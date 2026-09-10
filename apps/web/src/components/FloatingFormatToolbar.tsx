@@ -1,5 +1,19 @@
 import React from 'react';
-import { BoldIcon, ItalicIcon, TrashIcon, PlusIcon, MinusIcon } from '@inq/icons';
+import {
+  BoldIcon,
+  ItalicIcon,
+  TrashIcon,
+  PlusIcon,
+  MinusIcon,
+  AlignLeftIcon,
+  AlignCenterIcon,
+  AlignRightIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  ResetIcon,
+} from '@inq/icons';
 import { IconButton } from '@inq/ui/icon-button';
 import { ColorPickerPill } from '@inq/ui/color-picker-pill';
 
@@ -16,6 +30,11 @@ export interface FloatingFormatToolbarProps {
   onToggleBold?: () => void;
   isItalic?: boolean;
   onToggleItalic?: () => void;
+  textAlign?: 'left' | 'center' | 'right';
+  onTextAlignChange?: (align: 'left' | 'center' | 'right') => void;
+  onNudge?: (direction: 'left' | 'right' | 'up' | 'down', step?: number) => void;
+  onResetPosition?: () => void;
+  hasPositionOffset?: boolean;
   color?: string;
   onColorChange?: (color: string) => void;
   backgroundColor?: string;
@@ -64,6 +83,11 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = ({
   onToggleBold,
   isItalic = false,
   onToggleItalic,
+  textAlign = 'left',
+  onTextAlignChange,
+  onNudge,
+  onResetPosition,
+  hasPositionOffset = false,
   color = '#1f1f1f',
   onColorChange,
   backgroundColor = '#ffffff',
@@ -74,6 +98,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = ({
   onOpacityChange,
   onDelete,
 }) => {
+
   return (
     <div
       className="floating-toolbar"
@@ -155,6 +180,75 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = ({
           >
             <ItalicIcon size={15} />
           </IconButton>
+
+          {/* Text Alignment */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
+            <IconButton
+              tooltip="Align Left"
+              active={textAlign === 'left'}
+              size="sm"
+              onClick={() => onTextAlignChange?.('left')}
+            >
+              <AlignLeftIcon size={15} />
+            </IconButton>
+            <IconButton
+              tooltip="Align Center"
+              active={textAlign === 'center'}
+              size="sm"
+              onClick={() => onTextAlignChange?.('center')}
+            >
+              <AlignCenterIcon size={15} />
+            </IconButton>
+            <IconButton
+              tooltip="Align Right (Best for numbers/amounts)"
+              active={textAlign === 'right'}
+              size="sm"
+              onClick={() => onTextAlignChange?.('right')}
+            >
+              <AlignRightIcon size={15} />
+            </IconButton>
+          </div>
+
+          {/* Position Nudge Controls */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '2px' }}>
+            <IconButton
+              tooltip="Move Left (Alt+←, Shift: 5pt)"
+              size="sm"
+              onClick={(e) => onNudge?.('left', e.shiftKey ? 5 : 1)}
+            >
+              <ArrowLeftIcon size={14} />
+            </IconButton>
+            <IconButton
+              tooltip="Move Right (Alt+→, Shift: 5pt)"
+              size="sm"
+              onClick={(e) => onNudge?.('right', e.shiftKey ? 5 : 1)}
+            >
+              <ArrowRightIcon size={14} />
+            </IconButton>
+            <IconButton
+              tooltip="Move Up (Alt+↑, Shift: 5pt)"
+              size="sm"
+              onClick={(e) => onNudge?.('up', e.shiftKey ? 5 : 1)}
+            >
+              <ArrowUpIcon size={14} />
+            </IconButton>
+            <IconButton
+              tooltip="Move Down (Alt+↓, Shift: 5pt)"
+              size="sm"
+              onClick={(e) => onNudge?.('down', e.shiftKey ? 5 : 1)}
+            >
+              <ArrowDownIcon size={14} />
+            </IconButton>
+            {hasPositionOffset && (
+              <IconButton
+                tooltip="Reset Position"
+                size="sm"
+                onClick={onResetPosition}
+              >
+                <ResetIcon size={14} />
+              </IconButton>
+            )}
+          </div>
 
           {/* Text Color Picker */}
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>

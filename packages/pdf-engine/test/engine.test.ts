@@ -225,4 +225,53 @@ describe('Vector PDF Modification Pipeline', () => {
     expect(inputBytes.length).toBe(originalLength);
     expect(inputBytes.buffer.byteLength).toBeGreaterThan(0);
   });
+
+  it('correctly handles moved and right-aligned edited fields', async () => {
+    const doc = await PDFDocument.create();
+    const page = doc.addPage([612, 792]);
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    page.drawText('$0', { x: 500, y: 300, size: 12, font });
+    const originalPdfBytes = await doc.save();
+
+    const delta: ModificationDelta = {
+      pages: {
+        0: {
+          pageIndex: 0,
+          textEdits: [
+            {
+              id: 'edit-shifted-amount',
+              pageIndex: 0,
+              originalText: '$0',
+              newText: '$1,422.00',
+              originalBbox: { x: 500, y: 300, width: 14, height: 12 },
+              currentBbox: { x: 480, y: 310, width: 60, height: 12 }, // Shifted left 20pt, up 10pt
+              baselineY: 300,
+              style: {
+                fontFamily: 'Helvetica',
+                fontSize: 12,
+                colorHex: '#4285f4',
+                isBold: true,
+                isItalic: false,
+                letterSpacing: 0,
+                lineHeight: 1.2,
+                textAlign: 'right',
+                autoFit: true,
+              },
+            },
+          ],
+          whiteouts: [],
+          images: [],
+          newTexts: [],
+        },
+      },
+    };
+
+    const engine = new PdfEngine();
+    const modifiedBytes = await engine.modifyPdf(originalPdfBytes, delta);
+    expect(modifiedBytes.length).toBeGreaterThan(0);
+
+    const reloaded = await PDFDocument.load(modifiedBytes);
+    expect(reloaded.getPageCount()).toBe(1);
+  });
 });
+

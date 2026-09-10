@@ -57,8 +57,13 @@ export class PdfEngine {
         const padY = Math.max(1.5, fontSize * 0.1);
         const padX = Math.max(2, fontSize * 0.1);
 
-        // Determine effective baseline
-        const baselineY = edit.baselineY !== undefined ? edit.baselineY : edit.originalBbox.y;
+        // Determine position delta in PDF coordinate space
+        const deltaX = edit.currentBbox ? edit.currentBbox.x - edit.originalBbox.x : 0;
+        const deltaY = edit.currentBbox ? edit.currentBbox.y - edit.originalBbox.y : 0;
+
+        // Determine effective baseline accounting for vertical shift
+        const baseBaselineY = edit.baselineY !== undefined ? edit.baselineY : edit.originalBbox.y;
+        const effectiveBaselineY = baseBaselineY + deltaY;
 
         // Calculate robust whiteout bbox that covers from below descenders to above ascenders
         const originalWidth = edit.originalBbox.width || 40;
@@ -70,7 +75,7 @@ export class PdfEngine {
             : edit.originalBbox.height + 2 * padY;
         const whiteoutY =
           edit.baselineY !== undefined
-            ? baselineY - descent - padY
+            ? baseBaselineY - descent - padY
             : edit.originalBbox.y - padY;
 
         const textWhiteout: WhiteoutBlock = {
@@ -86,6 +91,22 @@ export class PdfEngine {
         };
         applyWhiteout(page, textWhiteout);
 
+        // If moved, also apply background whiteout at current position if background color is set
+        if ((deltaX !== 0 || deltaY !== 0) && edit.backgroundColorHex) {
+          const movedWhiteout: WhiteoutBlock = {
+            id: `whiteout-moved-${edit.id}`,
+            pageIndex,
+            bbox: {
+              x: edit.currentBbox.x - padX,
+              y: effectiveBaselineY - descent - padY,
+              width: currentWidth + 2 * padX,
+              height: whiteoutHeight,
+            },
+            fillColorHex: edit.backgroundColorHex,
+          };
+          applyWhiteout(page, movedWhiteout);
+        }
+
         // Resolve font
         const font = await this.fontResolver.resolveFont(
           doc,
@@ -95,12 +116,12 @@ export class PdfEngine {
           options?.customFontBuffers
         );
 
-        // Inject new vector text at the exact baseline
+        // Inject new vector text at the exact baseline and position
         injectVectorText(page, font, {
           text: edit.newText,
           bbox: edit.currentBbox,
           style: edit.style,
-          baselineY: edit.baselineY,
+          baselineY: effectiveBaselineY,
         });
       }
 

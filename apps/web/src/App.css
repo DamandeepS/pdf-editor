@@ -372,6 +372,35 @@ body {
   border-bottom: 2px solid var(--color-brand-emerald);
 }
 
+.text-move-handle {
+  position: absolute;
+  top: -9px;
+  left: -9px;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--border-radius-full);
+  background: var(--color-brand-primary);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 70;
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+  user-select: none;
+}
+
+.text-move-handle:hover {
+  transform: scale(1.15);
+  background: #1a73e8;
+  cursor: grab;
+}
+
+.text-move-handle:active {
+  cursor: grabbing;
+}
+
 .inline-edit-input {
   width: 100%;
   height: 100%;

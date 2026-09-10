@@ -34,6 +34,16 @@ import {
   CheckIcon,
   CloseIcon,
   ChevronDownIcon,
+  AlignLeftIcon,
+  AlignCenterIcon,
+  AlignRightIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  MoveIcon,
+  ResetIcon,
+  EyedropperIcon,
 } from '@inq/icons';
 
 // ============================================================================
@@ -475,4 +485,15 @@ export const ICON_CATALOG: IconItem[] = [
   { name: 'CheckIcon', category: 'Feedback', component: CheckIcon, keywords: ['check', 'confirm', 'success', 'done'] },
   { name: 'CloseIcon', category: 'Actions', component: CloseIcon, keywords: ['close', 'dismiss', 'cancel', 'x'] },
   { name: 'ChevronDownIcon', category: 'Navigation', component: ChevronDownIcon, keywords: ['chevron', 'arrow', 'dropdown', 'down'] },
+  { name: 'AlignLeftIcon', category: 'Format', component: AlignLeftIcon, keywords: ['align', 'left', 'text', 'format'] },
+  { name: 'AlignCenterIcon', category: 'Format', component: AlignCenterIcon, keywords: ['align', 'center', 'middle', 'text'] },
+  { name: 'AlignRightIcon', category: 'Format', component: AlignRightIcon, keywords: ['align', 'right', 'amount', 'number', 'text'] },
+  { name: 'ArrowLeftIcon', category: 'Navigation', component: ArrowLeftIcon, keywords: ['arrow', 'left', 'nudge', 'move', 'back'] },
+  { name: 'ArrowRightIcon', category: 'Navigation', component: ArrowRightIcon, keywords: ['arrow', 'right', 'nudge', 'move', 'forward'] },
+  { name: 'ArrowUpIcon', category: 'Navigation', component: ArrowUpIcon, keywords: ['arrow', 'up', 'nudge', 'move', 'top'] },
+  { name: 'ArrowDownIcon', category: 'Navigation', component: ArrowDownIcon, keywords: ['arrow', 'down', 'nudge', 'move', 'bottom'] },
+  { name: 'MoveIcon', category: 'Actions', component: MoveIcon, keywords: ['move', 'drag', 'position', 'reposition', 'crosshair'] },
+  { name: 'ResetIcon', category: 'Actions', component: ResetIcon, keywords: ['reset', 'restore', 'revert', 'rotate', 'undo'] },
+  { name: 'EyedropperIcon', category: 'Tools', component: EyedropperIcon, keywords: ['eyedropper', 'picker', 'color', 'sample'] },
 ];
+

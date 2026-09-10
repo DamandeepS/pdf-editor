@@ -40,9 +40,9 @@ export function injectVectorText(
   // Horizontal Alignment
   let startX = bbox.x;
   if (style.textAlign === 'center') {
-    startX = bbox.x + Math.max(0, (bbox.width - finalWidth) / 2);
+    startX = bbox.x + (bbox.width - finalWidth) / 2;
   } else if (style.textAlign === 'right') {
-    startX = bbox.x + Math.max(0, bbox.width - finalWidth);
+    startX = (bbox.x + bbox.width) - finalWidth;
   }
 
   // Baseline Calculation:

@@ -230,3 +230,50 @@ export const EyedropperIcon: React.FC<IconProps> = (props) => (
     <path d="M2 22l3-3" />
   </svg>
 );
+
+export const ArrowLeftIcon: React.FC<IconProps> = (props) => (
+  <svg {...baseProps(props)}>
+    <line x1="19" y1="12" x2="5" y2="12" />
+    <polyline points="12 19 5 12 12 5" />
+  </svg>
+);
+
+export const ArrowRightIcon: React.FC<IconProps> = (props) => (
+  <svg {...baseProps(props)}>
+    <line x1="5" y1="12" x2="19" y2="12" />
+    <polyline points="12 5 19 12 12 19" />
+  </svg>
+);
+
+export const ArrowUpIcon: React.FC<IconProps> = (props) => (
+  <svg {...baseProps(props)}>
+    <line x1="12" y1="19" x2="12" y2="5" />
+    <polyline points="5 12 12 5 19 12" />
+  </svg>
+);
+
+export const ArrowDownIcon: React.FC<IconProps> = (props) => (
+  <svg {...baseProps(props)}>
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <polyline points="19 12 12 19 5 12" />
+  </svg>
+);
+
+export const MoveIcon: React.FC<IconProps> = (props) => (
+  <svg {...baseProps(props)}>
+    <polyline points="5 9 2 12 5 15" />
+    <polyline points="9 5 12 2 15 5" />
+    <polyline points="15 19 12 22 9 19" />
+    <polyline points="19 9 22 12 19 15" />
+    <line x1="2" y1="12" x2="22" y2="12" />
+    <line x1="12" y1="2" x2="12" y2="22" />
+  </svg>
+);
+
+export const ResetIcon: React.FC<IconProps> = (props) => (
+  <svg {...baseProps(props)}>
+    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+    <path d="M3 3v5h5" />
+  </svg>
+);
+

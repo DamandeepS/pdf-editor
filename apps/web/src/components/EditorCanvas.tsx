@@ -15,6 +15,7 @@ import {
 } from '../utils/pdfRenderer';
 import { FloatingFormatToolbar } from './FloatingFormatToolbar';
 import { createStampDataUrl, STAMP_PRESETS } from '../utils/stampGenerator';
+import { MoveIcon } from '@inq/icons';
 
 export interface EditorCanvasProps {
   pdfDocument: PDFDocumentProxy | null;
@@ -55,6 +56,14 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
     mouseY: number;
     initPdfX: number;
     initPdfY: number;
+  } | null>(null);
+  const [draggingTextId, setDraggingTextId] = useState<string | null>(null);
+  const [textDragStartPos, setTextDragStartPos] = useState<{
+    mouseX: number;
+    mouseY: number;
+    initPdfX: number;
+    initPdfY: number;
+    initBaselineY: number;
   } | null>(null);
   const stampFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -250,7 +259,24 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
     });
   };
 
-  // Mouse Handlers for Whiteout & Stamp Dragging
+  const handleTextDragStart = (
+    e: React.MouseEvent,
+    item: ExtractedTextItem,
+    edit?: TextBlockEdit
+  ) => {
+    e.stopPropagation();
+    onSelectItem({ type: 'text', id: item.id });
+    setDraggingTextId(item.id);
+    setTextDragStartPos({
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      initPdfX: edit?.currentBbox.x ?? item.x,
+      initPdfY: edit?.currentBbox.y ?? item.y,
+      initBaselineY: edit?.baselineY ?? item.baselineY ?? item.y,
+    });
+  };
+
+  // Mouse Handlers for Whiteout, Stamp, and Text Dragging
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (activeTool !== 'whiteout') return;
 
@@ -296,6 +322,77 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             : img
         ),
       }));
+      return;
+    }
+
+    // 3. Text field dragging
+    if (draggingTextId && textDragStartPos) {
+      const dx = (e.clientX - textDragStartPos.mouseX) / scale;
+      const dy = (textDragStartPos.mouseY - e.clientY) / scale; // Screen Y goes down, PDF Y goes up
+      const newPdfX = Math.round((textDragStartPos.initPdfX + dx) * 10) / 10;
+      const newPdfY = Math.round((textDragStartPos.initPdfY + dy) * 10) / 10;
+      const newBaselineY = Math.round((textDragStartPos.initBaselineY + dy) * 10) / 10;
+
+      onUpdatePageModifications((prev: PageModifications) => {
+        const existingEdits = prev.textEdits || [];
+        const targetItem = textItems.find((t) => t.id === draggingTextId);
+        if (!targetItem) return prev;
+        const existing = existingEdits.find((t: TextBlockEdit) => t.id === draggingTextId);
+
+        if (existing) {
+          return {
+            ...prev,
+            textEdits: existingEdits.map((t: TextBlockEdit) =>
+              t.id === draggingTextId
+                ? {
+                    ...t,
+                    currentBbox: { ...t.currentBbox, x: newPdfX, y: newPdfY },
+                    baselineY: newBaselineY,
+                  }
+                : t
+            ),
+          };
+        } else {
+          const isCurrencyOrNumber = /^\$?\s*[\d,]+(\.\d+)?$/i.test(targetItem.text.trim());
+          const newEdit: TextBlockEdit = {
+            id: targetItem.id,
+            pageIndex: currentPage - 1,
+            originalText: targetItem.text,
+            newText: targetItem.text,
+            originalBbox: {
+              x: targetItem.x,
+              y: targetItem.y,
+              width: targetItem.width,
+              height: targetItem.height,
+            },
+            currentBbox: {
+              x: newPdfX,
+              y: newPdfY,
+              width: targetItem.width,
+              height: targetItem.height,
+            },
+            baselineY: newBaselineY,
+            backgroundColorHex: targetItem.detectedBackgroundColorHex || '#ffffff',
+            detectedFontName: targetItem.fontName,
+            style: {
+              fontFamily: targetItem.fontFamily || 'Helvetica',
+              fontSize: targetItem.fontSize,
+              colorHex: targetItem.detectedColorHex || '#1f1f1f',
+              isBold: targetItem.isBold,
+              isItalic: targetItem.isItalic,
+              letterSpacing: 0,
+              lineHeight: 1.2,
+              textAlign: isCurrencyOrNumber ? 'right' : 'left',
+              autoFit: true,
+            },
+          };
+          return {
+            ...prev,
+            textEdits: [...existingEdits, newEdit],
+          };
+        }
+      });
+      return;
     }
   };
 
@@ -303,6 +400,11 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
     if (draggingStampId) {
       setDraggingStampId(null);
       setDragStartPos(null);
+    }
+
+    if (draggingTextId) {
+      setDraggingTextId(null);
+      setTextDragStartPos(null);
     }
 
     if (!isDrawingWhiteout || !currentWhiteoutRect) return;
@@ -342,20 +444,179 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
     setCurrentWhiteoutRect(null);
   };
 
+  // Nudge text field position in PDF points
+  const handleNudgeText = useCallback(
+    (direction: 'left' | 'right' | 'up' | 'down', step = 1) => {
+      if (!selectedItem || selectedItem.type !== 'text') return;
+      const targetItem = textItems.find((t) => t.id === selectedItem.id);
+      if (!targetItem) return;
+
+      let deltaX = 0;
+      let deltaY = 0;
+      if (direction === 'left') deltaX = -step;
+      if (direction === 'right') deltaX = step;
+      if (direction === 'up') deltaY = step; // PDF Y goes UP
+      if (direction === 'down') deltaY = -step; // PDF Y goes DOWN
+
+      onUpdatePageModifications((prev: PageModifications) => {
+        const existingEdits = prev.textEdits || [];
+        const existing = existingEdits.find((t: TextBlockEdit) => t.id === selectedItem.id);
+
+        if (existing) {
+          return {
+            ...prev,
+            textEdits: existingEdits.map((t: TextBlockEdit) =>
+              t.id === selectedItem.id
+                ? {
+                    ...t,
+                    currentBbox: {
+                      ...t.currentBbox,
+                      x: Math.round((t.currentBbox.x + deltaX) * 10) / 10,
+                      y: Math.round((t.currentBbox.y + deltaY) * 10) / 10,
+                    },
+                    baselineY: Math.round(
+                      ((t.baselineY ?? targetItem.baselineY ?? targetItem.y) + deltaY) * 10
+                    ) / 10,
+                  }
+                : t
+            ),
+          };
+        } else {
+          const isCurrencyOrNumber = /^\$?\s*[\d,]+(\.\d+)?$/i.test(targetItem.text.trim());
+          const newEdit: TextBlockEdit = {
+            id: targetItem.id,
+            pageIndex: currentPage - 1,
+            originalText: targetItem.text,
+            newText: targetItem.text,
+            originalBbox: {
+              x: targetItem.x,
+              y: targetItem.y,
+              width: targetItem.width,
+              height: targetItem.height,
+            },
+            currentBbox: {
+              x: Math.round((targetItem.x + deltaX) * 10) / 10,
+              y: Math.round((targetItem.y + deltaY) * 10) / 10,
+              width: targetItem.width,
+              height: targetItem.height,
+            },
+            baselineY: Math.round(((targetItem.baselineY ?? targetItem.y) + deltaY) * 10) / 10,
+            backgroundColorHex: targetItem.detectedBackgroundColorHex || '#ffffff',
+            detectedFontName: targetItem.fontName,
+            style: {
+              fontFamily: targetItem.fontFamily || 'Helvetica',
+              fontSize: targetItem.fontSize,
+              colorHex: targetItem.detectedColorHex || '#1f1f1f',
+              isBold: targetItem.isBold,
+              isItalic: targetItem.isItalic,
+              letterSpacing: 0,
+              lineHeight: 1.2,
+              textAlign: isCurrencyOrNumber ? 'right' : 'left',
+              autoFit: true,
+            },
+          };
+          return { ...prev, textEdits: [...existingEdits, newEdit] };
+        }
+      });
+    },
+    [selectedItem, textItems, currentPage, onUpdatePageModifications]
+  );
+
+  // Reset text field position back to original detected coordinates
+  const handleResetTextPosition = useCallback(() => {
+    if (!selectedItem || selectedItem.type !== 'text') return;
+    const targetItem = textItems.find((t) => t.id === selectedItem.id);
+    if (!targetItem) return;
+
+    onUpdatePageModifications((prev: PageModifications) => {
+      const existingEdits = prev.textEdits || [];
+      return {
+        ...prev,
+        textEdits: existingEdits.map((t: TextBlockEdit) =>
+          t.id === selectedItem.id
+            ? {
+                ...t,
+                currentBbox: {
+                  ...t.currentBbox,
+                  x: t.originalBbox.x,
+                  y: t.originalBbox.y,
+                },
+                baselineY: targetItem.baselineY ?? targetItem.y,
+              }
+            : t
+        ),
+      };
+    });
+  }, [selectedItem, textItems, onUpdatePageModifications]);
+
+  // Keyboard shortcut listener for arrow keys (Alt + Arrow / Arrow when not input focused)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedItem || selectedItem.type !== 'text') return;
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+        const isInput =
+          document.activeElement?.tagName === 'INPUT' ||
+          document.activeElement?.tagName === 'TEXTAREA';
+        if (e.altKey || !isInput) {
+          e.preventDefault();
+          const step = e.shiftKey ? 5 : 1;
+          if (e.key === 'ArrowLeft') handleNudgeText('left', step);
+          if (e.key === 'ArrowRight') handleNudgeText('right', step);
+          if (e.key === 'ArrowUp') handleNudgeText('up', step);
+          if (e.key === 'ArrowDown') handleNudgeText('down', step);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedItem, handleNudgeText]);
+
   // Find active selected text, whiteout, or image for floating toolbar
   const activeTextItem = selectedItem?.type === 'text' ? textItems.find((t) => t.id === selectedItem.id) : undefined;
   const activeTextEdit = pageModifications.textEdits?.find((t: TextBlockEdit) => t.id === selectedItem?.id);
   const activeWhiteout = pageModifications.whiteouts?.find((w: WhiteoutBlock) => w.id === selectedItem?.id);
   const activeImage = pageModifications.images?.find((img: ImageStamp) => img.id === selectedItem?.id);
 
+  const hasPositionOffset = Boolean(
+    activeTextEdit &&
+      (Math.abs(activeTextEdit.currentBbox.x - activeTextEdit.originalBbox.x) > 0.1 ||
+        Math.abs(activeTextEdit.currentBbox.y - activeTextEdit.originalBbox.y) > 0.1)
+  );
+
   // Calculate position for floating toolbar docked above selection
   let toolbarPosition: { top: number; left: number } | null = null;
   if (selectedItem?.type === 'text') {
     const textItem = textItems.find((t) => t.id === selectedItem.id);
     if (textItem) {
+      const edit = activeTextEdit;
+      const isCurrencyOrNumber = /^\$?\s*[\d,]+(\.\d+)?$/i.test(textItem.text.trim());
+      const textAlign = edit?.style.textAlign || (isCurrencyOrNumber ? 'right' : 'left');
+      const deltaX = edit ? edit.currentBbox.x - textItem.x : 0;
+      const deltaY = edit ? edit.currentBbox.y - textItem.y : 0;
+      const offsetX = deltaX * scale;
+      const offsetY = -deltaY * scale;
+
+      const fontSize = (edit?.style.fontSize || textItem.fontSize) * scale;
+      const displayText = edit ? edit.newText : textItem.text;
+      const estimatedWidth = Math.max(
+        textItem.screenWidth + 16,
+        displayText.length * (fontSize * 0.58) + 24
+      );
+
+      let currentScreenX = textItem.screenX + offsetX;
+      if (textAlign === 'right') {
+        currentScreenX = textItem.screenX + textItem.screenWidth + offsetX - estimatedWidth;
+      } else if (textAlign === 'center') {
+        currentScreenX = textItem.screenX + textItem.screenWidth / 2 + offsetX - estimatedWidth / 2;
+      }
+
+      const approxToolbarWidth = 540;
+      const clampedX = Math.max(10, Math.min(pageSize.width - approxToolbarWidth, currentScreenX));
+
       toolbarPosition = {
-        top: textItem.screenY,
-        left: textItem.screenX,
+        top: textItem.screenY + offsetY,
+        left: clampedX,
       };
     } else if (activeTextEdit) {
       const coords = pdfToScreen(
@@ -369,6 +630,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
         left: coords.screenX,
       };
     }
+
   } else if (selectedItem?.type === 'whiteout' && activeWhiteout) {
     const coords = pdfToScreen(
       activeWhiteout.bbox.x,
@@ -532,20 +794,37 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             const isItalic = edit?.style.isItalic ?? item.isItalic ?? false;
             const fontFamily = edit?.style.fontFamily || item.fontFamily || 'Helvetica';
             const bgColor = edit?.backgroundColorHex || item.detectedBackgroundColorHex || '#ffffff';
+            const isCurrencyOrNumber = /^\$?\s*[\d,]+(\.\d+)?$/i.test(item.text.trim());
+            const textAlign = edit?.style.textAlign || (isCurrencyOrNumber ? 'right' : 'left');
+
+            // Position calculation accounting for user movement and alignment
+            const deltaX = edit ? edit.currentBbox.x - item.x : 0;
+            const deltaY = edit ? edit.currentBbox.y - item.y : 0;
+            const offsetX = deltaX * scale;
+            const offsetY = -deltaY * scale; // PDF Y goes UP, screen Y goes DOWN
+
             const estimatedWidth = Math.max(
               item.screenWidth + 16,
               displayText.length * (fontSize * 0.58) + 24
             );
+
+            let currentScreenX = item.screenX + offsetX;
+            if (textAlign === 'right') {
+              currentScreenX = item.screenX + item.screenWidth + offsetX - estimatedWidth;
+            } else if (textAlign === 'center') {
+              currentScreenX = item.screenX + item.screenWidth / 2 + offsetX - estimatedWidth / 2;
+            }
+            const currentScreenY = item.screenY + offsetY;
 
             return (
               <div
                 key={item.id}
                 className={`text-span-box ${isSelected ? 'selected' : ''} ${edit ? 'modified' : ''}`}
                 data-text={item.text}
-                title={`Click to edit "${item.text}"`}
+                title={`Click to edit "${item.text}" (Alt+Arrows to nudge)`}
                 style={{
-                  left: `${item.screenX}px`,
-                  top: `${item.screenY}px`,
+                  left: `${currentScreenX}px`,
+                  top: `${currentScreenY}px`,
                   width: `${isSelected || edit ? estimatedWidth : Math.max(item.screenWidth, 20)}px`,
                   height: `${Math.max(item.screenHeight, 16)}px`,
                   fontSize: `${fontSize}px`,
@@ -553,12 +832,24 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                   color,
                   fontWeight: isBold ? 700 : 400,
                   fontStyle: isItalic ? 'italic' : 'normal',
+                  justifyContent: textAlign === 'right' ? 'flex-end' : textAlign === 'center' ? 'center' : 'flex-start',
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
                   onSelectItem({ type: 'text', id: item.id });
                 }}
               >
+                {/* Drag Move Handle when Selected */}
+                {isSelected && (
+                  <div
+                    className="text-move-handle"
+                    title="Drag to move field (or use Alt+Arrow keys to nudge)"
+                    onMouseDown={(e) => handleTextDragStart(e, item, edit)}
+                  >
+                    <MoveIcon size={11} />
+                  </div>
+                )}
+
                 {/* If modified, place whiteout under the original text to cover it */}
                 {edit && (
                   <div
@@ -587,6 +878,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                       color,
                       fontWeight: isBold ? 700 : 400,
                       fontStyle: isItalic ? 'italic' : 'normal',
+                      textAlign,
                       backgroundColor: 'transparent',
                     }}
                     onChange={(e) => {
@@ -603,7 +895,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                           isItalic: edit?.style.isItalic ?? item.isItalic ?? false,
                           letterSpacing: 0,
                           lineHeight: 1.2,
-                          textAlign: 'left',
+                          textAlign,
                           autoFit: true,
                         };
 
@@ -618,16 +910,16 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                             width: item.width,
                             height: item.height,
                           },
-                          currentBbox: {
+                          currentBbox: edit?.currentBbox || {
                             x: item.x,
                             y: item.y,
                             width: item.width,
                             height: item.height,
                           },
-                          baselineY: item.baselineY ?? item.y,
+                          baselineY: edit?.baselineY ?? item.baselineY ?? item.y,
                           backgroundColorHex: edit?.backgroundColorHex || item.detectedBackgroundColorHex || '#ffffff',
                           detectedFontName: item.fontName,
-                          style: defaultStyle,
+                          style: edit?.style || defaultStyle,
                         };
                         return {
                           ...prev,
@@ -642,11 +934,12 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                     }}
                   />
                 ) : edit ? (
-                  <span>{displayText}</span>
+                  <span style={{ width: '100%', textAlign }}>{displayText}</span>
                 ) : null}
               </div>
             );
           })}
+
 
           {/* Floating Formatting Toolbar */}
           {toolbarPosition && selectedItem && (
@@ -896,6 +1189,62 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                   return prev;
                 });
               }}
+              textAlign={
+                activeTextEdit?.style.textAlign ||
+                (activeTextItem && /^\$?\s*[\d,]+(\.\d+)?$/i.test(activeTextItem.text.trim()) ? 'right' : 'left')
+              }
+              onTextAlignChange={(textAlign) => {
+                onUpdatePageModifications((prev: PageModifications) => {
+                  const existingEdits = prev.textEdits || [];
+                  const existing = existingEdits.find((t: TextBlockEdit) => t.id === selectedItem.id);
+                  if (existing) {
+                    return {
+                      ...prev,
+                      textEdits: existingEdits.map((t: TextBlockEdit) =>
+                        t.id === selectedItem.id ? { ...t, style: { ...t.style, textAlign } } : t
+                      ),
+                    };
+                  } else if (activeTextItem) {
+                    const newEdit: TextBlockEdit = {
+                      id: activeTextItem.id,
+                      pageIndex: currentPage - 1,
+                      originalText: activeTextItem.text,
+                      newText: activeTextItem.text,
+                      originalBbox: {
+                        x: activeTextItem.x,
+                        y: activeTextItem.y,
+                        width: activeTextItem.width,
+                        height: activeTextItem.height,
+                      },
+                      currentBbox: {
+                        x: activeTextItem.x,
+                        y: activeTextItem.y,
+                        width: activeTextItem.width,
+                        height: activeTextItem.height,
+                      },
+                      baselineY: activeTextItem.baselineY ?? activeTextItem.y,
+                      backgroundColorHex: activeTextItem.detectedBackgroundColorHex || '#ffffff',
+                      detectedFontName: activeTextItem.fontName,
+                      style: {
+                        fontFamily: activeTextItem.fontFamily || 'Helvetica',
+                        fontSize: activeTextItem.fontSize,
+                        colorHex: activeTextItem.detectedColorHex || '#1f1f1f',
+                        isBold: activeTextItem.isBold,
+                        isItalic: activeTextItem.isItalic,
+                        letterSpacing: 0,
+                        lineHeight: 1.2,
+                        textAlign,
+                        autoFit: true,
+                      },
+                    };
+                    return { ...prev, textEdits: [...existingEdits, newEdit] };
+                  }
+                  return prev;
+                });
+              }}
+              onNudge={handleNudgeText}
+              onResetPosition={handleResetTextPosition}
+              hasPositionOffset={hasPositionOffset}
               fillColor={activeWhiteout?.fillColorHex || '#ffffff'}
               onFillColorChange={(fillColorHex) => {
                 onUpdatePageModifications((prev: PageModifications) => ({
