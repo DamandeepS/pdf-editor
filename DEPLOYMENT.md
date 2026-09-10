@@ -81,7 +81,7 @@ The repository includes a root `vercel.json` file:
 ```json
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npx turbo run build --filter=@inq/web --filter=@inq/stories && node -e \"const fs = require('node:fs'); fs.cpSync('apps/stories/dist', 'apps/web/dist/design-system', { recursive: true }); fs.cpSync('apps/stories/dist', 'apps/web/dist/stories', { recursive: true });\"",
+  "buildCommand": "npm run build:vercel",
   "outputDirectory": "apps/web/dist",
   "framework": "vite",
   "cleanUrls": true,
