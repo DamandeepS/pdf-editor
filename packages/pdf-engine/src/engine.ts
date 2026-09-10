@@ -42,12 +42,39 @@ export class PdfEngine {
 
       // 2. Process Text Block Edits (Auto-Whiteout old text + Inject new text)
       for (const edit of pageMods.textEdits || []) {
-        // Redact original text area cleanly
+        const fontSize = edit.style?.fontSize || 12;
+        // In PDF typography, descent extends below baseline by ~0.25 to 0.3 * fontSize
+        // We add protective padding so descenders, commas, and anti-aliased subpixels are 100% blanketed
+        const descent = fontSize * 0.28;
+        const padY = Math.max(1.5, fontSize * 0.1);
+        const padX = Math.max(2, fontSize * 0.1);
+
+        // Determine effective baseline
+        const baselineY = edit.baselineY !== undefined ? edit.baselineY : edit.originalBbox.y;
+
+        // Calculate robust whiteout bbox that covers from below descenders to above ascenders
+        const originalWidth = edit.originalBbox.width || 40;
+        const currentWidth = edit.currentBbox?.width || originalWidth;
+        const whiteoutWidth = Math.max(originalWidth, currentWidth) + 2 * padX;
+        const whiteoutHeight =
+          edit.baselineY !== undefined
+            ? fontSize * 1.25 + 2 * padY
+            : edit.originalBbox.height + 2 * padY;
+        const whiteoutY =
+          edit.baselineY !== undefined
+            ? baselineY - descent - padY
+            : edit.originalBbox.y - padY;
+
         const textWhiteout: WhiteoutBlock = {
           id: `whiteout-${edit.id}`,
           pageIndex,
-          bbox: edit.originalBbox,
-          fillColorHex: '#ffffff',
+          bbox: {
+            x: edit.originalBbox.x - padX,
+            y: whiteoutY,
+            width: whiteoutWidth,
+            height: whiteoutHeight,
+          },
+          fillColorHex: edit.backgroundColorHex || '#ffffff',
         };
         applyWhiteout(page, textWhiteout);
 
@@ -60,11 +87,12 @@ export class PdfEngine {
           options?.customFontBuffers
         );
 
-        // Inject new vector text
+        // Inject new vector text at the exact baseline
         injectVectorText(page, font, {
           text: edit.newText,
           bbox: edit.currentBbox,
           style: edit.style,
+          baselineY: edit.baselineY,
         });
       }
 

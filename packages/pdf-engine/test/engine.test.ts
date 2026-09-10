@@ -135,4 +135,72 @@ describe('Vector PDF Modification Pipeline', () => {
     const reloadedDoc = await PDFDocument.load(modifiedBytes);
     expect(reloadedDoc.getPageCount()).toBe(1);
   });
+
+  it('correctly applies custom backgroundColorHex and baselineY for text on tinted containers', async () => {
+    // 1. Create document with a tinted highlight box
+    const baseDoc = await PDFDocument.create();
+    const basePage = baseDoc.addPage([612, 792]);
+    const fontBold = await baseDoc.embedFont(StandardFonts.HelveticaBold);
+
+    // Draw light blue container box (#e8f0fe)
+    basePage.drawRectangle({
+      x: 390,
+      y: 310,
+      width: 180,
+      height: 32,
+      color: rgb(232 / 255, 240 / 255, 254 / 255),
+    });
+    // Draw original text at baseline 325
+    basePage.drawText('$1,452.00', {
+      x: 480,
+      y: 325,
+      size: 14,
+      font: fontBold,
+      color: rgb(66 / 255, 133 / 255, 244 / 255),
+    });
+    const originalPdfBytes = await baseDoc.save();
+
+    // 2. Define modification with background color matching container and pinned baselineY
+    const delta: ModificationDelta = {
+      pages: {
+        0: {
+          pageIndex: 0,
+          textEdits: [
+            {
+              id: 'edit-total-due',
+              pageIndex: 0,
+              originalText: '$1,452.00',
+              newText: '$1,422.00',
+              originalBbox: { x: 480, y: 325, width: 62.27, height: 14 },
+              currentBbox: { x: 480, y: 325, width: 62.27, height: 14 },
+              baselineY: 325,
+              backgroundColorHex: '#e8f0fe',
+              style: {
+                fontFamily: 'Helvetica',
+                fontSize: 14,
+                colorHex: '#4285f4',
+                isBold: true,
+                isItalic: false,
+                letterSpacing: 0,
+                lineHeight: 1.2,
+                textAlign: 'left',
+                autoFit: true,
+              },
+            },
+          ],
+          whiteouts: [],
+          images: [],
+          newTexts: [],
+        },
+      },
+    };
+
+    // 3. Process via PdfEngine
+    const engine = new PdfEngine();
+    const modifiedBytes = await engine.modifyPdf(originalPdfBytes, delta);
+    expect(modifiedBytes.length).toBeGreaterThan(0);
+
+    const reloadedDoc = await PDFDocument.load(modifiedBytes);
+    expect(reloadedDoc.getPageCount()).toBe(1);
+  });
 });

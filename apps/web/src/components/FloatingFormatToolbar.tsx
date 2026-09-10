@@ -9,6 +9,7 @@ export interface FloatingFormatToolbarProps {
   // Text formatting
   fontFamily?: string;
   onFontFamilyChange?: (font: string) => void;
+  detectedFontName?: string;
   fontSize?: number;
   onFontSizeChange?: (size: number) => void;
   isBold?: boolean;
@@ -17,6 +18,8 @@ export interface FloatingFormatToolbarProps {
   onToggleItalic?: () => void;
   color?: string;
   onColorChange?: (color: string) => void;
+  backgroundColor?: string;
+  onBackgroundColorChange?: (color: string) => void;
   // Whiteout formatting
   fillColor?: string;
   onFillColorChange?: (color: string) => void;
@@ -28,12 +31,25 @@ export interface FloatingFormatToolbarProps {
 }
 
 const PRESET_COLORS = [
-  '#1f1f1f', // Dark Gray / Black
+  '#1f1f1f', // Charcoal
   '#4285f4', // Google Blue
   '#ea4335', // Google Coral
   '#fbbc05', // Google Amber
   '#34a853', // Google Emerald
+  '#5f6368', // Medium Gray
+  '#e8f0fe', // Soft Blue Tint
   '#ffffff', // White
+];
+
+const PRESET_BG_COLORS = [
+  '#ffffff', // White paper
+  '#e8f0fe', // Soft Blue container
+  '#f8fafd', // Neutral surface
+  '#f1f3f4', // Light Gray
+  '#fef7e0', // Soft Amber container
+  '#e6f4ea', // Soft Emerald container
+  '#fce8e6', // Soft Red container
+  '#1f1f1f', // Dark
 ];
 
 export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = ({
@@ -41,6 +57,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = ({
   type,
   fontFamily = 'Helvetica',
   onFontFamilyChange,
+  detectedFontName,
   fontSize = 12,
   onFontSizeChange,
   isBold = false,
@@ -49,6 +66,8 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = ({
   onToggleItalic,
   color = '#1f1f1f',
   onColorChange,
+  backgroundColor = '#ffffff',
+  onBackgroundColorChange,
   fillColor = '#ffffff',
   onFillColorChange,
   opacity = 1,
@@ -75,9 +94,21 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = ({
             onChange={(e) => onFontFamilyChange?.(e.target.value)}
             title="Font Family"
           >
-            <option value="Helvetica">Helvetica (Sans)</option>
-            <option value="Times-Roman">Times New Roman (Serif)</option>
-            <option value="Courier">Courier (Monospace)</option>
+            {detectedFontName && (
+              <option value={fontFamily}>
+                {fontFamily} (Detected)
+              </option>
+            )}
+            <optgroup label="Standard PDF Fonts">
+              <option value="Helvetica">Helvetica (Sans)</option>
+              <option value="Times-Roman">Times New Roman (Serif)</option>
+              <option value="Courier">Courier (Monospace)</option>
+            </optgroup>
+            <optgroup label="Modern Document Fonts">
+              <option value="Roboto">Roboto</option>
+              <option value="Inter">Inter</option>
+              <option value="Roboto Mono">Roboto Mono</option>
+            </optgroup>
           </select>
 
           {/* Font Size controls */}
@@ -125,12 +156,31 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = ({
             <ItalicIcon size={15} />
           </IconButton>
 
-          {/* Color Picker Pill */}
-          <ColorPickerPill
-            color={color}
-            onChange={(newColor) => onColorChange?.(newColor)}
-            presetColors={PRESET_COLORS}
-          />
+          {/* Text Color Picker */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+              Text:
+            </span>
+            <ColorPickerPill
+              color={color}
+              onChange={(newColor) => onColorChange?.(newColor)}
+              presetColors={PRESET_COLORS}
+              title="Text Color"
+            />
+          </div>
+
+          {/* Background / Whiteout Color Picker */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '10px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+              Bg:
+            </span>
+            <ColorPickerPill
+              color={backgroundColor}
+              onChange={(newBg) => onBackgroundColorChange?.(newBg)}
+              presetColors={PRESET_BG_COLORS}
+              title="Background / Whiteout Color"
+            />
+          </div>
         </>
       )}
 

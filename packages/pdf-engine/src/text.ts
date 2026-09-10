@@ -6,6 +6,7 @@ export interface TextInjectionOptions {
   text: string;
   bbox: { x: number; y: number; width: number; height: number };
   style: TextStyleOptions;
+  baselineY?: number;
 }
 
 /**
@@ -17,7 +18,7 @@ export function injectVectorText(
   font: PDFFont,
   options: TextInjectionOptions
 ): void {
-  const { text, bbox, style } = options;
+  const { text, bbox, style, baselineY } = options;
   if (!text) return;
 
   let fontSize = style.fontSize || 12;
@@ -45,9 +46,13 @@ export function injectVectorText(
   }
 
   // Baseline Calculation:
-  // In PDF, y represents the text baseline. We vertically center or align to bottom of bbox.
+  // If baselineY is provided, we use the exact original baseline coordinate.
+  // Otherwise, vertically center or align within bbox.
   const baselineOffset = textHeight * 0.2;
-  const startY = bbox.y + Math.max(0, (bbox.height - textHeight) / 2) + baselineOffset;
+  const startY =
+    baselineY !== undefined
+      ? baselineY
+      : bbox.y + Math.max(0, (bbox.height - textHeight) / 2) + baselineOffset;
 
   page.drawText(text, {
     x: startX,

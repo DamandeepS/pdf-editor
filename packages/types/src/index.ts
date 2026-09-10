@@ -60,6 +60,9 @@ export interface TextBlockEdit {
   originalBbox: BoundingBox;
   currentBbox: BoundingBox;
   style: TextStyleOptions;
+  backgroundColorHex?: string; // Background color for redaction/whiteout (matches container background)
+  baselineY?: number;          // Exact PDF baseline Y coordinate for sub-pixel text alignment
+  detectedFontName?: string;   // Original detected PDF font identifier or family
   customBoxAdjusted?: boolean;
 }
 

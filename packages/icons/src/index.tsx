@@ -222,3 +222,11 @@ export const LayersIcon: React.FC<IconProps> = (props) => (
     <polyline points="2 12 12 17 22 12" />
   </svg>
 );
+
+export const EyedropperIcon: React.FC<IconProps> = (props) => (
+  <svg {...baseProps(props)}>
+    <path d="M12 4l4 4-10 10H2v-4L12 4z" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L20 7l-4-4 1.5-1.5z" />
+    <path d="M2 22l3-3" />
+  </svg>
+);

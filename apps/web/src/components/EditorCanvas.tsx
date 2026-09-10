@@ -121,7 +121,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
           pdfHeight: unscaledViewport.height,
         });
 
-        const extracted = await extractPageTextItems(page, scale);
+        const extracted = await extractPageTextItems(page, scale, canvas);
         if (!isCancelled) {
           setTextItems(extracted);
         }
@@ -343,6 +343,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
   };
 
   // Find active selected text, whiteout, or image for floating toolbar
+  const activeTextItem = selectedItem?.type === 'text' ? textItems.find((t) => t.id === selectedItem.id) : undefined;
   const activeTextEdit = pageModifications.textEdits?.find((t: TextBlockEdit) => t.id === selectedItem?.id);
   const activeWhiteout = pageModifications.whiteouts?.find((w: WhiteoutBlock) => w.id === selectedItem?.id);
   const activeImage = pageModifications.images?.find((img: ImageStamp) => img.id === selectedItem?.id);
@@ -526,9 +527,11 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             const isSelected = selectedItem?.type === 'text' && selectedItem.id === item.id;
             const displayText = edit ? edit.newText : item.text;
             const fontSize = (edit?.style.fontSize || item.fontSize) * scale;
-            const color = edit?.style.colorHex || '#1f1f1f';
-            const isBold = edit?.style.isBold ?? false;
-            const isItalic = edit?.style.isItalic ?? false;
+            const color = edit?.style.colorHex || item.detectedColorHex || '#1f1f1f';
+            const isBold = edit?.style.isBold ?? item.isBold ?? false;
+            const isItalic = edit?.style.isItalic ?? item.isItalic ?? false;
+            const fontFamily = edit?.style.fontFamily || item.fontFamily || 'Helvetica';
+            const bgColor = edit?.backgroundColorHex || item.detectedBackgroundColorHex || '#ffffff';
             const estimatedWidth = Math.max(
               item.screenWidth + 16,
               displayText.length * (fontSize * 0.58) + 24
@@ -546,6 +549,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                   width: `${isSelected || edit ? estimatedWidth : Math.max(item.screenWidth, 20)}px`,
                   height: `${Math.max(item.screenHeight, 16)}px`,
                   fontSize: `${fontSize}px`,
+                  fontFamily,
                   color,
                   fontWeight: isBold ? 700 : 400,
                   fontStyle: isItalic ? 'italic' : 'normal',
@@ -560,11 +564,12 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                   <div
                     style={{
                       position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      backgroundColor: '#ffffff',
+                      top: '-2px',
+                      left: '-4px',
+                      width: 'calc(100% + 8px)',
+                      height: 'calc(100% + 4px)',
+                      backgroundColor: bgColor,
+                      borderRadius: '2px',
                       zIndex: -1,
                     }}
                   />
@@ -576,6 +581,14 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                     className="inline-edit-input"
                     value={displayText}
                     autoFocus
+                    style={{
+                      fontFamily,
+                      fontSize: `${fontSize}px`,
+                      color,
+                      fontWeight: isBold ? 700 : 400,
+                      fontStyle: isItalic ? 'italic' : 'normal',
+                      backgroundColor: 'transparent',
+                    }}
                     onChange={(e) => {
                       const newText = e.target.value;
                       onUpdatePageModifications((prev: PageModifications) => {
@@ -583,11 +596,11 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                         const withoutCurrent = existingEdits.filter((t: TextBlockEdit) => t.id !== item.id);
 
                         const defaultStyle: TextStyleOptions = {
-                          fontFamily: edit?.style.fontFamily || 'Helvetica',
+                          fontFamily: edit?.style.fontFamily || item.fontFamily || 'Helvetica',
                           fontSize: edit?.style.fontSize || item.fontSize,
-                          colorHex: edit?.style.colorHex || '#1f1f1f',
-                          isBold: edit?.style.isBold ?? false,
-                          isItalic: edit?.style.isItalic ?? false,
+                          colorHex: edit?.style.colorHex || item.detectedColorHex || '#1f1f1f',
+                          isBold: edit?.style.isBold ?? item.isBold ?? false,
+                          isItalic: edit?.style.isItalic ?? item.isItalic ?? false,
                           letterSpacing: 0,
                           lineHeight: 1.2,
                           textAlign: 'left',
@@ -611,6 +624,9 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                             width: item.width,
                             height: item.height,
                           },
+                          baselineY: item.baselineY ?? item.y,
+                          backgroundColorHex: edit?.backgroundColorHex || item.detectedBackgroundColorHex || '#ffffff',
+                          detectedFontName: item.fontName,
                           style: defaultStyle,
                         };
                         return {
@@ -637,60 +653,248 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             <FloatingFormatToolbar
               position={toolbarPosition}
               type={selectedItem.type}
-              fontFamily={activeTextEdit?.style.fontFamily || 'Helvetica'}
+              fontFamily={activeTextEdit?.style.fontFamily || activeTextItem?.fontFamily || 'Helvetica'}
+              detectedFontName={activeTextEdit?.detectedFontName || activeTextItem?.fontName}
               onFontFamilyChange={(fontFamily) => {
-                onUpdatePageModifications((prev: PageModifications) => ({
-                  ...prev,
-                  textEdits: (prev.textEdits || []).map((t: TextBlockEdit) =>
-                    t.id === selectedItem.id
-                      ? { ...t, style: { ...t.style, fontFamily } }
-                      : t
-                  ),
-                }));
+                onUpdatePageModifications((prev: PageModifications) => {
+                  const existingEdits = prev.textEdits || [];
+                  const existing = existingEdits.find((t: TextBlockEdit) => t.id === selectedItem.id);
+                  if (existing) {
+                    return {
+                      ...prev,
+                      textEdits: existingEdits.map((t: TextBlockEdit) =>
+                        t.id === selectedItem.id ? { ...t, style: { ...t.style, fontFamily } } : t
+                      ),
+                    };
+                  } else if (activeTextItem) {
+                    const newEdit: TextBlockEdit = {
+                      id: activeTextItem.id,
+                      pageIndex: currentPage - 1,
+                      originalText: activeTextItem.text,
+                      newText: activeTextItem.text,
+                      originalBbox: { x: activeTextItem.x, y: activeTextItem.y, width: activeTextItem.width, height: activeTextItem.height },
+                      currentBbox: { x: activeTextItem.x, y: activeTextItem.y, width: activeTextItem.width, height: activeTextItem.height },
+                      baselineY: activeTextItem.baselineY ?? activeTextItem.y,
+                      backgroundColorHex: activeTextItem.detectedBackgroundColorHex || '#ffffff',
+                      detectedFontName: activeTextItem.fontName,
+                      style: {
+                        fontFamily,
+                        fontSize: activeTextItem.fontSize,
+                        colorHex: activeTextItem.detectedColorHex || '#1f1f1f',
+                        isBold: activeTextItem.isBold,
+                        isItalic: activeTextItem.isItalic,
+                        letterSpacing: 0,
+                        lineHeight: 1.2,
+                        textAlign: 'left',
+                        autoFit: true,
+                      },
+                    };
+                    return { ...prev, textEdits: [...existingEdits, newEdit] };
+                  }
+                  return prev;
+                });
               }}
-              fontSize={activeTextEdit?.style.fontSize || 12}
+              fontSize={activeTextEdit?.style.fontSize || activeTextItem?.fontSize || 12}
               onFontSizeChange={(fontSize) => {
-                onUpdatePageModifications((prev: PageModifications) => ({
-                  ...prev,
-                  textEdits: (prev.textEdits || []).map((t: TextBlockEdit) =>
-                    t.id === selectedItem.id
-                      ? { ...t, style: { ...t.style, fontSize } }
-                      : t
-                  ),
-                }));
+                onUpdatePageModifications((prev: PageModifications) => {
+                  const existingEdits = prev.textEdits || [];
+                  const existing = existingEdits.find((t: TextBlockEdit) => t.id === selectedItem.id);
+                  if (existing) {
+                    return {
+                      ...prev,
+                      textEdits: existingEdits.map((t: TextBlockEdit) =>
+                        t.id === selectedItem.id ? { ...t, style: { ...t.style, fontSize } } : t
+                      ),
+                    };
+                  } else if (activeTextItem) {
+                    const newEdit: TextBlockEdit = {
+                      id: activeTextItem.id,
+                      pageIndex: currentPage - 1,
+                      originalText: activeTextItem.text,
+                      newText: activeTextItem.text,
+                      originalBbox: { x: activeTextItem.x, y: activeTextItem.y, width: activeTextItem.width, height: activeTextItem.height },
+                      currentBbox: { x: activeTextItem.x, y: activeTextItem.y, width: activeTextItem.width, height: activeTextItem.height },
+                      baselineY: activeTextItem.baselineY ?? activeTextItem.y,
+                      backgroundColorHex: activeTextItem.detectedBackgroundColorHex || '#ffffff',
+                      detectedFontName: activeTextItem.fontName,
+                      style: {
+                        fontFamily: activeTextItem.fontFamily || 'Helvetica',
+                        fontSize,
+                        colorHex: activeTextItem.detectedColorHex || '#1f1f1f',
+                        isBold: activeTextItem.isBold,
+                        isItalic: activeTextItem.isItalic,
+                        letterSpacing: 0,
+                        lineHeight: 1.2,
+                        textAlign: 'left',
+                        autoFit: true,
+                      },
+                    };
+                    return { ...prev, textEdits: [...existingEdits, newEdit] };
+                  }
+                  return prev;
+                });
               }}
-              isBold={activeTextEdit?.style.isBold || false}
+              isBold={activeTextEdit?.style.isBold ?? activeTextItem?.isBold ?? false}
               onToggleBold={() => {
-                onUpdatePageModifications((prev: PageModifications) => ({
-                  ...prev,
-                  textEdits: (prev.textEdits || []).map((t: TextBlockEdit) =>
-                    t.id === selectedItem.id
-                      ? { ...t, style: { ...t.style, isBold: !t.style.isBold } }
-                      : t
-                  ),
-                }));
+                onUpdatePageModifications((prev: PageModifications) => {
+                  const existingEdits = prev.textEdits || [];
+                  const existing = existingEdits.find((t: TextBlockEdit) => t.id === selectedItem.id);
+                  const currentBold = activeTextEdit?.style.isBold ?? activeTextItem?.isBold ?? false;
+                  if (existing) {
+                    return {
+                      ...prev,
+                      textEdits: existingEdits.map((t: TextBlockEdit) =>
+                        t.id === selectedItem.id ? { ...t, style: { ...t.style, isBold: !currentBold } } : t
+                      ),
+                    };
+                  } else if (activeTextItem) {
+                    const newEdit: TextBlockEdit = {
+                      id: activeTextItem.id,
+                      pageIndex: currentPage - 1,
+                      originalText: activeTextItem.text,
+                      newText: activeTextItem.text,
+                      originalBbox: { x: activeTextItem.x, y: activeTextItem.y, width: activeTextItem.width, height: activeTextItem.height },
+                      currentBbox: { x: activeTextItem.x, y: activeTextItem.y, width: activeTextItem.width, height: activeTextItem.height },
+                      baselineY: activeTextItem.baselineY ?? activeTextItem.y,
+                      backgroundColorHex: activeTextItem.detectedBackgroundColorHex || '#ffffff',
+                      detectedFontName: activeTextItem.fontName,
+                      style: {
+                        fontFamily: activeTextItem.fontFamily || 'Helvetica',
+                        fontSize: activeTextItem.fontSize,
+                        colorHex: activeTextItem.detectedColorHex || '#1f1f1f',
+                        isBold: !currentBold,
+                        isItalic: activeTextItem.isItalic,
+                        letterSpacing: 0,
+                        lineHeight: 1.2,
+                        textAlign: 'left',
+                        autoFit: true,
+                      },
+                    };
+                    return { ...prev, textEdits: [...existingEdits, newEdit] };
+                  }
+                  return prev;
+                });
               }}
-              isItalic={activeTextEdit?.style.isItalic || false}
+              isItalic={activeTextEdit?.style.isItalic ?? activeTextItem?.isItalic ?? false}
               onToggleItalic={() => {
-                onUpdatePageModifications((prev: PageModifications) => ({
-                  ...prev,
-                  textEdits: (prev.textEdits || []).map((t: TextBlockEdit) =>
-                    t.id === selectedItem.id
-                      ? { ...t, style: { ...t.style, isItalic: !t.style.isItalic } }
-                      : t
-                  ),
-                }));
+                onUpdatePageModifications((prev: PageModifications) => {
+                  const existingEdits = prev.textEdits || [];
+                  const existing = existingEdits.find((t: TextBlockEdit) => t.id === selectedItem.id);
+                  const currentItalic = activeTextEdit?.style.isItalic ?? activeTextItem?.isItalic ?? false;
+                  if (existing) {
+                    return {
+                      ...prev,
+                      textEdits: existingEdits.map((t: TextBlockEdit) =>
+                        t.id === selectedItem.id ? { ...t, style: { ...t.style, isItalic: !currentItalic } } : t
+                      ),
+                    };
+                  } else if (activeTextItem) {
+                    const newEdit: TextBlockEdit = {
+                      id: activeTextItem.id,
+                      pageIndex: currentPage - 1,
+                      originalText: activeTextItem.text,
+                      newText: activeTextItem.text,
+                      originalBbox: { x: activeTextItem.x, y: activeTextItem.y, width: activeTextItem.width, height: activeTextItem.height },
+                      currentBbox: { x: activeTextItem.x, y: activeTextItem.y, width: activeTextItem.width, height: activeTextItem.height },
+                      baselineY: activeTextItem.baselineY ?? activeTextItem.y,
+                      backgroundColorHex: activeTextItem.detectedBackgroundColorHex || '#ffffff',
+                      detectedFontName: activeTextItem.fontName,
+                      style: {
+                        fontFamily: activeTextItem.fontFamily || 'Helvetica',
+                        fontSize: activeTextItem.fontSize,
+                        colorHex: activeTextItem.detectedColorHex || '#1f1f1f',
+                        isBold: activeTextItem.isBold,
+                        isItalic: !currentItalic,
+                        letterSpacing: 0,
+                        lineHeight: 1.2,
+                        textAlign: 'left',
+                        autoFit: true,
+                      },
+                    };
+                    return { ...prev, textEdits: [...existingEdits, newEdit] };
+                  }
+                  return prev;
+                });
               }}
-              color={activeTextEdit?.style.colorHex || '#1f1f1f'}
+              color={activeTextEdit?.style.colorHex || activeTextItem?.detectedColorHex || '#1f1f1f'}
               onColorChange={(colorHex) => {
-                onUpdatePageModifications((prev: PageModifications) => ({
-                  ...prev,
-                  textEdits: (prev.textEdits || []).map((t: TextBlockEdit) =>
-                    t.id === selectedItem.id
-                      ? { ...t, style: { ...t.style, colorHex } }
-                      : t
-                  ),
-                }));
+                onUpdatePageModifications((prev: PageModifications) => {
+                  const existingEdits = prev.textEdits || [];
+                  const existing = existingEdits.find((t: TextBlockEdit) => t.id === selectedItem.id);
+                  if (existing) {
+                    return {
+                      ...prev,
+                      textEdits: existingEdits.map((t: TextBlockEdit) =>
+                        t.id === selectedItem.id ? { ...t, style: { ...t.style, colorHex } } : t
+                      ),
+                    };
+                  } else if (activeTextItem) {
+                    const newEdit: TextBlockEdit = {
+                      id: activeTextItem.id,
+                      pageIndex: currentPage - 1,
+                      originalText: activeTextItem.text,
+                      newText: activeTextItem.text,
+                      originalBbox: { x: activeTextItem.x, y: activeTextItem.y, width: activeTextItem.width, height: activeTextItem.height },
+                      currentBbox: { x: activeTextItem.x, y: activeTextItem.y, width: activeTextItem.width, height: activeTextItem.height },
+                      baselineY: activeTextItem.baselineY ?? activeTextItem.y,
+                      backgroundColorHex: activeTextItem.detectedBackgroundColorHex || '#ffffff',
+                      detectedFontName: activeTextItem.fontName,
+                      style: {
+                        fontFamily: activeTextItem.fontFamily || 'Helvetica',
+                        fontSize: activeTextItem.fontSize,
+                        colorHex,
+                        isBold: activeTextItem.isBold,
+                        isItalic: activeTextItem.isItalic,
+                        letterSpacing: 0,
+                        lineHeight: 1.2,
+                        textAlign: 'left',
+                        autoFit: true,
+                      },
+                    };
+                    return { ...prev, textEdits: [...existingEdits, newEdit] };
+                  }
+                  return prev;
+                });
+              }}
+              backgroundColor={activeTextEdit?.backgroundColorHex || activeTextItem?.detectedBackgroundColorHex || '#ffffff'}
+              onBackgroundColorChange={(backgroundColorHex) => {
+                onUpdatePageModifications((prev: PageModifications) => {
+                  const existingEdits = prev.textEdits || [];
+                  const existing = existingEdits.find((t: TextBlockEdit) => t.id === selectedItem.id);
+                  if (existing) {
+                    return {
+                      ...prev,
+                      textEdits: existingEdits.map((t: TextBlockEdit) =>
+                        t.id === selectedItem.id ? { ...t, backgroundColorHex } : t
+                      ),
+                    };
+                  } else if (activeTextItem) {
+                    const newEdit: TextBlockEdit = {
+                      id: activeTextItem.id,
+                      pageIndex: currentPage - 1,
+                      originalText: activeTextItem.text,
+                      newText: activeTextItem.text,
+                      originalBbox: { x: activeTextItem.x, y: activeTextItem.y, width: activeTextItem.width, height: activeTextItem.height },
+                      currentBbox: { x: activeTextItem.x, y: activeTextItem.y, width: activeTextItem.width, height: activeTextItem.height },
+                      baselineY: activeTextItem.baselineY ?? activeTextItem.y,
+                      backgroundColorHex,
+                      detectedFontName: activeTextItem.fontName,
+                      style: {
+                        fontFamily: activeTextItem.fontFamily || 'Helvetica',
+                        fontSize: activeTextItem.fontSize,
+                        colorHex: activeTextItem.detectedColorHex || '#1f1f1f',
+                        isBold: activeTextItem.isBold,
+                        isItalic: activeTextItem.isItalic,
+                        letterSpacing: 0,
+                        lineHeight: 1.2,
+                        textAlign: 'left',
+                        autoFit: true,
+                      },
+                    };
+                    return { ...prev, textEdits: [...existingEdits, newEdit] };
+                  }
+                  return prev;
+                });
               }}
               fillColor={activeWhiteout?.fillColorHex || '#ffffff'}
               onFillColorChange={(fillColorHex) => {
@@ -715,16 +919,19 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                   // Whiteout / Erase original text
                   const item = textItems.find((t) => t.id === selectedItem.id);
                   if (item) {
+                    const descent = item.fontSize * 0.28;
+                    const padY = Math.max(1.5, item.fontSize * 0.1);
+                    const padX = Math.max(2, item.fontSize * 0.1);
                     const whiteout: WhiteoutBlock = {
                       id: `whiteout-del-${Date.now()}`,
                       pageIndex: currentPage - 1,
                       bbox: {
-                        x: item.x - 2,
-                        y: item.y - 2,
-                        width: item.width + 4,
-                        height: item.height + 4,
+                        x: item.x - padX,
+                        y: (item.baselineY ?? item.y) - descent - padY,
+                        width: item.width + 2 * padX,
+                        height: item.fontSize * 1.25 + 2 * padY,
                       },
-                      fillColorHex: '#ffffff',
+                      fillColorHex: item.detectedBackgroundColorHex || '#ffffff',
                     };
                     onUpdatePageModifications((prev: PageModifications) => ({
                       ...prev,
