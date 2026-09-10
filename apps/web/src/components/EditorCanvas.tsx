@@ -15,7 +15,7 @@ import {
 } from '../utils/pdfRenderer';
 import { FloatingFormatToolbar } from './FloatingFormatToolbar';
 import { createStampDataUrl, STAMP_PRESETS } from '../utils/stampGenerator';
-import { MoveIcon } from '@inq/icons';
+import { MoveIcon, UploadIcon } from '@inq/icons';
 
 export interface EditorCanvasProps {
   pdfDocument: PDFDocumentProxy | null;
@@ -708,11 +708,12 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
               <button
                 type="button"
                 className="stamp-btn"
-                style={{ color: 'var(--color-brand-primary)', borderColor: 'var(--border-default)' }}
+                style={{ color: 'var(--color-brand-primary)', borderColor: 'var(--border-default)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                 onClick={() => stampFileInputRef.current?.click()}
                 title="Upload signature or custom stamp image"
               >
-                📷 Custom Stamp
+                <UploadIcon size={14} />
+                <span>Custom Stamp</span>
               </button>
             </div>
           )}

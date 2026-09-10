@@ -6,7 +6,7 @@ Welcome to **Inq PDF Editor**. Your privacy is our highest architectural priorit
 
 ---
 
-## 1. 🛡️ Client-Side Document Processing (Zero Server Transmission)
+## 1. Client-Side Document Processing (Zero Server Transmission)
 
 - **100% In-Browser Execution**: All document rendering, text glyph extraction, in-place text modification, redaction whiteout generation, stamp placement, and vector PDF compilation occur entirely inside your web browser using WebAssembly and client-side JavaScript (`pdf-lib` and `PDF.js`).
 - **Zero Document Storage**: We do **not** upload, collect, inspect, store, or transmit your PDF files, document text, financial figures, or confidential records to any external server or third-party cloud.
@@ -14,7 +14,7 @@ Welcome to **Inq PDF Editor**. Your privacy is our highest architectural priorit
 
 ---
 
-## 2. 📊 Analytics & Telemetry (Google Analytics 4)
+## 2. Analytics & Telemetry (Google Analytics 4)
 
 To understand aggregate platform usage (such as total page visits, popular screen sizes, and error occurrences) and improve the software:
 - We may use **Google Analytics 4 (GA4)**.
@@ -24,7 +24,7 @@ To understand aggregate platform usage (such as total page visits, popular scree
 
 ---
 
-## 3. 🍪 Cookies & Local Storage
+## 3. Cookies & Local Storage
 
 Inq PDF Editor uses minimal browser local storage:
 1. `inq_theme`: Remembers your choice of Light Mode (Google Labs) or Dark Mode (Gemini).
@@ -35,7 +35,7 @@ You can reset or remove these cookies at any time via your browser settings or b
 
 ---
 
-## 4. ⚖️ Your Rights (GDPR & CCPA/CPRA Compliance)
+## 4. Your Rights (GDPR & CCPA/CPRA Compliance)
 
 Under international data protection regulations (including the European Union General Data Protection Regulation and California Consumer Privacy Act):
 - **Right to Opt-Out**: You have the right to decline all non-essential analytics tracking at any time using the Cookie Consent banner or in-app Privacy Settings.
@@ -44,12 +44,12 @@ Under international data protection regulations (including the European Union Ge
 
 ---
 
-## 5. 📜 Open Source License
+## 5. Open Source License
 
 Inq PDF Editor is open-source software licensed under the [MIT License](./LICENSE).
 
 ---
 
-## 6. 📬 Contact & Inquiries
+## 6. Contact & Inquiries
 
 If you have any questions or feedback regarding our privacy practices, please open an issue in our project repository.

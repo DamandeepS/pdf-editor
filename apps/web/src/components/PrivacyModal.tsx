@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, Button } from '@inq/ui';
+import { ShieldCheckIcon } from '@inq/icons';
 
 export interface PrivacyModalProps {
   isOpen: boolean;
@@ -34,7 +35,9 @@ export const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) =
             borderRadius: '10px',
           }}
         >
-          <div style={{ fontSize: '20px', lineHeight: 1 }}>🛡️</div>
+          <div style={{ flexShrink: 0, marginTop: '2px' }}>
+            <ShieldCheckIcon size={22} color="var(--color-brand-primary)" />
+          </div>
           <div>
             <strong style={{ color: 'var(--color-brand-primary)', fontSize: '14px', display: 'block', marginBottom: '4px' }}>
               Zero Document Transmission Guarantee

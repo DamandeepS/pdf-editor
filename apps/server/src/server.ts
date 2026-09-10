@@ -74,7 +74,7 @@ const PORT = process.env.PORT || 4000;
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
-    console.log(`🚀 @inq/server running on http://localhost:${PORT}`);
+    console.log(`[inq-server] running on http://localhost:${PORT}`);
     console.log(`   - tRPC Endpoint:  http://localhost:${PORT}/trpc`);
     console.log(`   - REST Samples:   http://localhost:${PORT}/api/samples`);
   });

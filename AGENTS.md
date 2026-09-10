@@ -4,7 +4,7 @@ Welcome to the **Inq PDF Editor** repository. This document provides critical ar
 
 ---
 
-## 🏛️ Monorepo Architecture
+## Monorepo Architecture
 
 Managed via **Turborepo** and standard **npm workspaces** under the custom `@inq` scope:
 
@@ -27,7 +27,7 @@ Managed via **Turborepo** and standard **npm workspaces** under the custom `@inq
 
 ---
 
-## 🧩 UI Component Generation (Plop.js)
+## UI Component Generation (Plop.js)
 
 Whenever you need to create a new UI component in `@inq/ui`, **always use the Plop generator**:
 
@@ -55,7 +55,7 @@ npx plop component -- --name <ComponentName>
 
 ---
 
-## 🎨 Design Token Conventions (`@inq/tokens`)
+## Design Token Conventions (`@inq/tokens`)
 
 - **Design System**: Google Labs (Light Mode) & Gemini (Dark Mode) aesthetic.
 - **Brand Palette**:
@@ -76,7 +76,7 @@ npx plop component -- --name <ComponentName>
 
 ---
 
-## 🧪 Testing & Accessibility (a11y) Standards
+## Testing & Accessibility (a11y) Standards
 
 Every component in `@inq/ui` must satisfy accessibility criteria:
 - **ARIA Semantics**: Use appropriate roles (`role="dialog"`, `role="slider"`, `role="button"`).
@@ -91,7 +91,7 @@ Every component in `@inq/ui` must satisfy accessibility criteria:
 
 ---
 
-## ⚡ Essential Commands
+## Essential Commands
 
 | Command | Purpose |
 | :--- | :--- |
