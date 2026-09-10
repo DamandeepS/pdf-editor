@@ -21,6 +21,7 @@ Welcome to the **Open Knowledge Format (OKF)** bundle for Inq BillEditor. This r
 ## Knowledge Graph Nodes
 
 - [**System Architecture**](./system-architecture.md): Monorepo workspace topology, dependency graph, package boundaries, and application execution flow.
+- [**IPC & Protocol Architecture**](./ipc-architecture.md): Interprocess communication analysis (tRPC vs. MQTT vs. WebSockets), router topologies, and client-server synchronization.
 - [**UI Component Library**](./ui-component-graph.md): `@inq/ui` component hierarchy, `@inq/tokens` design token mappings, colocation contracts, and accessibility standards.
 - [**Vector PDF Processing Engine**](./pdf-engine-graph.md): Vector PDF assembly pipeline, coordinate inversion transformations (Screen DPI to PDF 72pt), and font embedding.
 - [**Change History Log**](./log.md): Record of changes, version updates, and bundle evolution.
