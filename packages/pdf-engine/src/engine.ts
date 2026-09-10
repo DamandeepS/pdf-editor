@@ -21,7 +21,15 @@ export class PdfEngine {
     delta: ModificationDelta,
     options?: PdfEngineOptions
   ): Promise<Uint8Array> {
-    const doc = await PDFDocument.load(originalPdfBytes);
+    if (!originalPdfBytes || originalPdfBytes.byteLength === 0 || originalPdfBytes.buffer?.byteLength === 0) {
+      throw new Error(
+        'Cannot modify PDF: The provided PDF byte buffer is empty or detached.'
+      );
+    }
+
+    // Work on a safe slice so callers' buffers are never altered or locked
+    const safeBytes = originalPdfBytes.slice();
+    const doc = await PDFDocument.load(safeBytes);
     const pages = doc.getPages();
 
     // Iterate through pages with modifications

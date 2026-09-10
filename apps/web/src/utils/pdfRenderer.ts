@@ -209,7 +209,11 @@ export async function loadPdfDocument(data: Uint8Array | string): Promise<PDFDoc
       sourceData[i] = binary.charCodeAt(i);
     }
   } else {
-    sourceData = data;
+    // CRITICAL: Always slice/copy the Uint8Array buffer before passing to pdfjs.getDocument!
+    // The PDF.js web worker transfers the underlying ArrayBuffer via postMessage transferable list,
+    // which detaches the buffer on the main thread. By slicing here, the caller's Uint8Array remains
+    // fully attached and valid for subsequent export operations, local modifications, and downloads.
+    sourceData = data.slice();
   }
 
   const loadingTask = pdfjs.getDocument({ data: sourceData });

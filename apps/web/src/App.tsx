@@ -39,6 +39,20 @@ const DEFAULT_SAMPLES: SampleBillMeta[] = [
 
 const clientPdfEngine = new PdfEngine();
 
+/**
+ * Safely converts a Uint8Array into a base64 string in chunks without exceeding call stack limits
+ */
+function uint8ArrayToBase64(bytes: Uint8Array): string {
+  let binary = '';
+  const len = bytes.byteLength;
+  const chunkSize = 0x8000; // 32KB chunks
+  for (let i = 0; i < len; i += chunkSize) {
+    const chunk = bytes.subarray(i, Math.min(i + chunkSize, len));
+    binary += String.fromCharCode.apply(null, chunk as unknown as number[]);
+  }
+  return btoa(binary);
+}
+
 export const App: React.FC = () => {
   // Document state
   const [documentTitle, setDocumentTitle] = useState('Cloud Tech SaaS Invoice');
@@ -84,8 +98,8 @@ export const App: React.FC = () => {
         bytes[i] = binary.charCodeAt(i);
       }
 
-      setPdfBytes(bytes);
-      const doc = await loadPdfDocument(bytes);
+      setPdfBytes(bytes.slice());
+      const doc = await loadPdfDocument(bytes.slice());
       setPdfDocument(doc);
       setNumPages(doc.numPages);
       setCurrentPage(1);
@@ -128,11 +142,11 @@ export const App: React.FC = () => {
     try {
       const arrayBuffer = await file.arrayBuffer();
       const bytes = new Uint8Array(arrayBuffer);
-      setPdfBytes(bytes);
+      setPdfBytes(bytes.slice());
       setCurrentSampleId('');
       setDocumentTitle(file.name.replace(/\.[^/.]+$/, ''));
 
-      const doc = await loadPdfDocument(bytes);
+      const doc = await loadPdfDocument(bytes.slice());
       setPdfDocument(doc);
       setNumPages(doc.numPages);
       setCurrentPage(1);
@@ -250,7 +264,7 @@ export const App: React.FC = () => {
 
   // Export PDF: Calls tRPC export with client-side fallback
   const handleExport = async () => {
-    if (!pdfBytes) {
+    if (!pdfBytes || pdfBytes.byteLength === 0 || pdfBytes.buffer?.byteLength === 0) {
       alert('No document is currently loaded to export.');
       return;
     }
@@ -258,6 +272,7 @@ export const App: React.FC = () => {
     setIsExporting(true);
     try {
       let finalBytes: Uint8Array;
+      const workingBytes = pdfBytes.slice();
 
       if (ipcStatus === 'connected') {
         // Primary IPC export via tRPC
@@ -265,7 +280,7 @@ export const App: React.FC = () => {
           documentTitle,
           sampleId: currentSampleId || undefined,
           pdfBase64: !currentSampleId
-            ? btoa(String.fromCharCode(...pdfBytes))
+            ? uint8ArrayToBase64(workingBytes)
             : undefined,
           delta,
         });
@@ -277,7 +292,7 @@ export const App: React.FC = () => {
         }
       } else {
         // Client-side fallback via @inq/pdf-engine
-        finalBytes = await clientPdfEngine.modifyPdf(pdfBytes, delta);
+        finalBytes = await clientPdfEngine.modifyPdf(workingBytes, delta);
       }
 
       // Trigger instant browser download

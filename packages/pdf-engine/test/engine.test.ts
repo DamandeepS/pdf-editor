@@ -203,4 +203,26 @@ describe('Vector PDF Modification Pipeline', () => {
     const reloadedDoc = await PDFDocument.load(modifiedBytes);
     expect(reloadedDoc.getPageCount()).toBe(1);
   });
+
+  it('rejects empty or detached byte buffers with a clear error', async () => {
+    const engine = new PdfEngine();
+    const emptyBytes = new Uint8Array(0);
+    await expect(engine.modifyPdf(emptyBytes, { pages: {} })).rejects.toThrow(
+      'Cannot modify PDF: The provided PDF byte buffer is empty or detached.'
+    );
+  });
+
+  it('preserves caller input buffer without modifying or detaching it', async () => {
+    const doc = await PDFDocument.create();
+    doc.addPage([200, 200]);
+    const inputBytes = await doc.save();
+    const originalLength = inputBytes.length;
+
+    const engine = new PdfEngine();
+    const result = await engine.modifyPdf(inputBytes, { pages: {} });
+
+    expect(result).toBeInstanceOf(Uint8Array);
+    expect(inputBytes.length).toBe(originalLength);
+    expect(inputBytes.buffer.byteLength).toBeGreaterThan(0);
+  });
 });
