@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Button } from '@inq/ui';
 import { ShieldCheckIcon } from '@inq/icons';
+import { getStoredConsent, updateAnalyticsConsent, type ConsentStatus } from '../utils/analytics';
 
 export interface PrivacyModalProps {
   isOpen: boolean;
@@ -8,6 +9,18 @@ export interface PrivacyModalProps {
 }
 
 export const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
+  const [consentStatus, setConsentStatus] = useState<ConsentStatus>('undecided');
+
+  useEffect(() => {
+    if (isOpen) {
+      setConsentStatus(getStoredConsent());
+    }
+  }, [isOpen]);
+
+  const handleToggleConsent = (newStatus: 'accepted' | 'declined') => {
+    updateAnalyticsConsent(newStatus);
+    setConsentStatus(newStatus);
+  };
   return (
     <Modal
       isOpen={isOpen}
@@ -91,6 +104,39 @@ export const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) =
           <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
             Under European (GDPR) and California (CCPA/CPRA) laws, you have full control over your telemetry preferences. Because we do not store documents or personal accounts on any server, there are no remote user databases or document logs to request deletion for.
           </p>
+
+          <div
+            style={{
+              marginTop: '12px',
+              padding: '12px 14px',
+              backgroundColor: 'var(--surface-hover)',
+              borderRadius: '8px',
+              border: '1px solid var(--border-subtle)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '10px',
+            }}
+          >
+            <div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Telemetry Status:</div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: consentStatus === 'accepted' ? 'var(--color-brand-emerald)' : 'var(--text-primary)' }}>
+                {consentStatus === 'accepted'
+                  ? 'Active (Anonymous Analytics Granted)'
+                  : consentStatus === 'declined'
+                  ? 'Disabled (Essential Only)'
+                  : 'Undecided (Blocked by Default)'}
+              </div>
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => handleToggleConsent(consentStatus === 'accepted' ? 'declined' : 'accepted')}
+            >
+              {consentStatus === 'accepted' ? 'Revoke Analytics Consent' : 'Enable Anonymous Analytics'}
+            </Button>
+          </div>
         </div>
 
         {/* Section 5: Open Source License */}
