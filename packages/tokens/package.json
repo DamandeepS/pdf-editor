@@ -24,6 +24,7 @@
     "src"
   ],
   "scripts": {
+    "build": "style-dictionary build --config style-dictionary.config.js",
     "tokens:build": "style-dictionary build --config style-dictionary.config.js",
     "typecheck": "tsc --noEmit"
   },
