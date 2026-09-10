@@ -1,20 +1,28 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npx turbo run build --filter=@inq/web --filter=@inq/stories && node -e \"const fs = require('node:fs'); fs.cpSync('apps/stories/dist', 'apps/web/dist/stories', { recursive: true });\"",
+  "buildCommand": "npx turbo run build --filter=@inq/web --filter=@inq/stories && node -e \"const fs = require('node:fs'); fs.cpSync('apps/stories/dist', 'apps/web/dist/design-system', { recursive: true }); fs.cpSync('apps/stories/dist', 'apps/web/dist/stories', { recursive: true });\"",
   "outputDirectory": "apps/web/dist",
   "framework": "vite",
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/design-system",
+      "destination": "/design-system/index.html"
+    },
+    {
+      "source": "/design-system/(.*)",
+      "destination": "/design-system/$1"
+    },
+    {
       "source": "/stories",
-      "destination": "/stories/index.html"
+      "destination": "/design-system/index.html"
     },
     {
       "source": "/stories/(.*)",
-      "destination": "/stories/$1"
+      "destination": "/design-system/$1"
     },
     {
-      "source": "/((?!stories).*)",
+      "source": "/((?!design-system|stories).*)",
       "destination": "/index.html"
     }
   ]

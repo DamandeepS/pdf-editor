@@ -49,7 +49,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
         )}
 
         <a
-          href={import.meta.env.DEV ? 'http://localhost:3001' : '/stories'}
+          href={import.meta.env.DEV ? 'http://localhost:3001' : '/design-system'}
           target="_blank"
           rel="noopener noreferrer"
           style={{
@@ -57,7 +57,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
             fontSize: '11px',
             textDecoration: 'underline',
           }}
-          title="Explore Living Design System & Component Stories Workbench"
+          title="Explore Inq UI Components & Design Tokens Workbench"
         >
           Design System ↗
         </a>

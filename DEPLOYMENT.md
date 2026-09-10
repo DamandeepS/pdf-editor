@@ -8,7 +8,7 @@ This guide outlines the production deployment workflow for **Inq PDF Editor** an
 
 Inq PDF Editor is architected as an isomorphic monorepo powered by Turborepo. When deployed to static edge hosting like Vercel:
 - **PDF Editor Web App (`@inq/web`)**: Runs at the root path (`/`). Document rendering, text glyph extraction, editing, redactions, and vector compilation execute client-side via WebAssembly and `pdf-lib`.
-- **Design System Workbench (`@inq/stories`)**: Runs at the `/stories` subpath on the same deployment. It showcases all 9 UI components, interactive props controls, accessibility audit panels, Google Material icons gallery, and Style Dictionary design tokens.
+- **Design System Workbench (`@inq/stories`)**: Runs at the `/design-system` path (with `/stories` preserved as an alias) on the same deployment. It showcases all 9 UI components, interactive props controls, accessibility audit panels, Google Material icons gallery, and Style Dictionary design tokens.
 - **Built-in Sample Documents**: Load via client-side fallbacks with zero requirement for an active Node.js server.
 - **Cost**: Completely self-contained and free to host indefinitely on Vercel's Hobby Tier.
 
@@ -25,10 +25,10 @@ npm run typecheck
 npm test
 
 # Test the unified Vercel production build command
-npx turbo run build --filter=@inq/web --filter=@inq/stories && node -e "const fs = require('node:fs'); fs.cpSync('apps/stories/dist', 'apps/web/dist/stories', { recursive: true });"
+npx turbo run build --filter=@inq/web --filter=@inq/stories && node -e "const fs = require('node:fs'); fs.cpSync('apps/stories/dist', 'apps/web/dist/design-system', { recursive: true }); fs.cpSync('apps/stories/dist', 'apps/web/dist/stories', { recursive: true });"
 ```
 
-The output artifacts are assembled into `apps/web/dist` (main editor) and `apps/web/dist/stories` (design library) in under 1 second.
+The output artifacts are assembled into `apps/web/dist` (main editor) and `apps/web/dist/design-system` (design library) in under 1 second.
 
 ---
 
@@ -44,7 +44,7 @@ Because the project is tracked under GitHub (`git@github.com:DamandeepS/pdf-edit
 Vercel reads the root `vercel.json` automatically:
 - **Framework Preset**: Vite
 - **Root Directory**: `./` (leave default)
-- **Build Command**: `npx turbo run build --filter=@inq/web --filter=@inq/stories && node -e "const fs = require('node:fs'); fs.cpSync('apps/stories/dist', 'apps/web/dist/stories', { recursive: true });"` (pre-configured)
+- **Build Command**: Pre-configured in `vercel.json`
 - **Output Directory**: `apps/web/dist` (pre-configured)
 - **Install Command**: `npm install` (default)
 
@@ -56,7 +56,7 @@ If you want to enable Google Analytics 4 tracking:
 ### Step 4: Deploy
 Click **Deploy**. In under 60 seconds, Vercel will compile the workspace packages and assign your live production URL:
 - **Live PDF Editor**: `https://<your-project>.vercel.app/`
-- **Live Design System Workbench**: `https://<your-project>.vercel.app/stories`
+- **Live Design System Workbench**: `https://<your-project>.vercel.app/design-system`
 
 ---
 
@@ -81,21 +81,29 @@ The repository includes a root `vercel.json` file:
 ```json
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npx turbo run build --filter=@inq/web --filter=@inq/stories && node -e \"const fs = require('node:fs'); fs.cpSync('apps/stories/dist', 'apps/web/dist/stories', { recursive: true });\"",
+  "buildCommand": "npx turbo run build --filter=@inq/web --filter=@inq/stories && node -e \"const fs = require('node:fs'); fs.cpSync('apps/stories/dist', 'apps/web/dist/design-system', { recursive: true }); fs.cpSync('apps/stories/dist', 'apps/web/dist/stories', { recursive: true });\"",
   "outputDirectory": "apps/web/dist",
   "framework": "vite",
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/design-system",
+      "destination": "/design-system/index.html"
+    },
+    {
+      "source": "/design-system/(.*)",
+      "destination": "/design-system/$1"
+    },
+    {
       "source": "/stories",
-      "destination": "/stories/index.html"
+      "destination": "/design-system/index.html"
     },
     {
       "source": "/stories/(.*)",
-      "destination": "/stories/$1"
+      "destination": "/design-system/$1"
     },
     {
-      "source": "/((?!stories).*)",
+      "source": "/((?!design-system|stories).*)",
       "destination": "/index.html"
     }
   ]
@@ -105,5 +113,5 @@ The repository includes a root `vercel.json` file:
 This ensures:
 1. Turborepo compiles the internal design tokens (`@inq/tokens`), UI components (`@inq/ui`), icons (`@inq/icons`), and vector engine (`@inq/pdf-engine`).
 2. Both `@inq/web` and `@inq/stories` are built in parallel.
-3. The stories workbench bundle is mounted into `/stories` with portable relative asset resolution.
+3. The design system bundle is mounted into `/design-system` (with `/stories` alias) with portable relative asset resolution.
 4. Client-side SPA routing handles all main editor paths without 404 conflicts.
