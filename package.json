@@ -22,7 +22,11 @@
   "devDependencies": {
     "jsdom": "^30.0.1",
     "plop": "^4.0.5",
-    "turbo": "^2.4.4",
-    "typescript": "^5.7.3"
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "turbo": "^2.10.12",
+    "typescript": "^7.0.2"
   }
 }
