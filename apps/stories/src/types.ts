@@ -48,3 +48,4 @@ export interface IconItem {
 
 export type ViewportMode = 'desktop' | 'laptop' | 'tablet' | 'mobile';
 export type CanvasBg = 'canvas' | 'white' | 'dark' | 'grid';
+export type ActiveSection = 'tokens' | 'typography' | 'icons' | 'component';

@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { ViewportMode, CanvasBg } from '../types';
+import type { ViewportMode, CanvasBg, ActiveSection } from '../types';
 
 export interface WorkbenchContextValue {
-  activeSection: 'tokens' | 'icons' | 'component';
-  setActiveSection: (sec: 'tokens' | 'icons' | 'component') => void;
+  activeSection: ActiveSection;
+  setActiveSection: (sec: ActiveSection) => void;
   activeComponentId: string;
   setActiveComponentId: (id: string) => void;
   currentProps: Record<string, any>;
@@ -22,7 +22,7 @@ export interface WorkbenchContextValue {
 const WorkbenchContext = createContext<WorkbenchContextValue | null>(null);
 
 export const WorkbenchProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [activeSection, setActiveSection] = useState<'tokens' | 'icons' | 'component'>('component');
+  const [activeSection, setActiveSection] = useState<ActiveSection>('component');
   const [activeComponentId, setActiveComponentId] = useState<string>('button');
   const [currentProps, setCurrentProps] = useState<Record<string, any>>({});
   const [theme, setTheme] = useState<'light' | 'dark'>('light');

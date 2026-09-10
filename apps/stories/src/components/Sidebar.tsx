@@ -63,6 +63,16 @@ export const Sidebar: React.FC = () => {
 
           <button
             type="button"
+            className={`nav-item ${activeSection === 'typography' ? 'active' : ''}`}
+            onClick={() => setActiveSection('typography')}
+          >
+            <span className="nav-item-icon">🔤</span>
+            <span className="nav-item-label">Typography Studio</span>
+            <span className="nav-item-badge">3 Fonts</span>
+          </button>
+
+          <button
+            type="button"
             className={`nav-item ${activeSection === 'icons' ? 'active' : ''}`}
             onClick={() => setActiveSection('icons')}
           >

@@ -7,6 +7,7 @@ import { ControlsPanel } from './components/ControlsPanel';
 import { CodeInspector } from './components/CodeInspector';
 import { A11yPanel } from './components/A11yPanel';
 import { TokensView } from './components/TokensView';
+import { TypographyView } from './components/TypographyView';
 import { IconsView } from './components/IconsView';
 import './App.css';
 
@@ -92,6 +93,7 @@ export const App: React.FC = () => {
         {/* Right Stage & Inspector Workspace */}
         <main className="stories-workspace">
           {activeSection === 'tokens' && <TokensView />}
+          {activeSection === 'typography' && <TypographyView />}
           {activeSection === 'icons' && <IconsView />}
           {activeSection === 'component' && activeStory && (
             <div className="component-workbench-layout">
