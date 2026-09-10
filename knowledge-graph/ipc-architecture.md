@@ -1,5 +1,5 @@
 ---
-id: inq-billeditor-ipc-architecture
+id: inq-pdf-editor-ipc-architecture
 type: architecture
 title: Interprocess Communication (IPC) & API Protocol Architecture
 description: Analysis and design of interprocess communication protocols (tRPC, MQTT, WebSockets) connecting apps/web, apps/server, and @inq/pdf-engine.
@@ -21,12 +21,12 @@ This node details the communication layer between the frontend user interface (`
 
 ## 1. Protocol Consideration & Trade-offs
 
-| Protocol | Suitability for Inq BillEditor | Trade-off Analysis |
+| Protocol | Suitability for Inq PDF Editor | Trade-off Analysis |
 | :--- | :--- | :--- |
 | **tRPC (Selected)** | **Optimal** | End-to-end compile-time type safety without code generators; transparent RPC calling over HTTP; directly consumes TypeScript types from `@inq/server` across Turborepo workspaces; zero schema drift. |
 | **MQTT** | *Not recommended for single-user document editing* | Lightweight publish-subscribe protocol ideal for high-fanout IoT telemetry and intermittent networks. Introduces broker complexity (e.g. Mosquitto/EMQX) without RPC request-response benefits for binary document compilation. |
-| **WebSockets** | *Reserved for future multi-user real-time collaboration* | Full-duplex persistent connection; valuable if multiple editors are concurrently modifying the same bill with operational transforms or CRDTs. Currently unneeded for single-tenant in-place bill editing. |
-| **Isomorphic Direct Engine (Client-side Fallback)** | **Active Support** | Because `@inq/pdf-engine` and `pdf-lib` run purely in JavaScript/WebAssembly, `apps/web` can perform 100% of PDF vector generation locally in the browser with zero server latency, while utilizing tRPC for server-backed persistence and sample bill cataloging. |
+| **WebSockets** | *Reserved for future multi-user real-time collaboration* | Full-duplex persistent connection; valuable if multiple editors are concurrently modifying the same document with operational transforms or CRDTs. Currently unneeded for single-tenant in-place PDF editing. |
+| **Isomorphic Direct Engine (Client-side Fallback)** | **Active Support** | Because `@inq/pdf-engine` and `pdf-lib` run purely in JavaScript/WebAssembly, `apps/web` can perform 100% of PDF vector generation locally in the browser with zero server latency, while utilizing tRPC for server-backed persistence and sample document cataloging. |
 
 ## 2. tRPC Endpoint Topography
 

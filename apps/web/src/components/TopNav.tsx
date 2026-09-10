@@ -103,14 +103,14 @@ export const TopNav: React.FC<TopNavProps> = ({
           </IconButton>
         )}
 
-        <div className="brand-wrapper" onClick={onOpenShortcuts} title="Inq BillEditor - Click for Shortcuts">
+        <div className="brand-wrapper" onClick={onOpenShortcuts} title="Inq PDF Editor - Click for Shortcuts">
           <div className="brand-dots">
             <span className="brand-dot" />
             <span className="brand-dot" />
             <span className="brand-dot" />
             <span className="brand-dot" />
           </div>
-          <span className="brand-title">Inq BillEditor</span>
+          <span className="brand-title">Inq PDF Editor</span>
         </div>
 
         <input
@@ -122,25 +122,25 @@ export const TopNav: React.FC<TopNavProps> = ({
           placeholder="Document Title"
         />
 
-        {/* Sample Bill Dropdown */}
+        {/* Sample Document Dropdown */}
         <div className="sample-select-wrapper">
           <select
             className="sample-select"
             value={currentSampleId}
             onChange={(e) => onSelectSample(e.target.value)}
-            title="Switch Sample Bill"
+            title="Switch Sample PDF"
           >
-            <option value="" disabled>Load Sample Bill...</option>
+            <option value="" disabled>Load Sample PDF...</option>
             {sampleBills.map((s) => (
               <option key={s.id} value={s.id}>
-                📄 {s.title}
+                {s.title}
               </option>
             ))}
           </select>
         </div>
 
         <IconButton
-          tooltip="Upload Custom PDF Bill"
+          tooltip="Upload Custom PDF"
           size="sm"
           onClick={() => fileInputRef.current?.click()}
         >

@@ -370,7 +370,7 @@ export const COMPONENT_STORIES: ComponentStoryMeta[] = [
     description: 'Google 4-color animated brand indicator pill with title typography.',
     component: BrandBadge,
     controls: {
-      label: { type: 'text', label: 'Label', defaultValue: 'Inq BillEditor' },
+      label: { type: 'text', label: 'Label', defaultValue: 'Inq PDF Editor' },
       size: {
         type: 'select',
         label: 'Size',
@@ -379,7 +379,7 @@ export const COMPONENT_STORIES: ComponentStoryMeta[] = [
       },
     },
     defaultProps: {
-      label: 'Inq BillEditor',
+      label: 'Inq PDF Editor',
       size: 'md',
     },
     a11y: {
@@ -387,7 +387,7 @@ export const COMPONENT_STORIES: ComponentStoryMeta[] = [
       focusIndicatorNote: 'Visual brand anchor element',
     },
     variants: [
-      { name: 'Standard Brand', props: { label: 'Inq BillEditor', size: 'md' } },
+      { name: 'Standard Brand', props: { label: 'Inq PDF Editor', size: 'md' } },
       { name: 'Compact Brand', props: { label: 'Inq', size: 'sm' } },
       { name: 'Hero Brand', props: { label: 'Inq Workspace', size: 'lg' } },
     ],

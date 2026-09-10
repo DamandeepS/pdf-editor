@@ -82,15 +82,15 @@ export const App: React.FC = () => {
             )}
           </button>
 
-          {/* External Link to BillEditor web app */}
+          {/* External Link to Inq PDF Editor web app */}
           <a
             href="http://localhost:3000"
             target="_blank"
             rel="noopener noreferrer"
             className="app-link-btn"
-            title="Open Inq BillEditor App"
+            title="Open Inq PDF Editor App"
           >
-            <span>BillEditor App</span>
+            <span>PDF Editor App</span>
             <span className="external-arrow">↗</span>
           </a>
         </div>

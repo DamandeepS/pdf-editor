@@ -1,6 +1,6 @@
 # AGENTS.md - Developer & AI Agent Guide
 
-Welcome to the **Inq BillEditor** repository. This document provides critical architectural context, package relationships, component conventions, and automated generation workflows for AI agents and human contributors.
+Welcome to the **Inq PDF Editor** repository. This document provides critical architectural context, package relationships, component conventions, and automated generation workflows for AI agents and human contributors.
 
 ---
 

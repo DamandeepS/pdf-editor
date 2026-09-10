@@ -2,7 +2,7 @@
 id: system-architecture
 type: architecture
 title: System Architecture & Monorepo Topology
-description: Comprehensive workspace dependency graph, package boundaries, and dataflow across the Inq BillEditor monorepo.
+description: Comprehensive workspace dependency graph, package boundaries, and dataflow across the Inq PDF Editor monorepo.
 tags:
   - architecture
   - monorepo

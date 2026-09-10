@@ -1,8 +1,8 @@
 ---
-id: inq-billeditor-knowledge-bundle
+id: inq-pdf-editor-knowledge-bundle
 type: index
-title: Inq BillEditor Knowledge Graph Bundle
-description: Curated Open Knowledge Format (OKF) bundle for the Inq BillEditor monorepo architecture, design token pipeline, UI component library, and vector PDF processing engine.
+title: Inq PDF Editor Knowledge Graph Bundle
+description: Curated Open Knowledge Format (OKF) bundle for the Inq PDF Editor monorepo architecture, design token pipeline, UI component library, and vector PDF processing engine.
 tags:
   - knowledge-graph
   - okf-spec
@@ -14,9 +14,9 @@ status: active
 version: 1.0.0
 ---
 
-# Inq BillEditor Knowledge Graph (OKF Bundle)
+# Inq PDF Editor Knowledge Graph (OKF Bundle)
 
-Welcome to the **Open Knowledge Format (OKF)** bundle for Inq BillEditor. This repository knowledge graph organizes structural metadata, system topology, component contracts, and transformation pipelines into a traversable semantic graph for human engineers and AI agents.
+Welcome to the **Open Knowledge Format (OKF)** bundle for Inq PDF Editor. This repository knowledge graph organizes structural metadata, system topology, component contracts, and transformation pipelines into a traversable semantic graph for human engineers and AI agents.
 
 ## Knowledge Graph Nodes
 

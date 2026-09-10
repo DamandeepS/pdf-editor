@@ -25,7 +25,7 @@ const TYPE_SCALE: TypeScaleSpecimen[] = [
 const PRESET_TEXTS = [
   { label: 'Alphabet & Numbers', text: 'The quick brown fox jumps over the lazy dog · 0123456789' },
   { label: 'Invoice & Financial', text: 'INVOICE #INV-2026-9481 · Subtotal: $1,420.00 · VAT (14%): $198.80 · Total: $1,618.80' },
-  { label: 'Product Statement', text: 'Inq BillEditor: High-performance, in-place vector PDF editing with Google aesthetic.' },
+  { label: 'Product Statement', text: 'Inq PDF Editor: High-performance, in-place vector PDF editing with Google aesthetic.' },
   { label: 'Code & Tokens', text: 'export const theme = { primary: "var(--color-brand-primary)", radius: "8px" };' },
 ];
 

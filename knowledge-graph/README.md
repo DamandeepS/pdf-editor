@@ -1,8 +1,8 @@
 ---
-id: inq-billeditor-knowledge-readme
+id: inq-pdf-editor-knowledge-readme
 type: index
-title: Inq BillEditor Knowledge Graph
-description: Entrypoint for the Inq BillEditor Open Knowledge Format (OKF) bundle.
+title: Inq PDF Editor Knowledge Graph
+description: Entrypoint for the Inq PDF Editor Open Knowledge Format (OKF) bundle.
 tags:
   - knowledge-graph
   - okf-spec
@@ -11,9 +11,9 @@ updated: 2026-09-10T15:45:00Z
 status: active
 ---
 
-# Knowledge Graph: Inq BillEditor (OKF Bundle)
+# Knowledge Graph: Inq PDF Editor (OKF Bundle)
 
-This directory contains visual and structural knowledge graphs detailing the architecture, component relationships, and data pipelines of the **Inq BillEditor** platform, authored in accordance with the **Open Knowledge Format (OKF)** specification.
+This directory contains visual and structural knowledge graphs detailing the architecture, component relationships, and data pipelines of the **Inq PDF Editor** platform, authored in accordance with the **Open Knowledge Format (OKF)** specification.
 
 ## Concepts & Nodes
 

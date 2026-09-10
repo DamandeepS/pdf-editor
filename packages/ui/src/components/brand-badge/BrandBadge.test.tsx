@@ -5,8 +5,8 @@ import { BrandBadge } from './BrandBadge';
 
 describe('BrandBadge Component', () => {
   it('renders brand label and Google-style 4-color dots', () => {
-    render(<BrandBadge label="Inq BillEditor" />);
-    expect(screen.getByText('Inq BillEditor')).toBeInTheDocument();
+    render(<BrandBadge label="Inq PDF Editor" />);
+    expect(screen.getByText('Inq PDF Editor')).toBeInTheDocument();
     const dots = document.querySelectorAll('.inq-brand-dot');
     expect(dots.length).toBe(4);
   });

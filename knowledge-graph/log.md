@@ -1,16 +1,24 @@
 ---
-id: inq-billeditor-knowledge-log
+id: inq-pdf-editor-knowledge-log
 type: changelog
 title: Knowledge Graph Bundle Evolution Log
 description: Chronological audit trail of knowledge bundle creation, updates, and node extensions.
 created: 2026-09-10T15:45:00Z
-updated: 2026-09-10T15:45:00Z
+updated: 2026-09-10T16:35:00Z
 status: active
 ---
 
 # Knowledge Graph Change Log
 
-All structural modifications, new concepts, and architectural shifts in the Inq BillEditor knowledge bundle are recorded here.
+All structural modifications, new concepts, and architectural shifts in the Inq PDF Editor knowledge bundle are recorded here.
+
+## [2026-09-10] Platform Identity Transition to Inq PDF Editor
+- Rebranded platform root package from `@inq/billeditor` to `@inq/pdf-editor`.
+- Rebranded web application identity, browser titles, navigation headers, and shortcuts tooltip to **Inq PDF Editor**.
+- Updated UI component library defaults (`BrandBadge`) and test suites to `Inq PDF Editor`.
+- Updated stories workbench component stories, brand badges, and typography statements.
+- Synchronized Open Knowledge Format (OKF) knowledge bundle manifests, system topology, IPC protocols, and changelogs.
+- Preserved sample document catalog (invoices, utility bills, cafe receipts) as built-in preset capabilities while positioning the platform as a universal, high-performance in-place vector PDF editor.
 
 ## [2026-09-10] React 19, TypeScript 7, Turbo 2, Vite 8 Stack Upgrade & Web Editor Implementation
 - Upgraded the entire monorepo to React 19.3.0 (`react@19.3.0`, `react-dom@19.3.0`, `@types/react@19.3.0`).

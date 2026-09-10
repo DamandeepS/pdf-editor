@@ -7,7 +7,7 @@ export interface BrandBadgeProps {
 }
 
 export const BrandBadge: React.FC<BrandBadgeProps> = ({
-  label = 'BillEditor',
+  label = 'PDF Editor',
   size = 'md',
   className = '',
 }) => {
