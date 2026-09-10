@@ -1,0 +1,88 @@
+.inq-progress-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1, 4px);
+  width: 100%;
+  user-select: none;
+  font-family: var(--font-sans, inherit);
+}
+
+.inq-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-xs, 12px);
+  color: var(--text-secondary, #444746);
+  font-weight: var(--font-weight-medium, 500);
+}
+
+.inq-progress-track {
+  width: 100%;
+  background-color: var(--surface-hover, #e0e2ec);
+  border-radius: var(--radius-full, 9999px);
+  overflow: hidden;
+  position: relative;
+}
+
+.inq-progress-fill {
+  height: 100%;
+  border-radius: var(--radius-full, 9999px);
+  transition: width var(--transition-normal, 250ms ease-out);
+}
+
+/* Variants */
+.inq-progress--primary .inq-progress-fill {
+  background-color: var(--color-primary, #4285f4);
+}
+
+.inq-progress--success .inq-progress-fill {
+  background-color: var(--color-brand-emerald, #34a853);
+}
+
+.inq-progress--warning .inq-progress-fill {
+  background-color: var(--color-brand-amber, #fbbc05);
+}
+
+.inq-progress--danger .inq-progress-fill {
+  background-color: var(--color-brand-coral, #ea4335);
+}
+
+.inq-progress--brand .inq-progress-fill {
+  background: linear-gradient(90deg, #4285f4, #ea4335, #fbbc05, #34a853);
+}
+
+/* Indeterminate Animation */
+.inq-progress-wrapper.is-indeterminate .inq-progress-fill {
+  width: 35% !important;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  animation: inq-progress-indeterminate 1.5s infinite cubic-bezier(0.65, 0.815, 0.735, 0.395);
+}
+
+@keyframes inq-progress-indeterminate {
+  0% {
+    left: -35%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Sizes */
+.inq-progress--xs .inq-progress-track {
+  height: 2px;
+}
+
+.inq-progress--sm .inq-progress-track {
+  height: 4px;
+}
+
+.inq-progress--md .inq-progress-track {
+  height: 8px;
+}
+
+.inq-progress--lg .inq-progress-track {
+  height: 12px;
+}
+

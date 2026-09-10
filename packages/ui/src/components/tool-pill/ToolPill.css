@@ -1,0 +1,41 @@
+.inq-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-3, 6px);
+  padding: 6px 14px;
+  border-radius: var(--radius-full, 9999px);
+  font-size: var(--font-size-sm, 12px);
+  font-weight: var(--font-weight-medium, 500);
+  background-color: var(--surface-card, #ffffff);
+  border: 1px solid var(--border-subtle, #e0e2e6);
+  color: var(--text-secondary, #444746);
+  cursor: pointer;
+  transition: all var(--transition-fast, 150ms ease);
+  user-select: none;
+}
+
+.inq-pill:hover {
+  background-color: var(--surface-hover, #f1f3f4);
+  color: var(--text-primary, #1f1f1f);
+}
+
+.inq-pill--active {
+  background-color: var(--color-brand-primary-subtle, rgba(66, 133, 244, 0.12));
+  border-color: var(--color-brand-primary, #4285f4);
+  color: var(--color-brand-primary, #4285f4);
+  font-weight: var(--font-weight-semibold, 600);
+  box-shadow: 0 0 0 1px var(--color-brand-primary, #4285f4);
+}
+
+.inq-pill-badge {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: var(--radius-sm, 4px);
+  background: rgba(0, 0, 0, 0.06);
+  color: inherit;
+  font-family: var(--font-mono, monospace);
+}
+
+[data-theme="dark"] .inq-pill-badge {
+  background: rgba(255, 255, 255, 0.12);
+}

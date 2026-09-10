@@ -1,0 +1,93 @@
+.inq-skeleton {
+  background-color: var(--surface-hover, #e0e2ec);
+  box-sizing: border-box;
+}
+
+/* Shapes */
+.inq-skeleton--text {
+  height: 1.15em;
+  border-radius: var(--radius-sm, 4px);
+  margin-bottom: 0.35em;
+}
+
+.inq-skeleton--circular {
+  border-radius: var(--radius-full, 9999px);
+  width: 40px;
+  height: 40px;
+}
+
+.inq-skeleton--rectangular {
+  border-radius: var(--radius-md, 8px);
+  width: 100%;
+  height: 120px;
+}
+
+/* Skeleton Group */
+.inq-skeleton-group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.inq-skeleton--last-line {
+  margin-bottom: 0;
+}
+
+/* Animations */
+/* Wave / Shimmer */
+.inq-skeleton--wave {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--surface-hover, #e8eaed);
+}
+
+.inq-skeleton--wave::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: inq-skeleton-wave 1.6s infinite ease-in-out;
+}
+
+@keyframes inq-skeleton-wave {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Pulse */
+.inq-skeleton--pulse {
+  animation: inq-skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes inq-skeleton-pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inq-skeleton--wave::after {
+    animation: none;
+    display: none;
+  }
+  .inq-skeleton--pulse {
+    animation: none;
+  }
+}
+

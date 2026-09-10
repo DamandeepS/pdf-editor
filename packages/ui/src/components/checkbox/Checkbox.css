@@ -1,0 +1,145 @@
+.inq-checkbox-wrapper {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--spacing-1, 4px);
+  user-select: none;
+}
+
+.inq-checkbox-label-container {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2, 8px);
+  cursor: pointer;
+  position: relative;
+  margin: 0;
+}
+
+.inq-checkbox-wrapper.is-disabled .inq-checkbox-label-container {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.inq-checkbox-control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.inq-checkbox-native-input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  cursor: inherit;
+  z-index: 1;
+}
+
+.inq-checkbox-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--surface-card, #ffffff);
+  border: 2px solid var(--border-default, #c4c7c5);
+  border-radius: var(--radius-sm, 4px);
+  color: #ffffff;
+  transition: background-color var(--transition-fast, 150ms ease),
+              border-color var(--transition-fast, 150ms ease),
+              box-shadow var(--transition-fast, 150ms ease),
+              transform var(--transition-fast, 150ms ease);
+}
+
+.inq-checkbox-indicator svg {
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity var(--transition-fast, 150ms ease), transform var(--transition-fast, 150ms ease);
+}
+
+/* Hover State */
+.inq-checkbox-label-container:hover:not(.is-disabled) .inq-checkbox-indicator {
+  border-color: var(--color-primary, #4285f4);
+  background-color: var(--surface-hover, #f8f9fa);
+}
+
+/* Checked & Indeterminate States */
+.inq-checkbox-native-input:checked ~ .inq-checkbox-indicator,
+.inq-checkbox-native-input:indeterminate ~ .inq-checkbox-indicator {
+  background-color: var(--color-primary, #4285f4);
+  border-color: var(--color-primary, #4285f4);
+}
+
+.inq-checkbox-native-input:checked ~ .inq-checkbox-indicator svg,
+.inq-checkbox-native-input:indeterminate ~ .inq-checkbox-indicator svg {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Focus Visible */
+.inq-checkbox-native-input:focus-visible ~ .inq-checkbox-indicator {
+  outline: none;
+  border-color: var(--color-primary, #4285f4);
+  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.25);
+}
+
+/* Error State */
+.inq-checkbox-wrapper.has-error .inq-checkbox-indicator {
+  border-color: var(--color-danger, #ea4335);
+}
+
+.inq-checkbox-wrapper.has-error .inq-checkbox-native-input:focus-visible ~ .inq-checkbox-indicator {
+  box-shadow: 0 0 0 3px rgba(234, 67, 53, 0.25);
+}
+
+/* Sizes */
+.inq-checkbox--sm .inq-checkbox-indicator {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+.inq-checkbox--sm .inq-checkbox-text {
+  font-size: var(--font-size-xs, 12px);
+}
+
+.inq-checkbox--md .inq-checkbox-indicator {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-sm, 4px);
+}
+.inq-checkbox--md .inq-checkbox-text {
+  font-size: var(--font-size-sm, 14px);
+}
+
+.inq-checkbox--lg .inq-checkbox-indicator {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+}
+.inq-checkbox--lg .inq-checkbox-text {
+  font-size: var(--font-size-md, 16px);
+}
+
+.inq-checkbox-text {
+  color: var(--text-primary, #1f1f1f);
+  font-family: var(--font-sans, inherit);
+  line-height: 1.4;
+  font-weight: var(--font-weight-normal, 400);
+}
+
+.inq-checkbox-helper {
+  font-size: var(--font-size-xs, 12px);
+  color: var(--text-secondary, #444746);
+  padding-left: calc(20px + var(--spacing-2, 8px));
+}
+
+.inq-checkbox-error {
+  font-size: var(--font-size-xs, 12px);
+  color: var(--color-danger, #ea4335);
+  font-weight: var(--font-weight-medium, 500);
+  padding-left: calc(20px + var(--spacing-2, 8px));
+}
+

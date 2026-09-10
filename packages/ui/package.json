@@ -1,0 +1,155 @@
+{
+  "name": "@inq/ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "*.css",
+    "./dist/styles.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./button": {
+      "types": "./dist/components/button/index.d.ts",
+      "import": "./dist/components/button/index.js"
+    },
+    "./icon-button": {
+      "types": "./dist/components/icon-button/index.d.ts",
+      "import": "./dist/components/icon-button/index.js"
+    },
+    "./tool-pill": {
+      "types": "./dist/components/tool-pill/index.d.ts",
+      "import": "./dist/components/tool-pill/index.js"
+    },
+    "./floating-card": {
+      "types": "./dist/components/floating-card/index.d.ts",
+      "import": "./dist/components/floating-card/index.js"
+    },
+    "./slider": {
+      "types": "./dist/components/slider/index.d.ts",
+      "import": "./dist/components/slider/index.js"
+    },
+    "./color-picker-pill": {
+      "types": "./dist/components/color-picker-pill/index.d.ts",
+      "import": "./dist/components/color-picker-pill/index.js"
+    },
+    "./modal": {
+      "types": "./dist/components/modal/index.d.ts",
+      "import": "./dist/components/modal/index.js"
+    },
+    "./brand-badge": {
+      "types": "./dist/components/brand-badge/index.d.ts",
+      "import": "./dist/components/brand-badge/index.js"
+    },
+    "./badge": {
+      "types": "./dist/components/badge/index.d.ts",
+      "import": "./dist/components/badge/index.js"
+    },
+    "./text-input": {
+      "types": "./dist/components/text-input/index.d.ts",
+      "import": "./dist/components/text-input/index.js"
+    },
+    "./checkbox": {
+      "types": "./dist/components/checkbox/index.d.ts",
+      "import": "./dist/components/checkbox/index.js"
+    },
+    "./switch": {
+      "types": "./dist/components/switch/index.d.ts",
+      "import": "./dist/components/switch/index.js"
+    },
+    "./select": {
+      "types": "./dist/components/select/index.d.ts",
+      "import": "./dist/components/select/index.js"
+    },
+    "./radio-group": {
+      "types": "./dist/components/radio-group/index.d.ts",
+      "import": "./dist/components/radio-group/index.js"
+    },
+    "./toast": {
+      "types": "./dist/components/toast/index.d.ts",
+      "import": "./dist/components/toast/index.js"
+    },
+    "./spinner": {
+      "types": "./dist/components/spinner/index.d.ts",
+      "import": "./dist/components/spinner/index.js"
+    },
+    "./progress-bar": {
+      "types": "./dist/components/progress-bar/index.d.ts",
+      "import": "./dist/components/progress-bar/index.js"
+    },
+    "./tooltip": {
+      "types": "./dist/components/tooltip/index.d.ts",
+      "import": "./dist/components/tooltip/index.js"
+    },
+    "./drawer": {
+      "types": "./dist/components/drawer/index.d.ts",
+      "import": "./dist/components/drawer/index.js"
+    },
+    "./accordion": {
+      "types": "./dist/components/accordion/index.d.ts",
+      "import": "./dist/components/accordion/index.js"
+    },
+    "./divider": {
+      "types": "./dist/components/divider/index.d.ts",
+      "import": "./dist/components/divider/index.js"
+    },
+    "./avatar": {
+      "types": "./dist/components/avatar/index.d.ts",
+      "import": "./dist/components/avatar/index.js"
+    },
+    "./tabs": {
+      "types": "./dist/components/tabs/index.d.ts",
+      "import": "./dist/components/tabs/index.js"
+    },
+    "./skeleton": {
+      "types": "./dist/components/skeleton/index.d.ts",
+      "import": "./dist/components/skeleton/index.js"
+    },
+    "./segmented-control": {
+      "types": "./dist/components/segmented-control/index.d.ts",
+      "import": "./dist/components/segmented-control/index.js"
+    },
+    "./textarea": {
+      "types": "./dist/components/textarea/index.d.ts",
+      "import": "./dist/components/textarea/index.js"
+    },
+    "./table": {
+      "types": "./dist/components/table/index.d.ts",
+      "import": "./dist/components/table/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node -e \"const fs = require('node:fs'); fs.cpSync('src', 'dist', { recursive: true, filter: (src) => !src.endsWith('.ts') && !src.endsWith('.tsx') });\"",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@inq/icons": "*",
+    "@inq/tokens": "*"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "jsdom": "^26.0.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "typescript": "^7.0.2",
+    "vitest": "^3.0.5"
+  }
+}

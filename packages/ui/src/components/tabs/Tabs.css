@@ -1,0 +1,135 @@
+.inq-tabs-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-family: var(--font-sans, inherit);
+}
+
+.inq-tabs--vertical {
+  flex-direction: row;
+  gap: var(--spacing-4, 16px);
+}
+
+.inq-tablist {
+  display: flex;
+  position: relative;
+  user-select: none;
+}
+
+.inq-tabs--horizontal .inq-tablist {
+  flex-direction: row;
+  align-items: center;
+}
+
+.inq-tabs--vertical .inq-tablist {
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 160px;
+}
+
+/* Underline Variant */
+.inq-tabs--underline.inq-tabs--horizontal .inq-tablist {
+  border-bottom: 2px solid var(--border-subtle, #e0e2ec);
+  gap: var(--spacing-4, 16px);
+}
+
+.inq-tabs--underline.inq-tabs--vertical .inq-tablist {
+  border-right: 2px solid var(--border-subtle, #e0e2ec);
+  gap: var(--spacing-1, 4px);
+}
+
+.inq-tab-button {
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: var(--font-size-sm, 14px);
+  font-weight: var(--font-weight-medium, 500);
+  color: var(--text-secondary, #444746);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2, 8px);
+  padding: 10px 14px;
+  position: relative;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.inq-tab-button:hover:not(.is-disabled) {
+  color: var(--text-primary, #1f1f1f);
+}
+
+.inq-tab-button:focus-visible {
+  outline: none;
+  border-radius: var(--radius-sm, 4px);
+  box-shadow: 0 0 0 2px var(--color-primary, #4285f4);
+}
+
+.inq-tabs--underline.inq-tabs--horizontal .inq-tab-button.is-selected {
+  color: var(--color-primary, #4285f4);
+  font-weight: var(--font-weight-medium, 600);
+}
+
+.inq-tabs--underline.inq-tabs--horizontal .inq-tab-button.is-selected::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--color-primary, #4285f4);
+  border-radius: 2px 2px 0 0;
+}
+
+.inq-tabs--underline.inq-tabs--vertical .inq-tab-button.is-selected {
+  color: var(--color-primary, #4285f4);
+  font-weight: var(--font-weight-medium, 600);
+}
+
+.inq-tabs--underline.inq-tabs--vertical .inq-tab-button.is-selected::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -2px;
+  width: 2px;
+  background-color: var(--color-primary, #4285f4);
+}
+
+/* Pill Variant */
+.inq-tabs--pill .inq-tablist {
+  background-color: var(--surface-hover, #f1f3f4);
+  padding: 4px;
+  border-radius: var(--radius-md, 8px);
+  gap: 4px;
+}
+
+.inq-tabs--pill .inq-tab-button {
+  border-radius: var(--radius-sm, 6px);
+  padding: 6px 14px;
+}
+
+.inq-tabs--pill .inq-tab-button.is-selected {
+  background-color: var(--surface-card, #ffffff);
+  color: var(--text-primary, #1f1f1f);
+  font-weight: var(--font-weight-medium, 600);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Disabled Tab */
+.inq-tab-button.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Tab Panel */
+.inq-tabpanel {
+  padding-top: var(--spacing-4, 16px);
+  flex: 1;
+  outline: none;
+}
+
+.inq-tabpanel:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--color-primary, #4285f4);
+  border-radius: var(--radius-sm, 4px);
+}
+

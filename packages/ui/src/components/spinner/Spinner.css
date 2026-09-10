@@ -1,0 +1,81 @@
+.inq-spinner-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2, 8px);
+  user-select: none;
+  font-family: var(--font-sans, inherit);
+}
+
+.inq-spinner--label-bottom {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.inq-spinner-svg {
+  display: block;
+  animation: inq-spinner-rotate 1.2s linear infinite;
+  transform-origin: center center;
+}
+
+.inq-spinner-track {
+  stroke: rgba(0, 0, 0, 0.08);
+}
+
+/* Arc styles by variant */
+.inq-spinner--primary .inq-spinner-arc {
+  stroke: var(--color-primary, #4285f4);
+}
+
+.inq-spinner--neutral .inq-spinner-arc {
+  stroke: var(--text-secondary, #444746);
+}
+
+.inq-spinner--white .inq-spinner-track {
+  stroke: rgba(255, 255, 255, 0.25);
+}
+
+.inq-spinner--white .inq-spinner-arc {
+  stroke: #ffffff;
+}
+
+/* Brand 4-Color Sequence */
+.inq-spinner--brand .inq-spinner-arc {
+  animation: inq-spinner-brand-colors 4.8s ease-in-out infinite;
+}
+
+@keyframes inq-spinner-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes inq-spinner-brand-colors {
+  0%, 100% {
+    stroke: var(--color-brand-primary, #4285f4);
+  }
+  25% {
+    stroke: var(--color-brand-coral, #ea4335);
+  }
+  50% {
+    stroke: var(--color-brand-amber, #fbbc05);
+  }
+  75% {
+    stroke: var(--color-brand-emerald, #34a853);
+  }
+}
+
+.inq-spinner-label {
+  font-size: var(--font-size-xs, 12px);
+  color: var(--text-secondary, #444746);
+  font-weight: var(--font-weight-medium, 500);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inq-spinner-svg {
+    animation-duration: 3s;
+  }
+}
+

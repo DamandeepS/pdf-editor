@@ -1,0 +1,83 @@
+.inq-divider {
+  box-sizing: border-box;
+  font-family: var(--font-sans, inherit);
+}
+
+/* Horizontal */
+.inq-divider--horizontal {
+  width: 100%;
+  height: 0;
+  border: none;
+  border-top: 1px solid var(--border-subtle, #e0e2ec);
+  margin: var(--spacing-2, 8px) 0;
+}
+
+.inq-divider--horizontal.inq-divider--default {
+  border-top-color: var(--border-default, #c4c7c5);
+}
+
+.inq-divider--horizontal.inq-divider--dashed {
+  border-top-style: dashed;
+}
+
+/* Vertical */
+.inq-divider--vertical {
+  display: inline-block;
+  height: 100%;
+  min-height: 1.2em;
+  width: 0;
+  border: none;
+  border-left: 1px solid var(--border-subtle, #e0e2ec);
+  margin: 0 var(--spacing-2, 8px);
+  vertical-align: middle;
+}
+
+.inq-divider--vertical.inq-divider--default {
+  border-left-color: var(--border-default, #c4c7c5);
+}
+
+.inq-divider--vertical.inq-divider--dashed {
+  border-left-style: dashed;
+}
+
+/* Horizontal With Label */
+.inq-divider--with-label {
+  display: flex;
+  align-items: center;
+  border-top: none;
+  height: auto;
+}
+
+.inq-divider-line {
+  flex: 1;
+  height: 1px;
+  background-color: var(--border-subtle, #e0e2ec);
+}
+
+.inq-divider--default .inq-divider-line {
+  background-color: var(--border-default, #c4c7c5);
+}
+
+.inq-divider--dashed .inq-divider-line {
+  border-top: 1px dashed var(--border-subtle, #e0e2ec);
+  background-color: transparent;
+  height: 0;
+}
+
+.inq-divider-text {
+  padding: 0 var(--spacing-3, 12px);
+  font-size: var(--font-size-xs, 12px);
+  color: var(--text-secondary, #444746);
+  font-weight: var(--font-weight-medium, 500);
+  white-space: nowrap;
+}
+
+/* Label alignment */
+.inq-divider--label-left .inq-divider-line--before {
+  flex: 0 0 24px;
+}
+
+.inq-divider--label-right .inq-divider-line--after {
+  flex: 0 0 24px;
+}
+

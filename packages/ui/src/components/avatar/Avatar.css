@@ -1,0 +1,105 @@
+.inq-avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background-color: var(--surface-hover, #e0e2ec);
+  color: var(--text-primary, #1f1f1f);
+  font-family: var(--font-sans, inherit);
+  font-weight: var(--font-weight-medium, 600);
+  user-select: none;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+.inq-avatar--circle {
+  border-radius: var(--radius-full, 9999px);
+}
+.inq-avatar--circle .inq-avatar-image {
+  border-radius: var(--radius-full, 9999px);
+}
+
+.inq-avatar--rounded {
+  border-radius: var(--radius-md, 8px);
+}
+.inq-avatar--rounded .inq-avatar-image {
+  border-radius: var(--radius-md, 8px);
+}
+
+.inq-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.inq-avatar-initials {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.inq-avatar-default-icon {
+  width: 55%;
+  height: 55%;
+  color: var(--text-secondary, #444746);
+}
+
+/* Sizes */
+.inq-avatar--xs {
+  width: 24px;
+  height: 24px;
+  font-size: 10px;
+}
+.inq-avatar--sm {
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+}
+.inq-avatar--md {
+  width: 40px;
+  height: 40px;
+  font-size: 14px;
+}
+.inq-avatar--lg {
+  width: 48px;
+  height: 48px;
+  font-size: 16px;
+}
+.inq-avatar--xl {
+  width: 64px;
+  height: 64px;
+  font-size: 22px;
+}
+
+/* Status Indicator Dot */
+.inq-avatar-status {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  border-radius: var(--radius-full, 9999px);
+  border: 2px solid var(--surface-card, #ffffff);
+  box-sizing: content-box;
+}
+
+.inq-avatar--xs .inq-avatar-status { width: 6px; height: 6px; border-width: 1.5px; }
+.inq-avatar--sm .inq-avatar-status { width: 8px; height: 8px; }
+.inq-avatar--md .inq-avatar-status { width: 10px; height: 10px; }
+.inq-avatar--lg .inq-avatar-status { width: 12px; height: 12px; }
+.inq-avatar--xl .inq-avatar-status { width: 14px; height: 14px; border-width: 2.5px; }
+
+.inq-avatar-status--online {
+  background-color: var(--color-brand-emerald, #34a853);
+}
+
+.inq-avatar-status--busy {
+  background-color: var(--color-brand-coral, #ea4335);
+}
+
+.inq-avatar-status--away {
+  background-color: var(--color-brand-amber, #fbbc05);
+}
+
+.inq-avatar-status--offline {
+  background-color: var(--text-muted, #747775);
+}
+

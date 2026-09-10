@@ -1,0 +1,99 @@
+.inq-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+  animation: inqFadeIn 150ms ease-out;
+  box-sizing: border-box;
+}
+
+.inq-modal-dialog {
+  background-color: var(--surface-card, #ffffff);
+  border: 1px solid var(--border-subtle, #e0e2e6);
+  border-radius: var(--radius-card, 16px);
+  box-shadow: var(--elevation-shadow-floating, 0 8px 32px rgba(0, 0, 0, 0.16));
+  width: 100%;
+  max-width: 540px;
+  max-height: calc(100% - 32px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: inqScaleUp 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-sizing: border-box;
+}
+
+.inq-modal-dialog--sm {
+  max-width: 380px;
+}
+
+.inq-modal-dialog--md {
+  max-width: 540px;
+}
+
+.inq-modal-dialog--lg {
+  max-width: 720px;
+}
+
+.inq-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-subtle, #e0e2e6);
+  flex-shrink: 0;
+}
+
+.inq-modal-title {
+  font-size: var(--font-size-lg, 16px);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--text-primary, #1f1f1f);
+  margin: 0;
+}
+
+.inq-modal-body {
+  padding: 20px;
+  color: var(--text-secondary, #444746);
+  font-size: var(--font-size-md, 14px);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.inq-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border-subtle, #e0e2e6);
+  background-color: var(--surface-canvas, #f8fafd);
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .inq-modal-overlay {
+    padding: 12px;
+  }
+
+  .inq-modal-dialog {
+    max-width: 100%;
+    border-radius: var(--radius-lg, 12px);
+  }
+
+  .inq-modal-header {
+    padding: 12px 16px;
+  }
+
+  .inq-modal-body {
+    padding: 16px;
+  }
+
+  .inq-modal-footer {
+    padding: 12px 16px;
+  }
+}
+
