@@ -315,20 +315,23 @@ export const COMPONENT_STORIES: ComponentStoryMeta[] = [
     component: (props: any) => {
       const [open, setOpen] = React.useState(false);
       return (
-        <div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
           <Button variant="primary" onClick={() => setOpen(true)}>
             Open Sample Modal
           </Button>
+          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+            Press Esc or click backdrop to dismiss
+          </span>
           <Modal
             {...props}
             isOpen={open}
             onClose={() => setOpen(false)}
-            actions={
+            footer={
               <>
-                <Button variant="ghost" onClick={() => setOpen(false)}>
+                <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
                   Cancel
                 </Button>
-                <Button variant="primary" onClick={() => setOpen(false)}>
+                <Button variant="primary" size="sm" onClick={() => setOpen(false)}>
                   Confirm Action
                 </Button>
               </>
@@ -354,6 +357,11 @@ export const COMPONENT_STORIES: ComponentStoryMeta[] = [
       title: 'Document Settings',
       size: 'md',
     },
+    variants: [
+      { name: 'Standard (md)', props: { title: 'Document Settings', size: 'md' } },
+      { name: 'Small Confirm (sm)', props: { title: 'Confirm Deletion', size: 'sm' } },
+      { name: 'Large Detailed (lg)', props: { title: 'Export Configuration', size: 'lg' } },
+    ],
     a11y: {
       role: 'dialog',
       keyboardShortcuts: [

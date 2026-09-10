@@ -14,6 +14,7 @@ describe('Modal Component Accessibility & Interaction', () => {
     const dialog = screen.getByRole('dialog');
     expect(dialog).toBeInTheDocument();
     expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(dialog).toHaveAttribute('aria-labelledby');
     expect(screen.getByText('Edit Properties')).toBeInTheDocument();
     expect(screen.getByText('Modal Content')).toBeInTheDocument();
   });
@@ -51,4 +52,36 @@ describe('Modal Component Accessibility & Interaction', () => {
     fireEvent.click(overlay);
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
+
+  it('renders footer or actions when provided', () => {
+    render(
+      <Modal
+        isOpen={true}
+        onClose={() => {}}
+        title="Footer Test"
+        actions={<button>Action Button</button>}
+      >
+        <p>Body</p>
+      </Modal>
+    );
+
+    expect(screen.getByText('Action Button')).toBeInTheDocument();
+  });
+
+  it('supports size variants sm, md, lg', () => {
+    const { rerender } = render(
+      <Modal isOpen={true} onClose={() => {}} title="Size Test" size="sm">
+        <p>Small</p>
+      </Modal>
+    );
+    expect(screen.getByRole('dialog')).toHaveClass('inq-modal-dialog--sm');
+
+    rerender(
+      <Modal isOpen={true} onClose={() => {}} title="Size Test" size="lg">
+        <p>Large</p>
+      </Modal>
+    );
+    expect(screen.getByRole('dialog')).toHaveClass('inq-modal-dialog--lg');
+  });
 });
+

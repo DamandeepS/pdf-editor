@@ -532,6 +532,7 @@ html, body {
   height: 100%;
   max-height: 100%;
   min-height: 240px;
+  overflow: hidden;
   transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.3s ease,
               border 0.3s ease,
@@ -813,6 +814,8 @@ html, body {
 
 /* Screen Viewport Inside Device */
 .canvas-device-screen {
+  position: relative;
+  transform: translateZ(0);
   flex: 1;
   display: flex;
   flex-direction: column;

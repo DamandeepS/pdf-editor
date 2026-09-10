@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useId } from 'react';
 import { CloseIcon } from '@inq/icons';
 import { IconButton } from '../icon-button';
 
@@ -8,6 +8,9 @@ export interface ModalProps {
   title: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
+  actions?: React.ReactNode;
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -16,7 +19,13 @@ export const Modal: React.FC<ModalProps> = ({
   title,
   children,
   footer,
+  actions,
+  size = 'md',
+  className = '',
 }) => {
+  const generatedId = useId();
+  const titleId = `modal-title-${generatedId.replace(/:/g, '')}`;
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -29,16 +38,19 @@ export const Modal: React.FC<ModalProps> = ({
 
   if (!isOpen) return null;
 
+  const modalFooter = footer ?? actions;
+
   return (
     <div className="inq-modal-overlay" onClick={onClose}>
       <div
-        className="inq-modal-dialog"
+        className={`inq-modal-dialog inq-modal-dialog--${size} ${className}`.trim()}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={titleId}
       >
         <div className="inq-modal-header">
-          <h3 className="inq-modal-title">{title}</h3>
+          <h3 id={titleId} className="inq-modal-title">{title}</h3>
           <IconButton onClick={onClose} tooltip="Close (Esc)">
             <CloseIcon size={18} />
           </IconButton>
@@ -46,8 +58,9 @@ export const Modal: React.FC<ModalProps> = ({
 
         <div className="inq-modal-body">{children}</div>
 
-        {footer && <div className="inq-modal-footer">{footer}</div>}
+        {modalFooter && <div className="inq-modal-footer">{modalFooter}</div>}
       </div>
     </div>
   );
 };
+
