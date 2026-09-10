@@ -1,0 +1,18 @@
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { {{pascalCase name}} } from './{{pascalCase name}}';
+
+describe('{{pascalCase name}} Component', () => {
+  it('renders children correctly with base class', () => {
+    render(<{{pascalCase name}}>Test Content</{{pascalCase name}}>);
+    const element = screen.getByText('Test Content');
+    expect(element).toBeInTheDocument();
+    expect(element).toHaveClass('inq-{{kebabCase name}}');
+  });
+
+  it('merges custom className when provided', () => {
+    render(<{{pascalCase name}} className="custom-test-class">Content</{{pascalCase name}}>);
+    expect(screen.getByText('Content')).toHaveClass('custom-test-class');
+  });
+});

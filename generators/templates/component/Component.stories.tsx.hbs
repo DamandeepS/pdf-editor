@@ -1,0 +1,17 @@
+import type { ComponentStoryMeta } from '../../../../../apps/stories/src/types';
+import { {{pascalCase name}} } from './{{pascalCase name}}';
+
+export const {{pascalCase name}}Story: ComponentStoryMeta = {
+  id: '{{kebabCase name}}',
+  name: '{{pascalCase name}}',
+  category: 'General',
+  description: '{{pascalCase name}} component description and usage guidelines.',
+  component: {{pascalCase name}},
+  defaultProps: {},
+  controls: {},
+  a11y: {
+    role: 'region',
+    focusIndicatorNote: 'Maintains 2px visible focus ring on :focus-visible',
+    keyboardShortcuts: [],
+  },
+};
