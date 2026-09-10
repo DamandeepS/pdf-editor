@@ -37,6 +37,11 @@ export default function (plop) {
       },
       {
         type: 'add',
+        path: 'packages/ui/src/components/{{kebabCase name}}/{{pascalCase name}}.stories.tsx',
+        templateFile: 'generators/templates/component/Component.stories.tsx.hbs',
+      },
+      {
+        type: 'add',
         path: 'packages/ui/src/components/{{kebabCase name}}/index.ts',
         templateFile: 'generators/templates/component/index.ts.hbs',
       },

@@ -18,8 +18,9 @@ Managed via **Turborepo** and standard **npm workspaces** under the custom `@inq
 │   ├── eslint-config/   # Shared ESLint configuration (@inq/eslint-config)
 │   └── vitest-config/   # Shared Vitest test configurations (@inq/vitest-config)
 ├── apps/
-│   ├── web/             # React 18 + Vite visual in-place PDF editor
-│   └── server/          # Node.js + Express API server with sample bill provider
+│   ├── web/             # React 19 + Vite 8 visual in-place PDF editor (port 3000)
+│   ├── stories/         # React 19 + Vite 8 living Design System & Stories workbench (port 3001)
+│   └── server/          # Node.js + Express API server with sample bill provider (port 4000)
 ├── generators/          # Plop.js code generation templates
 └── knowledge-graph/     # Visual architecture diagrams and domain models
 ```
@@ -46,10 +47,11 @@ npx plop component -- --name <ComponentName>
 1. `packages/ui/src/components/<kebab-name>/<PascalName>.tsx` (React component with semantic HTML)
 2. `packages/ui/src/components/<kebab-name>/<PascalName>.css` (Colocated styling using `@inq/tokens` CSS variables)
 3. `packages/ui/src/components/<kebab-name>/<PascalName>.test.tsx` (Colocated unit & accessibility tests)
-4. `packages/ui/src/components/<kebab-name>/index.ts` (Subpath export)
-5. Automatically registers export in `packages/ui/src/index.ts`
-6. Automatically registers `@import` in `packages/ui/src/styles.css`
-7. Automatically updates `packages/ui/package.json` with standalone tree-shakeable subpath export (`@inq/ui/<kebab-name>`)
+4. `packages/ui/src/components/<kebab-name>/<PascalName>.stories.tsx` (Workbench component story definition)
+5. `packages/ui/src/components/<kebab-name>/index.ts` (Subpath export)
+6. Automatically registers export in `packages/ui/src/index.ts`
+7. Automatically registers `@import` in `packages/ui/src/styles.css`
+8. Automatically updates `packages/ui/package.json` with standalone tree-shakeable subpath export (`@inq/ui/<kebab-name>`)
 
 ---
 
