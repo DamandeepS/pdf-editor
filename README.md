@@ -156,13 +156,13 @@ Once running:
 The project is pre-configured for turnkey deployment on **Vercel** with zero backend infrastructure required:
 
 1. Import `DamandeepS/pdf-editor` into [vercel.com/new](https://vercel.com/new).
-2. The root `vercel.json` automatically sets:
-   - Build Command: `npx turbo run build --filter=@inq/web`
-   - Output Directory: `apps/web/dist`
+2. The root `vercel.json` automatically builds both the PDF editor and the living design system:
+   - **Root URL (`/`)**: Inq PDF Editor Web Application
+   - **Subpath (`/stories`)**: Inq Stories Design System & Component Workbench
 3. Optional: Add `VITE_GA_MEASUREMENT_ID` in Vercel Environment Variables.
 4. Click **Deploy**.
 
-For detailed instructions and CLI workflows, consult [DEPLOYMENT.md](./DEPLOYMENT.md).
+For detailed instructions, standalone subdomain setups, and CLI workflows, consult [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ---
 

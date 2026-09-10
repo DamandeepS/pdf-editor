@@ -84,7 +84,7 @@ export const App: React.FC = () => {
 
           {/* External Link to Inq PDF Editor web app */}
           <a
-            href="http://localhost:3000"
+            href={import.meta.env.VITE_APP_URL || (import.meta.env.DEV ? 'http://localhost:3000' : '/')}
             target="_blank"
             rel="noopener noreferrer"
             className="app-link-btn"

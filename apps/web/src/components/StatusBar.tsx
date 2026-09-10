@@ -48,6 +48,20 @@ export const StatusBar: React.FC<StatusBarProps> = ({
           </button>
         )}
 
+        <a
+          href={import.meta.env.DEV ? 'http://localhost:3001' : '/stories'}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            color: 'var(--text-secondary)',
+            fontSize: '11px',
+            textDecoration: 'underline',
+          }}
+          title="Explore Living Design System & Component Stories Workbench"
+        >
+          Design System ↗
+        </a>
+
         <button
           type="button"
           style={{

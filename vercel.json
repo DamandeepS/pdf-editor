@@ -1,11 +1,20 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npx turbo run build --filter=@inq/web",
+  "buildCommand": "npx turbo run build --filter=@inq/web --filter=@inq/stories && node -e \"const fs = require('node:fs'); fs.cpSync('apps/stories/dist', 'apps/web/dist/stories', { recursive: true });\"",
   "outputDirectory": "apps/web/dist",
   "framework": "vite",
+  "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/stories",
+      "destination": "/stories/index.html"
+    },
+    {
+      "source": "/stories/(.*)",
+      "destination": "/stories/$1"
+    },
+    {
+      "source": "/((?!stories).*)",
       "destination": "/index.html"
     }
   ]
