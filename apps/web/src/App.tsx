@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import type { SampleBillMeta, ModificationDelta, PageModifications, EditorTool } from '@inq/types';
-import { PdfEngine } from '@inq/pdf-engine';
+import { PdfEngine, getSamplePdfBytes, SAMPLE_BILLS_META } from '@inq/pdf-engine';
 import { trpc } from './trpc';
 import { loadPdfDocument } from './utils/pdfRenderer';
 import { TopNav } from './components/TopNav';
@@ -10,32 +10,7 @@ import { EditorCanvas } from './components/EditorCanvas';
 import { StatusBar } from './components/StatusBar';
 import { ShortcutsModal } from './components/ShortcutsModal';
 
-const DEFAULT_SAMPLES: SampleBillMeta[] = [
-  {
-    id: 'saas-invoice',
-    title: 'Cloud Tech SaaS Invoice',
-    category: 'invoice',
-    description: 'Itemized cloud computing & AI infrastructure statement with tax calculation and invoice table.',
-    filename: 'cloud-tech-invoice.pdf',
-    badgeColor: '#4285f4',
-  },
-  {
-    id: 'electric-utility',
-    title: 'City Electric Utility Bill',
-    category: 'utility',
-    description: 'Municipal power statement with meter readings, energy breakdown, and payment stub barcode.',
-    filename: 'electric-utility-bill.pdf',
-    badgeColor: '#34a853',
-  },
-  {
-    id: 'retail-receipt',
-    title: 'Artisan Cafe & Bistro Receipt',
-    category: 'receipt',
-    description: 'Thermal-style dining receipt with timestamp, itemized order, tip breakdown, and payment card auth.',
-    filename: 'cafe-bistro-receipt.pdf',
-    badgeColor: '#fbbc05',
-  },
-];
+const DEFAULT_SAMPLES: SampleBillMeta[] = SAMPLE_BILLS_META;
 
 const clientPdfEngine = new PdfEngine();
 
@@ -95,18 +70,29 @@ export const App: React.FC = () => {
     document.body.className = `theme-${theme}`;
   }, [theme]);
 
-  // Load sample bill via tRPC
+  // Load sample bill via tRPC with client-side fallback
   const loadSample = useCallback(async (sampleId: string) => {
+    setCurrentSampleId(sampleId);
+    let bytes: Uint8Array | null = null;
+    let title: string | undefined;
+
     try {
-      setCurrentSampleId(sampleId);
       const res = await trpc.samples.get.query({ sampleId });
       const raw = res.base64;
       const binary = atob(raw);
-      const bytes = new Uint8Array(binary.length);
+      bytes = new Uint8Array(binary.length);
       for (let i = 0; i < binary.length; i++) {
         bytes[i] = binary.charCodeAt(i);
       }
+      title = res.meta?.title;
+    } catch {
+      // Standalone / static deployment fallback via @inq/pdf-engine
+      bytes = await getSamplePdfBytes(sampleId);
+      const meta = DEFAULT_SAMPLES.find((s) => s.id === sampleId);
+      title = meta?.title;
+    }
 
+    if (bytes) {
       setPdfBytes(bytes.slice());
       const doc = await loadPdfDocument(bytes.slice());
       setPdfDocument(doc);
@@ -116,11 +102,9 @@ export const App: React.FC = () => {
       setUndoStack([]);
       setRedoStack([]);
       setSelectedItem(null);
-      if (res.meta?.title) {
-        setDocumentTitle(res.meta.title);
+      if (title) {
+        setDocumentTitle(title);
       }
-    } catch (err) {
-      console.warn('Failed to load sample bill from tRPC, checking fallback:', err);
     }
   }, []);
 
@@ -137,9 +121,10 @@ export const App: React.FC = () => {
         }
 
         await loadSample('saas-invoice');
-      } catch (err) {
-        console.warn('tRPC server unreachable at http://localhost:4000/trpc:', err);
+      } catch {
+        // Operates in standalone client mode when backend is absent (e.g. Vercel static deployment)
         setIpcStatus('offline');
+        await loadSample('saas-invoice');
       }
     }
 

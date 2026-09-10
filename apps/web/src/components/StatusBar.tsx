@@ -43,7 +43,14 @@ export const StatusBar: React.FC<StatusBarProps> = ({
           Shortcuts (⌘/)
         </button>
 
-        <div className="ipc-status-pill" title="Interprocess Communication Status">
+        <div
+          className="ipc-status-pill"
+          title={
+            ipcStatus === 'connected'
+              ? 'tRPC IPC server connected'
+              : 'Client-side vector engine active. Documents are processed 100% locally in your browser.'
+          }
+        >
           <span
             className="status-dot"
             style={{
@@ -52,10 +59,16 @@ export const StatusBar: React.FC<StatusBarProps> = ({
                   ? 'var(--color-brand-emerald)'
                   : ipcStatus === 'checking'
                   ? 'var(--color-brand-amber)'
-                  : 'var(--color-brand-coral)',
+                  : 'var(--color-brand-primary)',
             }}
           />
-          <span>tRPC IPC: {ipcStatus === 'connected' ? 'Connected' : ipcStatus}</span>
+          <span>
+            {ipcStatus === 'connected'
+              ? 'tRPC IPC: Connected'
+              : ipcStatus === 'checking'
+              ? 'Connecting...'
+              : 'Vector Engine: Local'}
+          </span>
         </div>
       </div>
     </footer>
