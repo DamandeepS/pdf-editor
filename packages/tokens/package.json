@@ -1,0 +1,35 @@
+{
+  "name": "@inq/tokens",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/tokens.js",
+  "types": "./dist/tokens.d.ts",
+  "sideEffects": [
+    "*.css",
+    "./dist/tokens.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/tokens.d.ts",
+      "import": "./dist/tokens.js",
+      "default": "./dist/tokens.js"
+    },
+    "./css": "./dist/tokens.css",
+    "./tokens.css": "./dist/tokens.css",
+    "./dist/tokens.css": "./dist/tokens.css"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "style-dictionary build --config style-dictionary.config.js",
+    "tokens:build": "style-dictionary build --config style-dictionary.config.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "style-dictionary": "^4.4.0",
+    "typescript": "^7.0.2"
+  }
+}

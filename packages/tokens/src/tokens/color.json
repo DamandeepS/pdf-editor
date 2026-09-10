@@ -1,0 +1,105 @@
+{
+  "color": {
+    "brand": {
+      "primary": {
+        "value": "#4285f4",
+        "type": "color"
+      },
+      "primaryHover": {
+        "value": "#1a73e8",
+        "type": "color"
+      },
+      "primaryLight": {
+        "value": "#e8f0fe",
+        "type": "color"
+      },
+      "primarySubtle": {
+        "value": "rgba(66, 133, 244, 0.12)",
+        "type": "color"
+      },
+      "coral": {
+        "value": "#ea4335",
+        "type": "color"
+      },
+      "coralHover": {
+        "value": "#d93025",
+        "type": "color"
+      },
+      "coralLight": {
+        "value": "#fce8e6",
+        "type": "color"
+      },
+      "amber": {
+        "value": "#fbbc05",
+        "type": "color"
+      },
+      "amberHover": {
+        "value": "#f29900",
+        "type": "color"
+      },
+      "amberLight": {
+        "value": "#fef7e0",
+        "type": "color"
+      },
+      "emerald": {
+        "value": "#34a853",
+        "type": "color"
+      },
+      "emeraldHover": {
+        "value": "#1e8e3e",
+        "type": "color"
+      },
+      "emeraldLight": {
+        "value": "#e6f4ea",
+        "type": "color"
+      }
+    },
+    "semantic": {
+      "primary": { "value": "#4285f4", "type": "color" },
+      "danger": { "value": "#ea4335", "type": "color" },
+      "warning": { "value": "#fbbc05", "type": "color" },
+      "success": { "value": "#34a853", "type": "color" },
+      "info": { "value": "#4285f4", "type": "color" }
+    },
+    "light": {
+      "surface": {
+        "canvas": { "value": "#f8fafd", "type": "color" },
+        "card": { "value": "#ffffff", "type": "color" },
+        "elevated": { "value": "#ffffff", "type": "color" },
+        "hover": { "value": "#f1f3f4", "type": "color" },
+        "active": { "value": "#e8f0fe", "type": "color" }
+      },
+      "text": {
+        "primary": { "value": "#1f1f1f", "type": "color" },
+        "secondary": { "value": "#444746", "type": "color" },
+        "muted": { "value": "#747775", "type": "color" },
+        "inverse": { "value": "#ffffff", "type": "color" }
+      },
+      "border": {
+        "subtle": { "value": "#e0e2e6", "type": "color" },
+        "default": { "value": "#c4c7c5", "type": "color" },
+        "focus": { "value": "#4285f4", "type": "color" }
+      }
+    },
+    "dark": {
+      "surface": {
+        "canvas": { "value": "#131314", "type": "color" },
+        "card": { "value": "#1e1f20", "type": "color" },
+        "elevated": { "value": "#282a2c", "type": "color" },
+        "hover": { "value": "#333538", "type": "color" },
+        "active": { "value": "#004a77", "type": "color" }
+      },
+      "text": {
+        "primary": { "value": "#e3e3e3", "type": "color" },
+        "secondary": { "value": "#c4c7c5", "type": "color" },
+        "muted": { "value": "#8e918f", "type": "color" },
+        "inverse": { "value": "#1f1f1f", "type": "color" }
+      },
+      "border": {
+        "subtle": { "value": "#333538", "type": "color" },
+        "default": { "value": "#444746", "type": "color" },
+        "focus": { "value": "#8ab4f8", "type": "color" }
+      }
+    }
+  }
+}
