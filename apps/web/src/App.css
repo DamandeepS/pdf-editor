@@ -28,6 +28,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   width: 100vw;
   overflow: hidden;
   background-color: var(--surface-canvas);
@@ -192,7 +193,7 @@ body {
 .workspace-body {
   display: flex;
   flex: 1;
-  height: calc(100vh - var(--nav-height) - var(--status-height));
+  min-height: 0;
   position: relative;
   overflow: hidden;
 }
@@ -309,17 +310,20 @@ body {
   position: relative;
   display: flex;
   align-items: flex-start;
-  justify-content: center;
+  justify-content: safe center;
   padding: var(--spacing-10);
   background: radial-gradient(circle, var(--surface-canvas) 0%, rgba(0, 0, 0, 0.03) 100%);
+  -webkit-overflow-scrolling: touch;
 }
 
 .canvas-container {
+  margin: 0 auto;
   position: relative;
   box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12), 0 2px 12px rgba(0, 0, 0, 0.06);
   border-radius: 2px;
   background-color: #ffffff;
   transition: transform var(--transition-fast);
+  flex-shrink: 0;
 }
 
 .pdf-canvas {
@@ -616,4 +620,193 @@ body {
   border-radius: 4px;
   color: var(--text-secondary);
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* =========================================
+   RESPONSIVE BASE CLASSES & MOBILE MEDIA QUERIES
+   ========================================= */
+.mobile-rail-toggle-btn {
+  display: none;
+}
+
+.mobile-rail-backdrop {
+  display: none;
+}
+
+.export-label-desktop {
+  display: inline;
+}
+
+.export-label-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-rail-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-rail-backdrop {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 150;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    animation: mobileFadeIn 150ms ease-out;
+  }
+
+  @keyframes mobileFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Responsive Top Navigation (Two-tier compact mobile header) */
+  .top-nav {
+    height: auto;
+    min-height: 52px;
+    flex-wrap: wrap;
+    padding: var(--spacing-2) var(--spacing-3);
+    gap: var(--spacing-2);
+  }
+
+  .nav-left {
+    order: 1;
+    flex: 1;
+    min-width: 0;
+    gap: var(--spacing-2);
+  }
+
+  .brand-title {
+    display: none; /* Hide long brand title on mobile, preserve color dots */
+  }
+
+  .doc-title-input {
+    max-width: 110px;
+    font-size: var(--typography-font-size-xs);
+    padding: var(--spacing-1) var(--spacing-2);
+  }
+
+  .sample-select-wrapper {
+    display: none;
+  }
+
+  .nav-right {
+    order: 2;
+    margin-left: auto;
+    gap: var(--spacing-2);
+  }
+
+  .export-label-desktop {
+    display: none;
+  }
+
+  .export-label-mobile {
+    display: inline;
+  }
+
+  .nav-center {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: var(--spacing-1) 0;
+    gap: var(--spacing-2);
+  }
+
+  .nav-center::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tool-group {
+    flex-shrink: 0;
+  }
+
+  /* Compact ToolPills showing clean icons */
+  .tool-group .inq-pill {
+    padding: 6px 10px;
+  }
+
+  .tool-group .inq-pill > span:nth-child(2) {
+    display: none;
+  }
+
+  .tool-group .inq-pill-badge {
+    display: none;
+  }
+
+  .divider-vertical {
+    margin: 0 var(--spacing-1);
+    height: 18px;
+  }
+
+  /* Page Navigation Rail: Full Overlay Drawer on mobile */
+  .page-rail {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 200;
+    width: 250px;
+    background-color: var(--surface-card);
+    box-shadow: var(--elevation-shadow-xl);
+    border-right: 1px solid var(--border-default);
+  }
+
+  .page-rail.collapsed {
+    width: 0 !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    display: none !important;
+  }
+
+  /* Canvas Viewport on Mobile: Zero clipping, comfortable padding */
+  .canvas-viewport {
+    padding: var(--spacing-3) var(--spacing-2);
+    width: 100%;
+  }
+
+  .canvas-container {
+    margin: 0 auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Floating Contextual Formatting Toolbar on Mobile */
+  .floating-toolbar {
+    max-width: calc(100vw - 16px);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: var(--spacing-1) var(--spacing-2);
+    gap: var(--spacing-2);
+  }
+
+  .floating-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Status Bar on Mobile: Compact spacing */
+  .status-bar {
+    padding: 0 var(--spacing-3);
+    font-size: 11px;
+  }
+
+  .status-left {
+    gap: var(--spacing-2);
+  }
+
+  .status-right {
+    gap: var(--spacing-2);
+  }
+
+  .status-bar button[onClick*="Shortcuts"],
+  .status-left span:nth-child(5) {
+    display: none;
+  }
 }

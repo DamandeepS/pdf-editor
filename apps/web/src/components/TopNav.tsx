@@ -13,6 +13,7 @@ import {
   UploadIcon,
   SunIcon,
   MoonIcon,
+  LayersIcon,
 } from '@inq/icons';
 import { Button } from '@inq/ui/button';
 import { IconButton } from '@inq/ui/icon-button';
@@ -40,6 +41,8 @@ export interface TopNavProps {
   onExport: () => void;
   isExporting: boolean;
   onOpenShortcuts: () => void;
+  isRailCollapsed?: boolean;
+  onToggleRail?: () => void;
 }
 
 export const TopNav: React.FC<TopNavProps> = ({
@@ -64,6 +67,8 @@ export const TopNav: React.FC<TopNavProps> = ({
   onExport,
   isExporting,
   onOpenShortcuts,
+  isRailCollapsed,
+  onToggleRail,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -85,8 +90,19 @@ export const TopNav: React.FC<TopNavProps> = ({
         onChange={handleFileChange}
       />
 
-      {/* Left: Brand + Title + Sample Selector */}
+      {/* Left: Brand + Title + Sample Selector + Mobile Rail Toggle */}
       <div className="nav-left">
+        {onToggleRail && (
+          <IconButton
+            tooltip={isRailCollapsed ? 'Show Page Thumbnails' : 'Hide Page Thumbnails'}
+            size="sm"
+            onClick={onToggleRail}
+            className="mobile-rail-toggle-btn"
+          >
+            <LayersIcon size={18} />
+          </IconButton>
+        )}
+
         <div className="brand-wrapper" onClick={onOpenShortcuts} title="Inq BillEditor - Click for Shortcuts">
           <div className="brand-dots">
             <span className="brand-dot" />
@@ -230,7 +246,14 @@ export const TopNav: React.FC<TopNavProps> = ({
           disabled={isExporting}
           icon={<DownloadIcon size={18} />}
         >
-          {isExporting ? 'Exporting...' : 'Export Vector PDF'}
+          {isExporting ? (
+            'Exporting...'
+          ) : (
+            <>
+              <span className="export-label-desktop">Export Vector PDF</span>
+              <span className="export-label-mobile">Export</span>
+            </>
+          )}
         </Button>
       </div>
     </header>

@@ -19,6 +19,13 @@ export const PageRail: React.FC<PageRailProps> = ({
 }) => {
   const pages = Array.from({ length: Math.max(1, numPages) }, (_, i) => i + 1);
 
+  const handlePageClick = (pageNum: number) => {
+    onSelectPage(pageNum);
+    if (typeof window !== 'undefined' && window.innerWidth < 768 && !isCollapsed) {
+      onToggleCollapse();
+    }
+  };
+
   return (
     <aside className={`page-rail ${isCollapsed ? 'collapsed' : ''}`} aria-label="Page Navigation Rail">
       <div className="page-rail-header">
@@ -39,12 +46,12 @@ export const PageRail: React.FC<PageRailProps> = ({
             <div
               key={pageNum}
               className={`page-card ${isActive ? 'active' : ''}`}
-              onClick={() => onSelectPage(pageNum)}
+              onClick={() => handlePageClick(pageNum)}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
-                  onSelectPage(pageNum);
+                  handlePageClick(pageNum);
                 }
               }}
               title={`Page ${pageNum}`}

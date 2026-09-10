@@ -63,8 +63,14 @@ export const App: React.FC = () => {
   const [numPages, setNumPages] = useState<number>(1);
   const [currentPage, setCurrentPage] = useState<number>(1);
 
-  // Viewport & tool state
-  const [scale, setScale] = useState<number>(1.25);
+  // Viewport & tool state (auto-fit scale and auto-collapse sidebar on mobile screens)
+  const [scale, setScale] = useState<number>(() => {
+    if (typeof window === 'undefined') return 1.25;
+    if (window.innerWidth < 768) {
+      return Math.max(0.4, Math.min(1.0, Math.round(((window.innerWidth - 24) / 612) * 100) / 100));
+    }
+    return 1.25;
+  });
   const [activeTool, setActiveTool] = useState<EditorTool>('select');
   const [selectedItem, setSelectedItem] = useState<{ type: 'text' | 'whiteout' | 'image'; id: string } | null>(null);
 
@@ -75,7 +81,10 @@ export const App: React.FC = () => {
 
   // UI state
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [isRailCollapsed, setIsRailCollapsed] = useState<boolean>(false);
+  const [isRailCollapsed, setIsRailCollapsed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 768;
+  });
   const [isShortcutsOpen, setIsShortcutsOpen] = useState<boolean>(false);
   const [ipcStatus, setIpcStatus] = useState<'connected' | 'offline' | 'checking'>('checking');
   const [isExporting, setIsExporting] = useState<boolean>(false);
@@ -344,15 +353,32 @@ export const App: React.FC = () => {
         scale={scale}
         onZoomIn={() => setScale((s) => Math.min(3.0, s + 0.15))}
         onZoomOut={() => setScale((s) => Math.max(0.4, s - 0.15))}
-        onResetZoom={() => setScale(1.0)}
+        onResetZoom={() => {
+          if (window.innerWidth < 768) {
+            const fitScale = Math.max(0.4, Math.min(1.0, Math.round(((window.innerWidth - 24) / 612) * 100) / 100));
+            setScale((s) => (Math.abs(s - fitScale) < 0.05 ? 1.0 : fitScale));
+          } else {
+            setScale((s) => (s === 1.0 ? 1.25 : 1.0));
+          }
+        }}
         theme={theme}
         onToggleTheme={() => setTheme((t) => (t === 'light' ? 'dark' : 'light'))}
         onExport={handleExport}
         isExporting={isExporting}
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
+        isRailCollapsed={isRailCollapsed}
+        onToggleRail={() => setIsRailCollapsed((c) => !c)}
       />
 
       <div className="workspace-body">
+        {!isRailCollapsed && (
+          <div
+            className="mobile-rail-backdrop"
+            onClick={() => setIsRailCollapsed(true)}
+            aria-hidden="true"
+          />
+        )}
+
         <PageRail
           numPages={numPages}
           currentPage={currentPage}
