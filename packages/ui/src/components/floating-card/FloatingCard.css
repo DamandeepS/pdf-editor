@@ -1,0 +1,10 @@
+.inq-floating-card {
+  background-color: var(--toolbar-bg, rgba(255, 255, 255, 0.92));
+  backdrop-filter: blur(var(--elevation-backdrop-blur-md, 12px));
+  -webkit-backdrop-filter: blur(var(--elevation-backdrop-blur-md, 12px));
+  border: 1px solid var(--toolbar-border, rgba(224, 226, 230, 0.85));
+  border-radius: var(--radius-card, 16px);
+  box-shadow: var(--toolbar-shadow, 0 8px 32px rgba(0, 0, 0, 0.08));
+  padding: var(--spacing-4, 8px);
+  transition: box-shadow var(--transition-normal, 250ms ease);
+}

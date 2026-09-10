@@ -1,0 +1,79 @@
+{
+  "name": "@inq/ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "*.css",
+    "./dist/styles.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./button": {
+      "types": "./dist/components/button/index.d.ts",
+      "import": "./dist/components/button/index.js"
+    },
+    "./icon-button": {
+      "types": "./dist/components/icon-button/index.d.ts",
+      "import": "./dist/components/icon-button/index.js"
+    },
+    "./tool-pill": {
+      "types": "./dist/components/tool-pill/index.d.ts",
+      "import": "./dist/components/tool-pill/index.js"
+    },
+    "./floating-card": {
+      "types": "./dist/components/floating-card/index.d.ts",
+      "import": "./dist/components/floating-card/index.js"
+    },
+    "./slider": {
+      "types": "./dist/components/slider/index.d.ts",
+      "import": "./dist/components/slider/index.js"
+    },
+    "./color-picker-pill": {
+      "types": "./dist/components/color-picker-pill/index.d.ts",
+      "import": "./dist/components/color-picker-pill/index.js"
+    },
+    "./modal": {
+      "types": "./dist/components/modal/index.d.ts",
+      "import": "./dist/components/modal/index.js"
+    },
+    "./brand-badge": {
+      "types": "./dist/components/brand-badge/index.d.ts",
+      "import": "./dist/components/brand-badge/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && node -e \"import('node:fs').then(fs => fs.cpSync('src/styles.css', 'dist/styles.css'))\"",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@inq/tokens": "*",
+    "@inq/icons": "*"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "jsdom": "^26.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.5"
+  }
+}

@@ -1,0 +1,43 @@
+.inq-color-picker-trigger {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full, 9999px);
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px var(--border-default, #c4c7c5);
+  cursor: pointer;
+  padding: 0;
+  transition: transform var(--transition-fast, 150ms ease);
+}
+
+.inq-color-picker-trigger:hover {
+  transform: scale(1.15);
+}
+
+.inq-color-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 1000;
+  background-color: var(--surface-elevated, #ffffff);
+  border: 1px solid var(--border-subtle, #e0e2e6);
+  border-radius: var(--radius-card, 16px);
+  box-shadow: var(--elevation-shadow-floating, 0 8px 32px rgba(0, 0, 0, 0.14));
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  width: 180px;
+}
+
+.inq-color-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full, 9999px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform var(--transition-fast, 150ms ease);
+}
+
+.inq-color-swatch:hover {
+  transform: scale(1.2);
+}
