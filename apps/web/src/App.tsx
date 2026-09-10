@@ -154,8 +154,9 @@ export const App: React.FC = () => {
         setUndoStack((prevUndo) => [...prevUndo.slice(-30), prevDelta]);
         setRedoStack([]); // Clear redo stack on new action
 
-        const currentPageMods: PageModifications = prevDelta.pages[currentPage] || {
-          pageIndex: currentPage - 1,
+        const pageIdx = currentPage - 1;
+        const currentPageMods: PageModifications = prevDelta.pages[pageIdx] || {
+          pageIndex: pageIdx,
           whiteouts: [],
           textEdits: [],
           images: [],
@@ -167,7 +168,7 @@ export const App: React.FC = () => {
           ...prevDelta,
           pages: {
             ...prevDelta.pages,
-            [currentPage]: updatedMods,
+            [pageIdx]: updatedMods,
           },
         };
       });
@@ -302,7 +303,7 @@ export const App: React.FC = () => {
     return sum + (page.whiteouts?.length || 0) + (page.textEdits?.length || 0) + (page.images?.length || 0);
   }, 0);
 
-  const currentPageModifications: PageModifications = delta.pages[currentPage] || {
+  const currentPageModifications: PageModifications = delta.pages[currentPage - 1] || {
     pageIndex: currentPage - 1,
     whiteouts: [],
     textEdits: [],

@@ -20,6 +20,9 @@ export interface FloatingFormatToolbarProps {
   // Whiteout formatting
   fillColor?: string;
   onFillColorChange?: (color: string) => void;
+  // Image / Stamp formatting
+  opacity?: number;
+  onOpacityChange?: (opacity: number) => void;
   // Action
   onDelete: () => void;
 }
@@ -48,6 +51,8 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = ({
   onColorChange,
   fillColor = '#ffffff',
   onFillColorChange,
+  opacity = 1,
+  onOpacityChange,
   onDelete,
 }) => {
   return (
@@ -140,6 +145,28 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = ({
             presetColors={['#ffffff', '#f8fafd', '#fdfbf7', '#e8f0fe', '#1e1f20']}
           />
         </>
+      )}
+
+      {type === 'image' && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+            Opacity: {Math.round(opacity * 100)}%
+          </span>
+          <IconButton
+            tooltip="Decrease Opacity"
+            size="sm"
+            onClick={() => onOpacityChange?.(Math.max(0.2, Number((opacity - 0.15).toFixed(2))))}
+          >
+            <MinusIcon size={14} />
+          </IconButton>
+          <IconButton
+            tooltip="Increase Opacity"
+            size="sm"
+            onClick={() => onOpacityChange?.(Math.min(1.0, Number((opacity + 0.15).toFixed(2))))}
+          >
+            <PlusIcon size={14} />
+          </IconButton>
+        </div>
       )}
 
       {/* Delete Item */}

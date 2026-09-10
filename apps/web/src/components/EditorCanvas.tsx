@@ -14,6 +14,7 @@ import {
   type ExtractedTextItem,
 } from '../utils/pdfRenderer';
 import { FloatingFormatToolbar } from './FloatingFormatToolbar';
+import { createStampDataUrl, STAMP_PRESETS } from '../utils/stampGenerator';
 
 export interface EditorCanvasProps {
   pdfDocument: PDFDocumentProxy | null;
@@ -48,6 +49,14 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
   const [isDrawingWhiteout, setIsDrawingWhiteout] = useState(false);
   const [drawStart, setDrawStart] = useState<{ x: number; y: number } | null>(null);
   const [currentWhiteoutRect, setCurrentWhiteoutRect] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [draggingStampId, setDraggingStampId] = useState<string | null>(null);
+  const [dragStartPos, setDragStartPos] = useState<{
+    mouseX: number;
+    mouseY: number;
+    initPdfX: number;
+    initPdfY: number;
+  } | null>(null);
+  const stampFileInputRef = useRef<HTMLInputElement>(null);
 
   const renderTaskRef = useRef<any>(null);
 
@@ -162,7 +171,86 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
     [scale, pageSize.pdfHeight]
   );
 
-  // Mouse Handlers for Whiteout Drawing
+  // Stamp placement and drag handlers
+  const handleApplyStamp = async (presetId: string) => {
+    const preset = STAMP_PRESETS.find((p) => p.id === presetId);
+    if (!preset) return;
+    const dataUrl = await createStampDataUrl(preset.label, preset.colorHex, preset.subtext);
+    const stampWidth = 140;
+    const stampHeight = 55;
+    const pdfX = Math.max(20, (pageSize.pdfWidth - stampWidth) / 2);
+    const pdfY = Math.max(20, (pageSize.pdfHeight - stampHeight) / 2);
+
+    const newStamp: ImageStamp = {
+      id: `stamp-${Date.now()}`,
+      pageIndex: currentPage - 1,
+      bbox: {
+        x: pdfX,
+        y: pdfY,
+        width: stampWidth,
+        height: stampHeight,
+      },
+      dataUrl,
+      mimeType: 'image/png',
+      opacity: 0.9,
+      name: preset.label,
+    };
+
+    onUpdatePageModifications((prev: PageModifications) => ({
+      ...prev,
+      images: [...(prev.images || []), newStamp],
+    }));
+    onSelectItem({ type: 'image', id: newStamp.id });
+  };
+
+  const handleCustomStampUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      const stampWidth = 120;
+      const stampHeight = 60;
+      const pdfX = Math.max(20, (pageSize.pdfWidth - stampWidth) / 2);
+      const pdfY = Math.max(20, (pageSize.pdfHeight - stampHeight) / 2);
+
+      const newStamp: ImageStamp = {
+        id: `stamp-custom-${Date.now()}`,
+        pageIndex: currentPage - 1,
+        bbox: {
+          x: pdfX,
+          y: pdfY,
+          width: stampWidth,
+          height: stampHeight,
+        },
+        dataUrl,
+        mimeType: file.type === 'image/jpeg' ? 'image/jpeg' : 'image/png',
+        opacity: 1,
+        name: file.name,
+      };
+
+      onUpdatePageModifications((prev: PageModifications) => ({
+        ...prev,
+        images: [...(prev.images || []), newStamp],
+      }));
+      onSelectItem({ type: 'image', id: newStamp.id });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleStampMouseDown = (e: React.MouseEvent, stamp: ImageStamp) => {
+    e.stopPropagation();
+    onSelectItem({ type: 'image', id: stamp.id });
+    setDraggingStampId(stamp.id);
+    setDragStartPos({
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      initPdfX: stamp.bbox.x,
+      initPdfY: stamp.bbox.y,
+    });
+  };
+
+  // Mouse Handlers for Whiteout & Stamp Dragging
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
     if (activeTool !== 'whiteout') return;
 
@@ -178,21 +266,45 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isDrawingWhiteout || !drawStart || !containerRef.current) return;
+    // 1. Whiteout drawing
+    if (isDrawingWhiteout && drawStart && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const currentX = Math.max(0, Math.min(pageSize.width, e.clientX - rect.left));
+      const currentY = Math.max(0, Math.min(pageSize.height, e.clientY - rect.top));
 
-    const rect = containerRef.current.getBoundingClientRect();
-    const currentX = Math.max(0, Math.min(pageSize.width, e.clientX - rect.left));
-    const currentY = Math.max(0, Math.min(pageSize.height, e.clientY - rect.top));
+      const x = Math.min(drawStart.x, currentX);
+      const y = Math.min(drawStart.y, currentY);
+      const w = Math.abs(currentX - drawStart.x);
+      const h = Math.abs(currentY - drawStart.y);
 
-    const x = Math.min(drawStart.x, currentX);
-    const y = Math.min(drawStart.y, currentY);
-    const w = Math.abs(currentX - drawStart.x);
-    const h = Math.abs(currentY - drawStart.y);
+      setCurrentWhiteoutRect({ x, y, w, h });
+      return;
+    }
 
-    setCurrentWhiteoutRect({ x, y, w, h });
+    // 2. Stamp dragging
+    if (draggingStampId && dragStartPos) {
+      const dx = (e.clientX - dragStartPos.mouseX) / scale;
+      const dy = (dragStartPos.mouseY - e.clientY) / scale;
+      const newPdfX = Math.round(dragStartPos.initPdfX + dx);
+      const newPdfY = Math.round(dragStartPos.initPdfY + dy);
+
+      onUpdatePageModifications((prev: PageModifications) => ({
+        ...prev,
+        images: (prev.images || []).map((img: ImageStamp) =>
+          img.id === draggingStampId
+            ? { ...img, bbox: { ...img.bbox, x: newPdfX, y: newPdfY } }
+            : img
+        ),
+      }));
+    }
   };
 
   const handleMouseUp = () => {
+    if (draggingStampId) {
+      setDraggingStampId(null);
+      setDragStartPos(null);
+    }
+
     if (!isDrawingWhiteout || !currentWhiteoutRect) return;
 
     setIsDrawingWhiteout(false);
@@ -230,9 +342,10 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
     setCurrentWhiteoutRect(null);
   };
 
-  // Find active selected text or whiteout for floating toolbar
+  // Find active selected text, whiteout, or image for floating toolbar
   const activeTextEdit = pageModifications.textEdits?.find((t: TextBlockEdit) => t.id === selectedItem?.id);
   const activeWhiteout = pageModifications.whiteouts?.find((w: WhiteoutBlock) => w.id === selectedItem?.id);
+  const activeImage = pageModifications.images?.find((img: ImageStamp) => img.id === selectedItem?.id);
 
   // Calculate position for floating toolbar docked above selection
   let toolbarPosition: { top: number; left: number } | null = null;
@@ -266,6 +379,17 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
       top: coords.screenY,
       left: coords.screenX,
     };
+  } else if (selectedItem?.type === 'image' && activeImage) {
+    const coords = pdfToScreen(
+      activeImage.bbox.x,
+      activeImage.bbox.y,
+      activeImage.bbox.width,
+      activeImage.bbox.height
+    );
+    toolbarPosition = {
+      top: coords.screenY,
+      left: coords.screenX,
+    };
   }
 
   return (
@@ -293,6 +417,43 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
 
         {/* Interactive Overlay */}
         <div className="interactive-overlay">
+          {/* Stamp Picker Floating Dock when Image/Stamp tool is active */}
+          {activeTool === 'image' && (
+            <div className="stamp-picker-dock">
+              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+                Stamp:
+              </span>
+              {STAMP_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  className="stamp-btn"
+                  style={{ color: preset.colorHex, borderColor: preset.colorHex }}
+                  onClick={() => handleApplyStamp(preset.id)}
+                  title={`Place ${preset.label} Stamp on Page`}
+                >
+                  {preset.label}
+                </button>
+              ))}
+              <input
+                ref={stampFileInputRef}
+                type="file"
+                accept="image/png,image/jpeg"
+                style={{ display: 'none' }}
+                onChange={handleCustomStampUpload}
+              />
+              <button
+                type="button"
+                className="stamp-btn"
+                style={{ color: 'var(--color-brand-primary)', borderColor: 'var(--border-default)' }}
+                onClick={() => stampFileInputRef.current?.click()}
+                title="Upload signature or custom stamp image"
+              >
+                📷 Custom Stamp
+              </button>
+            </div>
+          )}
+
           {/* Render Vector Whiteouts */}
           {pageModifications.whiteouts?.map((w: WhiteoutBlock) => {
             const coords = pdfToScreen(w.bbox.x, w.bbox.y, w.bbox.width, w.bbox.height);
@@ -332,6 +493,33 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             />
           )}
 
+          {/* Render Image Stamps */}
+          {pageModifications.images?.map((img: ImageStamp) => {
+            const coords = pdfToScreen(img.bbox.x, img.bbox.y, img.bbox.width, img.bbox.height);
+            const isSelected = selectedItem?.type === 'image' && selectedItem.id === img.id;
+
+            return (
+              <div
+                key={img.id}
+                className={`image-stamp-box ${isSelected ? 'selected' : ''}`}
+                style={{
+                  left: `${coords.screenX}px`,
+                  top: `${coords.screenY}px`,
+                  width: `${coords.screenW}px`,
+                  height: `${coords.screenH}px`,
+                  opacity: img.opacity ?? 1,
+                }}
+                onMouseDown={(e) => handleStampMouseDown(e, img)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectItem({ type: 'image', id: img.id });
+                }}
+              >
+                <img src={img.dataUrl} alt={img.name || 'Stamp'} />
+              </div>
+            );
+          })}
+
           {/* Render Text Items (Extracted from PDF.js + Modified) */}
           {textItems.map((item) => {
             const edit = pageModifications.textEdits?.find((e: TextBlockEdit) => e.id === item.id);
@@ -341,15 +529,21 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             const color = edit?.style.colorHex || '#1f1f1f';
             const isBold = edit?.style.isBold ?? false;
             const isItalic = edit?.style.isItalic ?? false;
+            const estimatedWidth = Math.max(
+              item.screenWidth + 16,
+              displayText.length * (fontSize * 0.58) + 24
+            );
 
             return (
               <div
                 key={item.id}
                 className={`text-span-box ${isSelected ? 'selected' : ''} ${edit ? 'modified' : ''}`}
+                data-text={item.text}
+                title={`Click to edit "${item.text}"`}
                 style={{
                   left: `${item.screenX}px`,
                   top: `${item.screenY}px`,
-                  width: `${Math.max(item.screenWidth, 20)}px`,
+                  width: `${isSelected || edit ? estimatedWidth : Math.max(item.screenWidth, 20)}px`,
                   height: `${Math.max(item.screenHeight, 16)}px`,
                   fontSize: `${fontSize}px`,
                   color,
@@ -507,6 +701,15 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                   ),
                 }));
               }}
+              opacity={activeImage?.opacity ?? 1}
+              onOpacityChange={(opacity) => {
+                onUpdatePageModifications((prev: PageModifications) => ({
+                  ...prev,
+                  images: (prev.images || []).map((img: ImageStamp) =>
+                    img.id === selectedItem.id ? { ...img, opacity } : img
+                  ),
+                }));
+              }}
               onDelete={() => {
                 if (selectedItem.type === 'text') {
                   // Whiteout / Erase original text
@@ -533,6 +736,11 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                   onUpdatePageModifications((prev: PageModifications) => ({
                     ...prev,
                     whiteouts: (prev.whiteouts || []).filter((w: WhiteoutBlock) => w.id !== selectedItem.id),
+                  }));
+                } else if (selectedItem.type === 'image') {
+                  onUpdatePageModifications((prev: PageModifications) => ({
+                    ...prev,
+                    images: (prev.images || []).filter((img: ImageStamp) => img.id !== selectedItem.id),
                   }));
                 }
                 onSelectItem(null);

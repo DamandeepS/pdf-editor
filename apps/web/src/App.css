@@ -441,6 +441,48 @@ body {
 .resize-handle.bl { bottom: -4px; left: -4px; cursor: nesw-resize; }
 .resize-handle.br { bottom: -4px; right: -4px; cursor: nwse-resize; }
 
+/* Stamp Picker Floating Dock */
+.stamp-picker-dock {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-4);
+  background: var(--toolbar-bg);
+  backdrop-filter: blur(var(--elevation-backdrop-blur-md));
+  -webkit-backdrop-filter: blur(var(--elevation-backdrop-blur-md));
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-full);
+  box-shadow: var(--elevation-shadow-floating);
+  z-index: 500;
+  animation: dockSlideDown 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+@keyframes dockSlideDown {
+  0% { opacity: 0; transform: translate(-50%, -10px); }
+  100% { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.stamp-btn {
+  padding: 4px 12px;
+  border-radius: var(--border-radius-full);
+  font-size: var(--typography-font-size-xs);
+  font-weight: var(--typography-font-weight-bold);
+  letter-spacing: 0.5px;
+  border: 1.5px solid currentColor;
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.stamp-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
 /* =========================================
    FLOATING CONTEXTUAL TOOLBAR
    ========================================= */

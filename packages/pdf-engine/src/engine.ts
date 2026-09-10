@@ -26,7 +26,11 @@ export class PdfEngine {
 
     // Iterate through pages with modifications
     for (const [pageIndexStr, pageMods] of Object.entries(delta.pages)) {
-      const pageIndex = Number(pageIndexStr);
+      let pageIndex = typeof pageMods.pageIndex === 'number' ? pageMods.pageIndex : Number(pageIndexStr);
+      // If 1-indexed key was passed and out of bounds, adjust to 0-indexed
+      if (pageIndex >= pages.length && Number(pageIndexStr) > 0 && Number(pageIndexStr) <= pages.length) {
+        pageIndex = Number(pageIndexStr) - 1;
+      }
       if (pageIndex < 0 || pageIndex >= pages.length) continue;
 
       const page = pages[pageIndex];
