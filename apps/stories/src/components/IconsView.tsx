@@ -4,6 +4,7 @@ import { Button } from '@inq/ui/button';
 import { IconButton } from '@inq/ui/icon-button';
 import { ToolPill } from '@inq/ui/tool-pill';
 import { Badge } from '@inq/ui/badge';
+import { CheckIcon, CloseIcon, ZoomInIcon } from '@inq/icons';
 import type { IconItem } from '../types';
 
 export const IconsView: React.FC = () => {
@@ -75,7 +76,8 @@ export const IconsView: React.FC = () => {
 
       {copiedLabel && (
         <div className="copied-toast">
-          ✓ Copied {copiedLabel} to clipboard!
+          <CheckIcon size={14} />
+          <span>Copied {copiedLabel} to clipboard</span>
         </div>
       )}
 
@@ -86,14 +88,14 @@ export const IconsView: React.FC = () => {
           className={`mode-tab-btn ${activeTab === 'grid' ? 'active' : ''}`}
           onClick={() => setActiveTab('grid')}
         >
-          🔲 All Icons Grid ({filteredIcons.length})
+          All Icons Grid ({filteredIcons.length})
         </button>
         <button
           type="button"
           className={`mode-tab-btn ${activeTab === 'insitu' ? 'active' : ''}`}
           onClick={() => setActiveTab('insitu')}
         >
-          🧩 In-Situ Component Previews
+          In-Situ Component Previews
         </button>
       </div>
 
@@ -103,7 +105,7 @@ export const IconsView: React.FC = () => {
         <div className="toolbar-main-row">
           {/* Search Box */}
           <div className="icons-search-wrapper">
-            <span className="search-icon">🔍</span>
+            <span className="search-icon"><ZoomInIcon size={14} /></span>
             <input
               type="text"
               className="icons-search-input"
@@ -118,7 +120,7 @@ export const IconsView: React.FC = () => {
                 onClick={() => setSearch('')}
                 title="Clear search"
               >
-                ✕
+                <CloseIcon size={12} />
               </button>
             )}
           </div>
@@ -177,7 +179,17 @@ export const IconsView: React.FC = () => {
                   value={iconColor.startsWith('#') ? iconColor : '#4285f4'}
                   onChange={(e) => setIconColor(e.target.value)}
                 />
-                <span className="custom-color-indicator">🎨</span>
+                <span
+                  className="custom-color-indicator"
+                  style={{
+                    display: 'inline-block',
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    border: '1px solid var(--border-subtle)',
+                    background: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
+                  }}
+                />
               </label>
             </div>
           </div>
@@ -203,7 +215,7 @@ export const IconsView: React.FC = () => {
                 onClick={() => setIsSpinning(!isSpinning)}
                 title="Toggle continuous rotation animation"
               >
-                🔄 Spin
+                Spin
               </button>
             </div>
           </div>
@@ -276,7 +288,7 @@ export const IconsView: React.FC = () => {
 
           {filteredIcons.length === 0 && (
             <div className="icons-empty-state">
-              <div className="empty-icon-graphic">🔍</div>
+              <div className="empty-icon-graphic"><ZoomInIcon size={32} /></div>
               <p className="empty-title">No icons found</p>
               <p className="empty-desc">No icons match "{search}" in category "{selectedCategory}".</p>
               <button
@@ -395,7 +407,7 @@ export const IconsView: React.FC = () => {
                 onClick={() => setInspectingIcon(null)}
                 aria-label="Close inspector"
               >
-                ✕
+                <CloseIcon size={16} />
               </button>
             </div>
 
@@ -510,7 +522,7 @@ export const IconsView: React.FC = () => {
                     className="modal-copy-btn"
                     onClick={() => handleCopy(getInspectCodeSnippet(inspectingIcon), `${codeFormat.toUpperCase()} snippet`)}
                   >
-                    📋 Copy Snippet
+                    Copy Snippet
                   </button>
                 </div>
               </div>

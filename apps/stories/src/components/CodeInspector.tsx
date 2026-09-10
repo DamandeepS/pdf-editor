@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useWorkbench } from '../context/WorkbenchContext';
+import { CheckIcon } from '@inq/icons';
 import type { ComponentStoryMeta } from '../types';
 
 export interface CodeInspectorProps {
@@ -81,7 +82,14 @@ export const CodeInspector: React.FC<CodeInspectorProps> = ({ story }) => {
           className={`copy-code-btn ${copied ? 'copied' : ''}`}
           onClick={handleCopy}
         >
-          {copied ? '✓ Copied to Clipboard!' : '📋 Copy JSX'}
+          {copied ? (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <CheckIcon size={13} />
+              <span>Copied to Clipboard</span>
+            </span>
+          ) : (
+            <span>Copy JSX</span>
+          )}
         </button>
       </div>
       <pre className="code-block">

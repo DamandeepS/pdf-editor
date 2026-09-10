@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { CheckIcon } from '@inq/icons';
 
 interface TypeScaleSpecimen {
   token: string;
@@ -88,7 +89,8 @@ text-align: ${textAlign};`;
 
       {copiedToken && (
         <div className="copied-toast">
-          ✓ Copied {copiedToken} to clipboard!
+          <CheckIcon size={14} />
+          <span>Copied {copiedToken} to clipboard</span>
         </div>
       )}
 
@@ -402,7 +404,7 @@ text-align: ${textAlign};`;
               className="copy-css-btn"
               onClick={() => handleCopy(generatedCss, 'CSS rule')}
             >
-              📋 Copy CSS Rule
+              Copy CSS Rule
             </button>
           </div>
           <pre className="type-css-code">

@@ -53,7 +53,7 @@ export const StoryCanvas: React.FC<StoryCanvasProps> = ({ story }) => {
             onClick={() => setViewport('desktop')}
             title="Desktop (100%)"
           >
-            🖥️ 100%
+            Desktop (100%)
           </button>
           <button
             type="button"
@@ -61,7 +61,7 @@ export const StoryCanvas: React.FC<StoryCanvasProps> = ({ story }) => {
             onClick={() => setViewport('laptop')}
             title="Laptop (1024px)"
           >
-            💻 1024
+            Laptop (1024)
           </button>
           <button
             type="button"
@@ -69,7 +69,7 @@ export const StoryCanvas: React.FC<StoryCanvasProps> = ({ story }) => {
             onClick={() => setViewport('tablet')}
             title="Tablet (768px)"
           >
-            📱 768
+            Tablet (768)
           </button>
           <button
             type="button"
@@ -77,7 +77,7 @@ export const StoryCanvas: React.FC<StoryCanvasProps> = ({ story }) => {
             onClick={() => setViewport('mobile')}
             title="Mobile (375px)"
           >
-            📲 375
+            Mobile (375)
           </button>
         </div>
 
@@ -138,7 +138,7 @@ export const StoryCanvas: React.FC<StoryCanvasProps> = ({ story }) => {
             onClick={() => setCurrentProps(story.defaultProps)}
             title="Reset to default props"
           >
-            ↺ Reset
+            Reset
           </button>
         </div>
       )}

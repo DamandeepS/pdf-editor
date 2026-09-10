@@ -9,6 +9,7 @@ import { A11yPanel } from './components/A11yPanel';
 import { TokensView } from './components/TokensView';
 import { TypographyView } from './components/TypographyView';
 import { IconsView } from './components/IconsView';
+import { SunIcon, MoonIcon } from '@inq/icons';
 import './App.css';
 
 export const App: React.FC = () => {
@@ -68,7 +69,17 @@ export const App: React.FC = () => {
             title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
             aria-label="Toggle light/dark theme"
           >
-            {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
+            {theme === 'light' ? (
+              <>
+                <MoonIcon size={14} />
+                <span>Dark</span>
+              </>
+            ) : (
+              <>
+                <SunIcon size={14} />
+                <span>Light</span>
+              </>
+            )}
           </button>
 
           {/* External Link to BillEditor web app */}
@@ -112,7 +123,7 @@ export const App: React.FC = () => {
                     className={`inspector-tab ${activeTab === 'controls' ? 'active' : ''}`}
                     onClick={() => setActiveTab('controls')}
                   >
-                    ⚙️ Controls & Knobs
+                    Controls & Knobs
                     <span className="tab-badge">
                       {Object.keys(activeStory.controls).length}
                     </span>
@@ -124,7 +135,7 @@ export const App: React.FC = () => {
                     className={`inspector-tab ${activeTab === 'code' ? 'active' : ''}`}
                     onClick={() => setActiveTab('code')}
                   >
-                    💻 JSX Code
+                    JSX Code
                   </button>
                   <button
                     type="button"
@@ -133,7 +144,7 @@ export const App: React.FC = () => {
                     className={`inspector-tab ${activeTab === 'a11y' ? 'active' : ''}`}
                     onClick={() => setActiveTab('a11y')}
                   >
-                    ♿ Accessibility (a11y)
+                    Accessibility (a11y)
                   </button>
                 </div>
 
