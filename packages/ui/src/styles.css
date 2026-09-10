@@ -11,3 +11,5 @@
 @import './components/color-picker-pill/ColorPickerPill.css';
 @import './components/modal/Modal.css';
 @import './components/brand-badge/BrandBadge.css';
+
+@import './components/badge/Badge.css';

@@ -6,3 +6,5 @@ export * from './components/slider';
 export * from './components/color-picker-pill';
 export * from './components/modal';
 export * from './components/brand-badge';
+
+export * from './components/badge';

@@ -1,0 +1,16 @@
+.inq-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4, 8px);
+  background-color: var(--surface-card, #ffffff);
+  border: 1px solid var(--border-subtle, #e0e2e6);
+  border-radius: var(--radius-md, 8px);
+  padding: var(--spacing-4, 8px);
+  color: var(--text-primary, #1f1f1f);
+  font-family: var(--font-sans, inherit);
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.inq-badge:hover {
+  background-color: var(--surface-hover, #f1f3f4);
+}

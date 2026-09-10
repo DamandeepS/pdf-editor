@@ -50,6 +50,10 @@
     "./brand-badge": {
       "types": "./dist/components/brand-badge/index.d.ts",
       "import": "./dist/components/brand-badge/index.js"
+    },
+    "./badge": {
+      "types": "./dist/components/badge/index.d.ts",
+      "import": "./dist/components/badge/index.js"
     }
   },
   "scripts": {
