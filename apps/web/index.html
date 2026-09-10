@@ -2,13 +2,132 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234285f4'><path d='M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z'/></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234285f4'><path d='M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z'/></svg>" />
+    
+    <!-- Primary SEO Meta Tags -->
     <title>Inq PDF Editor | In-Place Visual Vector PDF & Document Editor</title>
+    <meta name="title" content="Inq PDF Editor | In-Place Visual Vector PDF & Document Editor" />
+    <meta name="description" content="Free, high-performance in-place visual vector PDF editor. Edit text, redact sensitive figures, add stamps, and export lossless vector PDFs 100% locally in your browser with complete privacy." />
+    <meta name="keywords" content="pdf editor, vector pdf editor, edit pdf online, free pdf editor, bill editor, invoice editor, redact pdf, pdf text editor, in-browser pdf editor, client-side pdf" />
+    <meta name="author" content="Inq Contributors" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="canonical" href="https://inq-pdf-editor.vercel.app/" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://inq-pdf-editor.vercel.app/" />
+    <meta property="og:site_name" content="Inq PDF Editor" />
+    <meta property="og:title" content="Inq PDF Editor | In-Place Visual Vector PDF & Document Editor" />
+    <meta property="og:description" content="Edit text in place, whiteout sections, and export crisp, native vector PDFs entirely within your browser. 100% client-side privacy with zero server uploads." />
+    <meta property="og:image" content="https://inq-pdf-editor.vercel.app/og-preview.png" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://inq-pdf-editor.vercel.app/" />
+    <meta property="twitter:title" content="Inq PDF Editor | In-Place Visual Vector PDF & Document Editor" />
+    <meta property="twitter:description" content="Edit text in place, whiteout sections, and export crisp, native vector PDFs entirely within your browser. 100% client-side privacy with zero server uploads." />
+    <meta property="twitter:image" content="https://inq-pdf-editor.vercel.app/og-preview.png" />
+
     <!-- Modern Typography: Google Sans / Inter via Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+    <!-- Google Consent Mode v2 & Google Analytics (GA4) -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+
+      // Initialize Consent Mode v2: default to denied until explicit user consent
+      var storedConsent = null;
+      try {
+        storedConsent = localStorage.getItem('inq_cookie_consent');
+      } catch (e) {}
+
+      gtag('consent', 'default', {
+        'analytics_storage': storedConsent === 'accepted' ? 'granted' : 'denied',
+        'ad_storage': 'denied',
+        'ad_user_data': 'denied',
+        'ad_personalization': 'denied',
+        'wait_for_update': 500
+      });
+      gtag('js', new Date());
+    </script>
+
+    <!-- JSON-LD Structured Data: WebApplication & FAQPage -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "@id": "https://inq-pdf-editor.vercel.app/#webapp",
+          "name": "Inq PDF Editor",
+          "url": "https://inq-pdf-editor.vercel.app/",
+          "description": "High-performance in-place visual vector PDF editor with 100% client-side privacy. Edit text, place whiteout redactions, stamp documents, and export lossless vector PDFs.",
+          "applicationCategory": "BusinessApplication, DesignApplication, UtilitiesApplication",
+          "operatingSystem": "All (Modern Web Browsers)",
+          "browserRequirements": "Requires JavaScript. Requires HTML5 Canvas.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "featureList": [
+            "In-place visual text editing with glyph coordinate detection",
+            "Sub-pixel baseline vector text injection with right/center/left alignment",
+            "Color eyedropper tool with screen and canvas pixel sampling",
+            "Drag-and-draw vector whiteout redaction with adaptive background matching",
+            "Document stamp overlays (PAID, VOID, APPROVED, CONFIDENTIAL)",
+            "100% in-browser offline processing with zero server document transmission",
+            "Lossless vector PDF export via pdf-lib and fontkit"
+          ],
+          "license": "https://opensource.org/licenses/MIT",
+          "softwareVersion": "1.0.0"
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://inq-pdf-editor.vercel.app/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Is Inq PDF Editor completely free to use?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. Inq PDF Editor is 100% free and open-source under the MIT License, with zero subscription fees, watermarks, or usage limits."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Are my uploaded PDF files or documents sent to a server?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "No. Inq PDF Editor processes 100% of your document rendering, editing, whiteouts, and vector PDF compilation locally inside your web browser using WebAssembly. Your documents never leave your device."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Does the exported PDF keep its crisp vector quality?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. Unlike typical online editors that flatten pages into blurry images, Inq PDF Editor directly manipulates the native PDF vector object streams, preserving sharp typography, selectable text, and clean vector shapes."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I use Inq PDF Editor offline?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. Because the application engine runs entirely on client-side WebAssembly and JavaScript, you can continue to edit and export PDFs even without an active internet connection."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
   </head>
   <body class="theme-light">
     <div id="root"></div>

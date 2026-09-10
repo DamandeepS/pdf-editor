@@ -7,6 +7,7 @@ export interface StatusBarProps {
   totalEdits: number;
   ipcStatus: 'connected' | 'offline' | 'checking';
   onOpenShortcuts: () => void;
+  onOpenPrivacy?: () => void;
 }
 
 export const StatusBar: React.FC<StatusBarProps> = ({
@@ -16,6 +17,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   totalEdits,
   ipcStatus,
   onOpenShortcuts,
+  onOpenPrivacy,
 }) => {
   return (
     <footer className="status-bar" role="contentinfo">
@@ -28,6 +30,24 @@ export const StatusBar: React.FC<StatusBarProps> = ({
       </div>
 
       <div className="status-right">
+        {onOpenPrivacy && (
+          <button
+            type="button"
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--text-secondary)',
+              fontSize: '11px',
+              textDecoration: 'underline',
+            }}
+            onClick={onOpenPrivacy}
+            title="View Privacy Policy & Data Ethics"
+          >
+            Privacy
+          </button>
+        )}
+
         <button
           type="button"
           style={{

@@ -9,6 +9,9 @@ import { PageRail } from './components/PageRail';
 import { EditorCanvas } from './components/EditorCanvas';
 import { StatusBar } from './components/StatusBar';
 import { ShortcutsModal } from './components/ShortcutsModal';
+import { PrivacyModal } from './components/PrivacyModal';
+import { CookieConsentBanner } from './components/CookieConsentBanner';
+import { trackEvent } from './utils/analytics';
 
 const DEFAULT_SAMPLES: SampleBillMeta[] = SAMPLE_BILLS_META;
 
@@ -61,6 +64,7 @@ export const App: React.FC = () => {
     return window.innerWidth < 768;
   });
   const [isShortcutsOpen, setIsShortcutsOpen] = useState<boolean>(false);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState<boolean>(false);
   const [ipcStatus, setIpcStatus] = useState<'connected' | 'offline' | 'checking'>('checking');
   const [isExporting, setIsExporting] = useState<boolean>(false);
 
@@ -105,6 +109,7 @@ export const App: React.FC = () => {
       if (title) {
         setDocumentTitle(title);
       }
+      trackEvent('pdf_sample_loaded', { sample_id: sampleId });
     }
   }, []);
 
@@ -148,6 +153,7 @@ export const App: React.FC = () => {
       setUndoStack([]);
       setRedoStack([]);
       setSelectedItem(null);
+      trackEvent('pdf_custom_uploaded', { pages: doc.numPages });
     } catch (err) {
       console.error('Failed to parse uploaded PDF:', err);
       alert('Unable to load uploaded PDF file.');
@@ -299,6 +305,7 @@ export const App: React.FC = () => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      trackEvent('pdf_exported', { edits_count: totalEdits });
     } catch (err: any) {
       console.error('Export failed:', err);
       alert(`Export failed: ${err.message || String(err)}`);
@@ -391,11 +398,21 @@ export const App: React.FC = () => {
         totalEdits={totalEdits}
         ipcStatus={ipcStatus}
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
+        onOpenPrivacy={() => setIsPrivacyOpen(true)}
       />
 
       <ShortcutsModal
         isOpen={isShortcutsOpen}
         onClose={() => setIsShortcutsOpen(false)}
+      />
+
+      <PrivacyModal
+        isOpen={isPrivacyOpen}
+        onClose={() => setIsPrivacyOpen(false)}
+      />
+
+      <CookieConsentBanner
+        onOpenPrivacy={() => setIsPrivacyOpen(true)}
       />
     </div>
   );
