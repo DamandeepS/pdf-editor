@@ -1,0 +1,137 @@
+.inq-switch-wrapper {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--spacing-1, 4px);
+  user-select: none;
+}
+
+.inq-switch-container {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2, 8px);
+}
+
+.inq-switch-track {
+  position: relative;
+  border: 1px solid var(--border-default, #c4c7c5);
+  background-color: var(--surface-hover, #e0e2ec);
+  border-radius: var(--radius-full, 9999px);
+  cursor: pointer;
+  padding: 2px;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  transition: background-color var(--transition-fast, 150ms ease),
+              border-color var(--transition-fast, 150ms ease),
+              box-shadow var(--transition-fast, 150ms ease);
+}
+
+.inq-switch-thumb {
+  display: block;
+  background-color: var(--surface-card, #ffffff);
+  border-radius: var(--radius-full, 9999px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform var(--transition-fast, 150ms cubic-bezier(0.4, 0, 0.2, 1)),
+              background-color var(--transition-fast, 150ms ease);
+}
+
+/* Checked State */
+.inq-switch-track.is-checked {
+  background-color: var(--color-primary, #4285f4);
+  border-color: var(--color-primary, #4285f4);
+}
+
+.inq-switch-track.is-checked .inq-switch-thumb {
+  background-color: #ffffff;
+}
+
+/* Focus Visible */
+.inq-switch-track:focus-visible {
+  outline: none;
+  border-color: var(--color-primary, #4285f4);
+  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.3);
+}
+
+/* Disabled State */
+.inq-switch-wrapper.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.inq-switch-wrapper.is-disabled .inq-switch-track {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.inq-switch-wrapper.is-disabled .inq-switch-label {
+  cursor: not-allowed;
+}
+
+/* Sizes */
+/* Small */
+.inq-switch--sm .inq-switch-track {
+  width: 32px;
+  height: 18px;
+}
+.inq-switch--sm .inq-switch-thumb {
+  width: 12px;
+  height: 12px;
+}
+.inq-switch--sm .inq-switch-track.is-checked .inq-switch-thumb {
+  transform: translateX(14px);
+}
+.inq-switch--sm .inq-switch-label {
+  font-size: var(--font-size-xs, 12px);
+}
+
+/* Medium */
+.inq-switch--md .inq-switch-track {
+  width: 44px;
+  height: 24px;
+}
+.inq-switch--md .inq-switch-thumb {
+  width: 18px;
+  height: 18px;
+}
+.inq-switch--md .inq-switch-track.is-checked .inq-switch-thumb {
+  transform: translateX(20px);
+}
+.inq-switch--md .inq-switch-label {
+  font-size: var(--font-size-sm, 14px);
+}
+
+/* Large */
+.inq-switch--lg .inq-switch-track {
+  width: 54px;
+  height: 30px;
+}
+.inq-switch--lg .inq-switch-thumb {
+  width: 24px;
+  height: 24px;
+}
+.inq-switch--lg .inq-switch-track.is-checked .inq-switch-thumb {
+  transform: translateX(24px);
+}
+.inq-switch--lg .inq-switch-label {
+  font-size: var(--font-size-md, 16px);
+}
+
+.inq-switch-label {
+  color: var(--text-primary, #1f1f1f);
+  font-family: var(--font-sans, inherit);
+  font-weight: var(--font-weight-normal, 400);
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.inq-switch-helper {
+  font-size: var(--font-size-xs, 12px);
+  color: var(--text-secondary, #444746);
+}
+
+.inq-switch-error {
+  font-size: var(--font-size-xs, 12px);
+  color: var(--color-danger, #ea4335);
+  font-weight: var(--font-weight-medium, 500);
+}
+

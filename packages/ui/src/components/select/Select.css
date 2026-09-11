@@ -1,0 +1,159 @@
+.inq-select-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1, 4px);
+  width: 100%;
+  font-family: var(--font-sans, inherit);
+}
+
+.inq-select-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-xs, 12px);
+  font-weight: var(--font-weight-medium, 500);
+  color: var(--text-secondary, #444746);
+  transition: color var(--transition-fast, 150ms ease);
+}
+
+.inq-select-required {
+  color: var(--color-danger, #ea4335);
+  font-weight: bold;
+}
+
+.inq-select-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border-radius: var(--radius-md, 8px);
+  transition: border-color var(--transition-fast, 150ms ease),
+              box-shadow var(--transition-fast, 150ms ease),
+              background-color var(--transition-fast, 150ms ease);
+}
+
+/* Outlined Variant */
+.inq-select--outlined .inq-select-box {
+  background-color: var(--surface-card, #ffffff);
+  border: 1px solid var(--border-default, #c4c7c5);
+}
+
+.inq-select--outlined .inq-select-box:hover:not(.is-disabled) {
+  border-color: var(--border-focus, #1f1f1f);
+}
+
+.inq-select--outlined:focus-within .inq-select-box {
+  border-color: var(--color-primary, #4285f4);
+  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.25);
+}
+
+/* Filled Variant */
+.inq-select--filled .inq-select-box {
+  background-color: var(--surface-hover, #f1f3f4);
+  border: 1px solid transparent;
+  border-bottom: 2px solid var(--border-default, #c4c7c5);
+  border-radius: var(--radius-md, 8px) var(--radius-md, 8px) 0 0;
+}
+
+.inq-select--filled .inq-select-box:hover:not(.is-disabled) {
+  background-color: var(--surface-active, #e8eaed);
+}
+
+.inq-select--filled:focus-within .inq-select-box {
+  background-color: var(--surface-active, #e8eaed);
+  border-bottom-color: var(--color-primary, #4285f4);
+}
+
+/* Native Select Element */
+.inq-select-element {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  color: var(--text-primary, #1f1f1f);
+  cursor: pointer;
+  padding-right: 36px;
+}
+
+/* Chevron */
+.inq-select-chevron {
+  position: absolute;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: var(--text-secondary, #444746);
+  transition: transform var(--transition-fast, 150ms ease);
+}
+
+.inq-select-prefix {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 12px;
+  color: var(--text-secondary, #444746);
+}
+
+/* Sizes */
+.inq-select--sm .inq-select-box {
+  min-height: 32px;
+}
+.inq-select--sm .inq-select-element {
+  padding: 4px 30px 4px 10px;
+  font-size: var(--font-size-xs, 12px);
+}
+.inq-select--sm .inq-select-chevron {
+  right: 8px;
+}
+
+.inq-select--md .inq-select-box {
+  min-height: 40px;
+}
+.inq-select--md .inq-select-element {
+  padding: 8px 36px 8px 12px;
+  font-size: var(--font-size-sm, 14px);
+}
+
+.inq-select--lg .inq-select-box {
+  min-height: 48px;
+}
+.inq-select--lg .inq-select-element {
+  padding: 12px 42px 12px 16px;
+  font-size: var(--font-size-md, 16px);
+}
+
+/* Error State */
+.inq-select-container.has-error .inq-select-box {
+  border-color: var(--color-danger, #ea4335) !important;
+}
+
+.inq-select-container.has-error:focus-within .inq-select-box {
+  box-shadow: 0 0 0 3px rgba(234, 67, 53, 0.25) !important;
+}
+
+.inq-select-helper {
+  font-size: var(--font-size-xs, 12px);
+  color: var(--text-secondary, #444746);
+}
+
+.inq-select-error {
+  font-size: var(--font-size-xs, 12px);
+  color: var(--color-danger, #ea4335);
+  font-weight: var(--font-weight-medium, 500);
+}
+
+/* Disabled State */
+.inq-select-container.is-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.inq-select-container.is-disabled .inq-select-element {
+  cursor: not-allowed;
+}
+
