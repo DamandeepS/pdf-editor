@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { CheckIcon, CloseIcon } from '@inq/icons';
+import { CheckIcon, CloseIcon, ZoomInIcon } from '@inq/icons';
+import { TextInput } from '@inq/ui/text-input';
+import { SegmentedControl } from '@inq/ui/segmented-control';
+import { Badge } from '@inq/ui/badge';
 
 interface TokenSpec {
   name: string;
@@ -114,42 +117,29 @@ export const TokensView: React.FC = () => {
         {/* Row 1: Search & View Switcher */}
         <div className="tokens-toolbar-top">
           {/* Search Box */}
-          <div className="tokens-search-field">
-            <input
-              type="text"
-              className="tokens-search-input"
+          <div className="tokens-search-field-inq">
+            <TextInput
+              size="sm"
               placeholder="Search by token name, CSS variable, or role..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              clearable
+              onClear={() => setSearch('')}
+              prefixIcon={<ZoomInIcon size={14} />}
             />
-            {search && (
-              <button
-                type="button"
-                className="search-clear-btn"
-                onClick={() => setSearch('')}
-                title="Clear search"
-              >
-                <CloseIcon size={12} />
-              </button>
-            )}
           </div>
 
           {/* View Mode Toggle */}
-          <div className="tokens-view-switcher">
-            <button
-              type="button"
-              className={`view-switch-btn ${viewMode === 'cards' ? 'active' : ''}`}
-              onClick={() => setViewMode('cards')}
-            >
-              Specimen Cards
-            </button>
-            <button
-              type="button"
-              className={`view-switch-btn ${viewMode === 'table' ? 'active' : ''}`}
-              onClick={() => setViewMode('table')}
-            >
-              Spec Sheet Table
-            </button>
+          <div className="tokens-view-switcher-inq">
+            <SegmentedControl
+              size="sm"
+              value={viewMode}
+              onChange={(val) => setViewMode(val as 'cards' | 'table')}
+              options={[
+                { value: 'cards', label: 'Specimen Cards' },
+                { value: 'table', label: 'Spec Sheet Table' },
+              ]}
+            />
           </div>
         </div>
 

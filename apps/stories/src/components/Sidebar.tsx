@@ -1,7 +1,10 @@
 import React from 'react';
 import { useWorkbench } from '../context/WorkbenchContext';
 import { COMPONENT_STORIES, DESIGN_TOKENS, ICON_CATALOG } from '../registry';
-import { LayersIcon, TextEditIcon, AutoFitIcon, CloseIcon } from '@inq/icons';
+import { LayersIcon, TextEditIcon, AutoFitIcon, CloseIcon, ZoomInIcon } from '@inq/icons';
+import { TextInput } from '@inq/ui/text-input';
+import { IconButton } from '@inq/ui/icon-button';
+import { Badge } from '@inq/ui/badge';
 
 export interface SidebarProps {
   isOpen?: boolean;
@@ -53,31 +56,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </div>
           <span className="drawer-header-title">Components & Design Tokens</span>
         </div>
-        <button
-          type="button"
+        <IconButton
+          size="sm"
           className="drawer-close-btn"
           onClick={onClose}
           aria-label="Close Navigation"
-          title="Close Navigation"
+          tooltip="Close Navigation"
         >
           <CloseIcon size={16} />
-        </button>
+        </IconButton>
       </div>
 
       {/* Search Bar */}
       <div className="sidebar-search-box">
-        <input
-          type="text"
-          className="search-input"
+        <TextInput
+          size="sm"
           placeholder="Search components, tokens, icons..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          clearable
+          onClear={() => setSearchQuery('')}
+          prefixIcon={<ZoomInIcon size={14} />}
         />
-        {searchQuery && (
-          <button className="clear-search-btn" onClick={() => setSearchQuery('')} title="Clear search">
-            <CloseIcon size={12} />
-          </button>
-        )}
       </div>
 
       <div className="sidebar-nav-scroll">
@@ -92,7 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           >
             <span className="nav-item-icon"><LayersIcon size={16} /></span>
             <span className="nav-item-label">Design Tokens</span>
-            <span className="nav-item-badge">{DESIGN_TOKENS.length}</span>
+            <Badge className="nav-item-badge">{DESIGN_TOKENS.length}</Badge>
           </button>
 
           <button
@@ -102,7 +102,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           >
             <span className="nav-item-icon"><TextEditIcon size={16} /></span>
             <span className="nav-item-label">Typography Studio</span>
-            <span className="nav-item-badge">3 Fonts</span>
+            <Badge className="nav-item-badge">3 Fonts</Badge>
           </button>
 
           <button
@@ -112,7 +112,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           >
             <span className="nav-item-icon"><AutoFitIcon size={16} /></span>
             <span className="nav-item-label">Material Icons</span>
-            <span className="nav-item-badge">{ICON_CATALOG.length}</span>
+            <Badge className="nav-item-badge">{ICON_CATALOG.length}</Badge>
           </button>
         </div>
 
@@ -134,7 +134,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               >
                 <span className="nav-item-bullet" />
                 <span className="nav-item-label">{story.name}</span>
-                <span className="nav-item-category-tag">{story.category}</span>
+                <Badge className="nav-item-category-tag">{story.category}</Badge>
               </button>
             );
           })}

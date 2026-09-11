@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
 import { CheckIcon } from '@inq/icons';
+import { Slider } from '@inq/ui/slider';
+import { SegmentedControl } from '@inq/ui/segmented-control';
+import { Textarea } from '@inq/ui/textarea';
+import { Badge } from '@inq/ui/badge';
+import { Select } from '@inq/ui/select';
+import { Checkbox } from '@inq/ui/checkbox';
+import { Button } from '@inq/ui/button';
 
 interface TypeScaleSpecimen {
   token: string;
@@ -179,55 +186,40 @@ text-align: ${textAlign};`;
           <div className="controls-row">
             <div className="control-group">
               <span className="control-label">Typeface:</span>
-              <div className="pill-toggle-group">
-                <button
-                  type="button"
-                  className={`pill-toggle ${selectedFamily === 'brand' ? 'active' : ''}`}
-                  onClick={() => setSelectedFamily('brand')}
-                >
-                  Google Sans
-                </button>
-                <button
-                  type="button"
-                  className={`pill-toggle ${selectedFamily === 'base' ? 'active' : ''}`}
-                  onClick={() => setSelectedFamily('base')}
-                >
-                  Inter
-                </button>
-                <button
-                  type="button"
-                  className={`pill-toggle ${selectedFamily === 'mono' ? 'active' : ''}`}
-                  onClick={() => setSelectedFamily('mono')}
-                >
-                  Roboto Mono
-                </button>
-              </div>
+              <SegmentedControl
+                size="sm"
+                value={selectedFamily}
+                onChange={(val) => setSelectedFamily(val as 'brand' | 'base' | 'mono')}
+                options={[
+                  { value: 'brand', label: 'Google Sans' },
+                  { value: 'base', label: 'Inter' },
+                  { value: 'mono', label: 'Roboto Mono' },
+                ]}
+              />
             </div>
 
             <div className="control-group">
               <span className="control-label">Preset Text:</span>
-              <select
-                className="type-select"
-                onChange={(e) => setCustomText(e.target.value)}
-                value={customText}
-              >
-                {PRESET_TEXTS.map((p) => (
-                  <option key={p.label} value={p.text}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
+              <div style={{ minWidth: '180px' }}>
+                <Select
+                  size="sm"
+                  value={customText}
+                  onChange={(e) => setCustomText(e.target.value)}
+                  options={PRESET_TEXTS.map((p) => ({
+                    value: p.text,
+                    label: p.label,
+                  }))}
+                />
+              </div>
             </div>
 
             <div className="control-group">
-              <label className="checkbox-control">
-                <input
-                  type="checkbox"
-                  checked={showBaselineGrid}
-                  onChange={(e) => setShowBaselineGrid(e.target.checked)}
-                />
-                <span>Baseline Grid (8px)</span>
-              </label>
+              <Checkbox
+                size="sm"
+                label="Baseline Grid (8px)"
+                checked={showBaselineGrid}
+                onChange={(checked) => setShowBaselineGrid(checked)}
+              />
             </div>
           </div>
 
@@ -235,17 +227,13 @@ text-align: ${textAlign};`;
           <div className="controls-row sliders-row">
             {/* Font Size */}
             <div className="slider-control">
-              <div className="slider-header">
-                <span className="slider-label">Font Size</span>
-                <span className="slider-val">{fontSize}px ({(fontSize / 16).toFixed(2)}rem)</span>
-              </div>
-              <input
-                type="range"
-                className="range-input"
+              <Slider
                 min={11}
                 max={72}
                 value={fontSize}
-                onChange={(e) => setFontSize(Number(e.target.value))}
+                onChange={(val) => setFontSize(val)}
+                label="Font Size"
+                unit="px"
               />
             </div>
 
@@ -253,53 +241,43 @@ text-align: ${textAlign};`;
             <div className="slider-control">
               <div className="slider-header">
                 <span className="slider-label">Font Weight</span>
-                <span className="slider-val">{fontWeight}</span>
               </div>
-              <div className="pill-toggle-group small">
-                {[300, 400, 500, 600, 700].map((w) => (
-                  <button
-                    key={w}
-                    type="button"
-                    className={`pill-toggle ${fontWeight === w ? 'active' : ''}`}
-                    onClick={() => setFontWeight(w)}
-                  >
-                    {w}
-                  </button>
-                ))}
-              </div>
+              <SegmentedControl
+                size="sm"
+                value={String(fontWeight)}
+                onChange={(val) => setFontWeight(Number(val))}
+                options={[
+                  { value: '300', label: '300' },
+                  { value: '400', label: '400' },
+                  { value: '500', label: '500' },
+                  { value: '600', label: '600' },
+                  { value: '700', label: '700' },
+                ]}
+              />
             </div>
 
             {/* Line Height */}
             <div className="slider-control">
-              <div className="slider-header">
-                <span className="slider-label">Line Height</span>
-                <span className="slider-val">{lineHeight}</span>
-              </div>
-              <input
-                type="range"
-                className="range-input"
+              <Slider
                 min={1.0}
                 max={2.4}
                 step={0.05}
                 value={lineHeight}
-                onChange={(e) => setLineHeight(Number(e.target.value))}
+                onChange={(val) => setLineHeight(val)}
+                label="Line Height"
               />
             </div>
 
             {/* Letter Spacing */}
             <div className="slider-control">
-              <div className="slider-header">
-                <span className="slider-label">Letter Spacing</span>
-                <span className="slider-val">{letterSpacing}em</span>
-              </div>
-              <input
-                type="range"
-                className="range-input"
+              <Slider
                 min={-0.05}
                 max={0.2}
                 step={0.01}
                 value={letterSpacing}
-                onChange={(e) => setLetterSpacing(Number(e.target.value))}
+                onChange={(val) => setLetterSpacing(val)}
+                label="Letter Spacing"
+                unit="em"
               />
             </div>
           </div>
@@ -333,35 +311,31 @@ text-align: ${textAlign};`;
             {/* Alignment */}
             <div className="control-group">
               <span className="control-label">Align:</span>
-              <div className="pill-toggle-group small">
-                {(['left', 'center', 'right'] as const).map((align) => (
-                  <button
-                    key={align}
-                    type="button"
-                    className={`pill-toggle ${textAlign === align ? 'active' : ''}`}
-                    onClick={() => setTextAlign(align)}
-                  >
-                    {align}
-                  </button>
-                ))}
-              </div>
+              <SegmentedControl
+                size="sm"
+                value={textAlign}
+                onChange={(val) => setTextAlign(val as any)}
+                options={[
+                  { value: 'left', label: 'Left' },
+                  { value: 'center', label: 'Center' },
+                  { value: 'right', label: 'Right' },
+                ]}
+              />
             </div>
 
             {/* Transform */}
             <div className="control-group">
               <span className="control-label">Transform:</span>
-              <div className="pill-toggle-group small">
-                {(['none', 'uppercase', 'capitalize'] as const).map((tr) => (
-                  <button
-                    key={tr}
-                    type="button"
-                    className={`pill-toggle ${textTransform === tr ? 'active' : ''}`}
-                    onClick={() => setTextTransform(tr)}
-                  >
-                    {tr}
-                  </button>
-                ))}
-              </div>
+              <SegmentedControl
+                size="sm"
+                value={textTransform}
+                onChange={(val) => setTextTransform(val as any)}
+                options={[
+                  { value: 'none', label: 'None' },
+                  { value: 'uppercase', label: 'UPPER' },
+                  { value: 'capitalize', label: 'Capitalize' },
+                ]}
+              />
             </div>
           </div>
         </div>
@@ -385,9 +359,9 @@ text-align: ${textAlign};`;
           </div>
 
           <div className="type-input-footer">
-            <input
-              type="text"
-              className="type-live-input"
+            <Textarea
+              size="sm"
+              rows={2}
               value={customText}
               onChange={(e) => setCustomText(e.target.value)}
               placeholder="Type custom text to preview here..."
@@ -399,13 +373,14 @@ text-align: ${textAlign};`;
         <div className="type-css-card">
           <div className="type-css-header">
             <span className="type-css-label">Generated CSS Specifications</span>
-            <button
-              type="button"
+            <Button
+              size="sm"
+              variant="secondary"
               className="copy-css-btn"
               onClick={() => handleCopy(generatedCss, 'CSS rule')}
             >
               Copy CSS Rule
-            </button>
+            </Button>
           </div>
           <pre className="type-css-code">
             <code>{generatedCss}</code>

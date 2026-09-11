@@ -23,3 +23,5 @@ export * from './components/divider';
 export * from './components/avatar';
 export * from './components/tabs';
 export * from './components/skeleton';
+export * from './components/segmented-control';
+export * from './components/textarea';

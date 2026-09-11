@@ -371,9 +371,9 @@ html, body {
 }
 
 .inspector-section {
-  height: 220px;
+  height: 300px;
   flex-shrink: 0;
-  min-height: 180px;
+  min-height: 220px;
   background: var(--surface-card);
   display: flex;
   flex-direction: column;
@@ -931,6 +931,40 @@ html, body {
   padding: 16px 24px;
 }
 
+/* Inspector Tabs Integration */
+.inspector-section .inq-tabs-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.inspector-section .inq-tablist {
+  padding: 0 16px;
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+  scrollbar-width: none;
+}
+
+.inspector-section .inq-tablist::-webkit-scrollbar {
+  display: none;
+}
+
+.inspector-section .inq-tab-button {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.inspector-section .inq-tabpanel {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 24px;
+  min-height: 0;
+}
+
 /* Controls Knobs Table */
 .controls-panel {
   width: 100%;
@@ -988,6 +1022,29 @@ html, body {
   width: 18%;
 }
 
+.type-badge-inq {
+  display: inline-flex !important;
+  font-family: var(--font-family-mono, monospace);
+  font-size: 11px !important;
+  padding: 2px 8px !important;
+  border-radius: var(--radius-sm, 6px) !important;
+  background: var(--surface-canvas, #f8fafd) !important;
+  color: var(--text-secondary, #444746) !important;
+  border: 1px solid var(--border-subtle, #e0e2e6) !important;
+}
+
+[data-theme='dark'] .type-badge-inq,
+.theme-dark .type-badge-inq {
+  background: var(--surface-elevated, #282a2d) !important;
+  color: #8ab4f8 !important;
+  border-color: var(--border-default, #3c4043) !important;
+}
+
+.type-badge-inq code {
+  font-family: inherit;
+  font-size: inherit;
+}
+
 .type-badge {
   font-family: var(--font-family-mono);
   font-size: 10px;
@@ -1002,6 +1059,99 @@ html, body {
   width: 54%;
   display: flex;
   align-items: center;
+}
+
+.control-input-wrapper {
+  width: 100%;
+  max-width: 320px;
+}
+
+.control-input-wrapper .inq-select-container,
+.control-input-wrapper .inq-text-field-container {
+  width: 100%;
+}
+
+.control-switch-wrapper {
+  display: inline-flex;
+  align-items: center;
+}
+
+.viewport-switcher-wrap,
+.canvas-bg-switcher-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-search-box .inq-text-field-container,
+.icons-search-field-inq .inq-text-field-container,
+.tokens-search-field-inq .inq-text-field-container {
+  width: 100%;
+}
+
+.icons-search-field-inq,
+.tokens-search-field-inq {
+  flex: 1;
+  min-width: 240px;
+  display: flex;
+  align-items: center;
+}
+
+.custom-color-picker-wrap {
+  display: inline-flex;
+  align-items: center;
+}
+
+.code-format-wrap {
+  margin: 12px 0 8px;
+}
+
+.variant-pill-btn {
+  border-radius: var(--radius-full, 9999px) !important;
+  font-size: 12px !important;
+  padding: 4px 12px !important;
+}
+
+.variant-pill-btn.reset {
+  color: var(--color-brand-coral, #ea4335) !important;
+  background: rgba(234, 67, 53, 0.08) !important;
+  border: 1px solid rgba(234, 67, 53, 0.25) !important;
+}
+
+.variant-pill-btn.reset:hover {
+  background: rgba(234, 67, 53, 0.16) !important;
+  border-color: rgba(234, 67, 53, 0.4) !important;
+}
+
+[data-theme='dark'] .variant-pill-btn.reset,
+.theme-dark .variant-pill-btn.reset {
+  color: #f28b82 !important;
+  background: rgba(242, 139, 130, 0.12) !important;
+  border-color: rgba(242, 139, 130, 0.3) !important;
+}
+
+/* Color swatch buttons in IconsView */
+.color-pill-btn {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  min-height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.color-pill-btn:hover {
+  transform: scale(1.18);
+}
+
+.color-pill-btn.active {
+  border-color: var(--color-brand-primary, #4285f4);
+  box-shadow: 0 0 0 2px var(--surface-card), 0 0 0 4px var(--color-brand-primary, #4285f4);
+  transform: scale(1.1);
 }
 
 .workbench-select {
@@ -1026,6 +1176,7 @@ html, body {
   color: var(--text-primary);
   outline: none;
 }
+
 
 /* Switch Toggle */
 .toggle-switch {
@@ -3366,22 +3517,8 @@ html, body {
 }
 
 .modal-copy-btn {
-  margin-top: 8px;
+  margin-top: 10px;
   align-self: flex-end;
-  padding: 5px 14px;
-  font-size: 11px;
-  font-weight: 500;
-  border-radius: var(--radius-md, 8px);
-  background: var(--surface-hover);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-primary);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.modal-copy-btn:hover {
-  background: var(--surface-active);
-  border-color: var(--border-default);
 }
 
 /* ==========================================================================
@@ -3627,7 +3764,8 @@ html, body {
   }
 
   /* Hide desktop viewport switcher and show true mobile badge */
-  .viewport-switcher {
+  .viewport-switcher,
+  .viewport-switcher-wrap {
     display: none !important;
   }
 
@@ -3721,27 +3859,80 @@ html, body {
     width: 100%;
   }
 
-  /* Inspector */
+  /* Inspector on mobile - natural height, seamless page scroll without nested trapping */
   .inspector-section {
-    height: auto;
-    min-height: 280px;
-    flex: 1;
-    overflow-y: visible;
+    height: auto !important;
+    min-height: 0 !important;
+    flex: none !important;
+    overflow: visible !important;
   }
 
-  .inspector-tabs {
-    padding: 0 12px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+  .inspector-section .inq-tabs-container {
+    height: auto !important;
+    overflow: visible !important;
   }
 
-  .inspector-tabs::-webkit-scrollbar {
-    display: none;
+  .inspector-section .inq-tablist {
+    padding: 0 12px !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none !important;
   }
 
-  .inspector-content {
-    padding: 14px 12px 24px;
+  .inspector-section .inq-tablist::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .inspector-section .inq-tab-button {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+  }
+
+  .inspector-section .inq-tabpanel {
+    overflow-y: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 14px 12px 40px !important;
+  }
+
+  /* Stacked Controls Knobs on mobile / tablet portrait */
+  .controls-header-row {
+    display: none !important;
+  }
+
+  .control-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 12px 6px !important;
+  }
+
+  .col-prop {
+    width: 100% !important;
+  }
+
+  .col-type {
+    display: none !important;
+  }
+
+  .col-control {
+    width: 100% !important;
+  }
+
+  .control-input-wrapper {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .workbench-select,
+  .workbench-text-input,
+  .number-control-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 38px !important;
+    font-size: 13px !important;
   }
 
   /* Foundations Views (Tokens, Typography, Icons) */
@@ -3757,13 +3948,29 @@ html, body {
     gap: 10px;
   }
 
-  .tokens-search-field {
-    min-width: 100%;
+  .tokens-search-field,
+  .tokens-search-field-inq,
+  .icons-search-field-inq {
+    width: 100% !important;
+    min-width: 100% !important;
+    flex: none !important;
   }
 
-  .tokens-view-switcher {
-    width: 100%;
+  .tokens-view-switcher,
+  .tokens-view-switcher-inq {
+    width: 100% !important;
     justify-content: center;
+  }
+
+  .tokens-view-switcher-inq .inq-segmented-control {
+    width: 100% !important;
+    display: flex !important;
+  }
+
+  .tokens-view-switcher-inq .inq-segmented-control-item {
+    flex: 1 !important;
+    justify-content: center !important;
+    text-align: center !important;
   }
 
   .tokens-cat-row {
@@ -3886,7 +4093,7 @@ html, body {
     display: none;
   }
 
-  /* Modal Dialog */
+  /* Modal Dialog on Mobile */
   .inspector-modal-backdrop {
     padding: 12px;
   }
@@ -3900,52 +4107,52 @@ html, body {
 
   .inspector-modal-body {
     grid-template-columns: 1fr;
-    padding: 16px;
+    padding: 16px 16px 28px;
     gap: 16px;
   }
 
   .inspector-stage {
     height: 140px;
   }
+
+  .stage-controls-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .stage-controls-row .inq-segmented-control {
+    width: 100% !important;
+    display: flex !important;
+  }
+
+  .stage-controls-row .inq-segmented-control-item {
+    flex: 1 !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  .modal-zoom-group {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .modal-zoom-group .inq-slider-container {
+    flex: 1 !important;
+    width: 100% !important;
+  }
+
+  .modal-copy-btn {
+    margin-top: 14px !important;
+    margin-bottom: 8px !important;
+    width: 100% !important;
+    justify-content: center !important;
+  }
 }
 
 @media (max-width: 640px) {
-  .controls-header-row {
-    display: none;
-  }
-
-  .control-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    padding: 12px 6px;
-  }
-
-  .col-prop {
-    width: 100%;
-  }
-
-  .col-type {
-    display: none;
-  }
-
-  .col-control {
-    width: 100%;
-  }
-
-  .workbench-select,
-  .workbench-text-input,
-  .number-control-wrapper {
-    width: 100%;
-    max-width: 100%;
-    min-height: 38px;
-    font-size: 13px;
-  }
-
-  .number-control-wrapper {
-    max-width: 100%;
-  }
-
   .typography-hero-card {
     padding: 16px 12px;
   }

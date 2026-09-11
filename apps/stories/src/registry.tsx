@@ -26,6 +26,8 @@ import { Divider } from '@inq/ui/divider';
 import { Avatar } from '@inq/ui/avatar';
 import { Tabs } from '@inq/ui/tabs';
 import { Skeleton } from '@inq/ui/skeleton';
+import { SegmentedControl } from '@inq/ui/segmented-control';
+import { Textarea } from '@inq/ui/textarea';
 
 // Icons
 import {
@@ -1212,6 +1214,119 @@ export const COMPONENT_STORIES: ComponentStoryMeta[] = [
       { name: 'Paragraph Lines', props: { variant: 'text', lines: 3, animation: 'wave' } },
       { name: 'Rectangular Card', props: { variant: 'rectangular', height: 140, animation: 'wave' } },
       { name: 'Circular Avatar Placeholder', props: { variant: 'circular', width: 48, height: 48, animation: 'pulse' } },
+    ],
+  },
+  {
+    id: 'segmented-control',
+    name: 'SegmentedControl',
+    category: 'Inputs',
+    description: 'Segmented pill switcher for mutually exclusive options with keyboard navigation and accessible radiogroup semantics.',
+    component: (props: any) => {
+      const [val, setVal] = React.useState('overview');
+      return (
+        <SegmentedControl
+          {...props}
+          value={val}
+          onChange={(v) => setVal(v)}
+          options={[
+            { value: 'overview', label: 'Overview' },
+            { value: 'invoices', label: 'Invoices' },
+            { value: 'analytics', label: 'Analytics' },
+            { value: 'settings', label: 'Settings' },
+          ]}
+        />
+      );
+    },
+    controls: {
+      size: {
+        type: 'select',
+        label: 'Size',
+        options: ['sm', 'md', 'lg'],
+        defaultValue: 'md',
+      },
+      fullWidth: { type: 'boolean', label: 'Full Width', defaultValue: false },
+      disabled: { type: 'boolean', label: 'Disabled', defaultValue: false },
+    },
+    defaultProps: {
+      size: 'md',
+      fullWidth: false,
+      disabled: false,
+    },
+    a11y: {
+      role: 'radiogroup',
+      keyboardShortcuts: [
+        { key: 'ArrowRight / ArrowDown', description: 'Moves focus and selection to next segment' },
+        { key: 'ArrowLeft / ArrowUp', description: 'Moves focus and selection to previous segment' },
+        { key: 'Home / End', description: 'Selects first or last segment in group' },
+      ],
+      ariaAttributes: ['role="radiogroup"', 'role="radio"', 'aria-checked="true|false"', 'aria-label'],
+    },
+    variants: [
+      { name: 'Default (md)', props: { size: 'md', fullWidth: false } },
+      { name: 'Compact (sm)', props: { size: 'sm', fullWidth: false } },
+      { name: 'Full Width', props: { size: 'md', fullWidth: true } },
+    ],
+  },
+  {
+    id: 'textarea',
+    name: 'Textarea',
+    category: 'Inputs',
+    description: 'Multi-line text input with character counting, validation feedback, and Google Labs design tokens.',
+    component: (props: any) => {
+      const [val, setVal] = React.useState('Invoice payment terms: Net 30 days. Late remittances subject to 1.5% monthly finance charge.');
+      return (
+        <div style={{ width: '100%', maxWidth: '420px' }}>
+          <Textarea
+            {...props}
+            value={val}
+            onChange={(e) => setVal(e.target.value)}
+          />
+        </div>
+      );
+    },
+    controls: {
+      label: { type: 'text', label: 'Label', defaultValue: 'Invoice Notes' },
+      placeholder: { type: 'text', label: 'Placeholder', defaultValue: 'Add special instructions or terms...' },
+      helperText: { type: 'text', label: 'Helper Text', defaultValue: 'Visible to customer on finalized bill' },
+      error: { type: 'text', label: 'Error', defaultValue: '' },
+      size: {
+        type: 'select',
+        label: 'Size',
+        options: ['sm', 'md', 'lg'],
+        defaultValue: 'md',
+      },
+      variant: {
+        type: 'select',
+        label: 'Variant',
+        options: ['outlined', 'filled'],
+        defaultValue: 'outlined',
+      },
+      rows: { type: 'number', label: 'Rows', min: 2, max: 10, step: 1, defaultValue: 4 },
+      disabled: { type: 'boolean', label: 'Disabled', defaultValue: false },
+      required: { type: 'boolean', label: 'Required', defaultValue: false },
+    },
+    defaultProps: {
+      label: 'Invoice Notes',
+      placeholder: 'Add special instructions or terms...',
+      helperText: 'Visible to customer on finalized bill',
+      error: '',
+      size: 'md',
+      variant: 'outlined',
+      rows: 4,
+      disabled: false,
+      required: false,
+    },
+    a11y: {
+      role: 'textbox',
+      keyboardShortcuts: [
+        { key: 'Tab', description: 'Navigates focus into and out of multi-line editor' },
+      ],
+      ariaAttributes: ['aria-invalid', 'aria-describedby linked to helper or error', 'aria-required'],
+    },
+    variants: [
+      { name: 'Standard Outlined', props: { variant: 'outlined', size: 'md' } },
+      { name: 'Filled Variant', props: { variant: 'filled', size: 'md' } },
+      { name: 'With Error State', props: { error: 'Exceeded maximum length for invoice memo' } },
     ],
   },
 ];

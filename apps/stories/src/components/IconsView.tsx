@@ -4,6 +4,11 @@ import { Button } from '@inq/ui/button';
 import { IconButton } from '@inq/ui/icon-button';
 import { ToolPill } from '@inq/ui/tool-pill';
 import { Badge } from '@inq/ui/badge';
+import { TextInput } from '@inq/ui/text-input';
+import { Slider } from '@inq/ui/slider';
+import { ColorPickerPill } from '@inq/ui/color-picker-pill';
+import { SegmentedControl } from '@inq/ui/segmented-control';
+import { Modal } from '@inq/ui/modal';
 import { CheckIcon, CloseIcon, ZoomInIcon } from '@inq/icons';
 import type { IconItem } from '../types';
 
@@ -83,20 +88,15 @@ export const IconsView: React.FC = () => {
 
       {/* Main View Mode Tabs (Grid vs In-Situ) */}
       <div className="icons-mode-tabs">
-        <button
-          type="button"
-          className={`mode-tab-btn ${activeTab === 'grid' ? 'active' : ''}`}
-          onClick={() => setActiveTab('grid')}
-        >
-          All Icons Grid ({filteredIcons.length})
-        </button>
-        <button
-          type="button"
-          className={`mode-tab-btn ${activeTab === 'insitu' ? 'active' : ''}`}
-          onClick={() => setActiveTab('insitu')}
-        >
-          In-Situ Component Previews
-        </button>
+        <SegmentedControl
+          size="sm"
+          value={activeTab}
+          onChange={(val) => setActiveTab(val as 'grid' | 'insitu')}
+          options={[
+            { value: 'grid', label: `All Icons Grid (${filteredIcons.length})` },
+            { value: 'insitu', label: 'In-Situ Component Previews' },
+          ]}
+        />
       </div>
 
       {/* Filter & Controls Toolbar */}
@@ -104,25 +104,16 @@ export const IconsView: React.FC = () => {
         {/* Row 1: Search, Size Presets, Color Tint, Rotation */}
         <div className="toolbar-main-row">
           {/* Search Box */}
-          <div className="icons-search-wrapper">
-            <span className="search-icon"><ZoomInIcon size={14} /></span>
-            <input
-              type="text"
-              className="icons-search-input"
+          <div className="icons-search-field-inq">
+            <TextInput
+              size="sm"
               placeholder="Search by name, tag or shortcut (e.g. zoom, stamp, undo, trash)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              clearable
+              onClear={() => setSearch('')}
+              prefixIcon={<ZoomInIcon size={14} />}
             />
-            {search && (
-              <button
-                type="button"
-                className="search-clear-btn"
-                onClick={() => setSearch('')}
-                title="Clear search"
-              >
-                <CloseIcon size={12} />
-              </button>
-            )}
           </div>
 
           {/* Sizing Controls */}
@@ -143,18 +134,14 @@ export const IconsView: React.FC = () => {
               </div>
             </div>
             <div className="size-slider-wrapper">
-              <span className="slider-bound-label">14px</span>
-              <input
-                type="range"
-                className="range-input size-slider"
+              <Slider
                 min={14}
                 max={64}
                 step={2}
                 value={iconSize}
-                onChange={(e) => setIconSize(Number(e.target.value))}
-                aria-label="Icon size slider"
+                onChange={(val) => setIconSize(val)}
+                unit="px"
               />
-              <span className="slider-bound-label">64px</span>
             </div>
           </div>
 
@@ -180,24 +167,13 @@ export const IconsView: React.FC = () => {
                 />
               ))}
               {/* Custom Color Input */}
-              <label className="custom-color-picker" title="Custom Hex Color">
-                <input
-                  type="color"
-                  value={iconColor.startsWith('#') ? iconColor : '#4285f4'}
-                  onChange={(e) => setIconColor(e.target.value)}
+              <div className="custom-color-picker-wrap">
+                <ColorPickerPill
+                  color={iconColor.startsWith('#') ? iconColor : '#4285f4'}
+                  onChange={(col) => setIconColor(col)}
+                  title="Custom Hex Color"
                 />
-                <span
-                  className="custom-color-indicator"
-                  style={{
-                    display: 'inline-block',
-                    width: '18px',
-                    height: '18px',
-                    borderRadius: '50%',
-                    border: '1px solid var(--border-subtle)',
-                    background: 'conic-gradient(red, yellow, lime, aqua, blue, magenta, red)',
-                  }}
-                />
-              </label>
+              </div>
             </div>
           </div>
 
@@ -392,150 +368,111 @@ export const IconsView: React.FC = () => {
         </div>
       )}
 
-      {/* MODAL: DEEP ICON INSPECTOR DRAWER */}
+      {/* MODAL: DEEP ICON INSPECTOR */}
       {inspectingIcon && (
-        <div className="icon-inspector-overlay" onClick={() => setInspectingIcon(null)}>
-          <div
-            className="icon-inspector-dialog"
-            onClick={(e) => e.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-label={`Inspect ${inspectingIcon.name}`}
-          >
-            {/* Modal Header */}
-            <div className="inspector-modal-header">
-              <div className="inspector-modal-title-group">
-                <h2 className="inspector-modal-title">{inspectingIcon.name}</h2>
-                <span className="inspector-category-badge">{inspectingIcon.category}</span>
+        <Modal
+          isOpen={Boolean(inspectingIcon)}
+          onClose={() => setInspectingIcon(null)}
+          title={`${inspectingIcon.name} (${inspectingIcon.category})`}
+          size="lg"
+        >
+          <div className="inspector-modal-body">
+            {/* Left Column: Scalable Preview on Multiple Backdrops */}
+            <div className="inspector-preview-col">
+              <div className={`inspector-stage bg-${modalStageBg}`}>
+                <div
+                  className={`inspector-stage-glyph ${isSpinning ? 'animate-spin' : ''}`}
+                  style={{
+                    color: iconColor,
+                    transform: `rotate(${rotation}deg)`,
+                  }}
+                >
+                  {React.createElement(inspectingIcon.component, { size: modalPreviewSize })}
+                </div>
               </div>
-              <button
-                type="button"
-                className="inspector-close-btn"
-                onClick={() => setInspectingIcon(null)}
-                aria-label="Close inspector"
-              >
-                <CloseIcon size={16} />
-              </button>
+
+              {/* Stage Backdrop Switcher */}
+              <div className="stage-controls-row">
+                <SegmentedControl
+                  size="sm"
+                  value={modalStageBg}
+                  onChange={(bg) => setModalStageBg(bg as any)}
+                  options={[
+                    { value: 'canvas', label: 'Canvas' },
+                    { value: 'white', label: 'White' },
+                    { value: 'dark', label: 'Dark' },
+                    { value: 'grid', label: 'Grid' },
+                  ]}
+                />
+
+                {/* Preview Zoom Slider */}
+                <div className="modal-zoom-group">
+                  <Slider
+                    min={24}
+                    max={128}
+                    step={8}
+                    value={modalPreviewSize}
+                    onChange={(val) => setModalPreviewSize(val)}
+                    unit="px"
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Modal Body */}
-            <div className="inspector-modal-body">
-              {/* Left Column: Scalable Preview on Multiple Backdrops */}
-              <div className="inspector-preview-col">
-                <div className={`inspector-stage bg-${modalStageBg}`}>
-                  <div
-                    className={`inspector-stage-glyph ${isSpinning ? 'animate-spin' : ''}`}
-                    style={{
-                      color: iconColor,
-                      transform: `rotate(${rotation}deg)`,
-                    }}
-                  >
-                    {React.createElement(inspectingIcon.component, { size: modalPreviewSize })}
-                  </div>
+            {/* Right Column: Metadata & Code Generator */}
+            <div className="inspector-meta-col">
+              {/* Meta details */}
+              <div className="meta-details-card">
+                <div className="meta-row">
+                  <span className="meta-label">Optical ViewBox:</span>
+                  <code className="meta-val">0 0 24 24</code>
                 </div>
-
-                {/* Stage Backdrop Switcher */}
-                <div className="stage-controls-row">
-                  <div className="bg-buttons-group">
-                    {(['canvas', 'white', 'dark', 'grid'] as const).map((bg) => (
-                      <button
-                        key={bg}
-                        type="button"
-                        className={`bg-toggle-btn ${modalStageBg === bg ? 'active' : ''}`}
-                        onClick={() => setModalStageBg(bg)}
-                      >
-                        {bg}
-                      </button>
+                <div className="meta-row">
+                  <span className="meta-label">Export Package:</span>
+                  <code className="meta-val">@inq/icons</code>
+                </div>
+                <div className="meta-row">
+                  <span className="meta-label">Search Keywords:</span>
+                  <div className="keywords-wrap">
+                    {inspectingIcon.keywords.map((k) => (
+                      <Badge key={k} className="keyword-tag">{k}</Badge>
                     ))}
-                  </div>
-
-                  {/* Preview Zoom Slider */}
-                  <div className="modal-zoom-group">
-                    <span>{modalPreviewSize}px</span>
-                    <input
-                      type="range"
-                      className="range-input small"
-                      min={24}
-                      max={128}
-                      step={8}
-                      value={modalPreviewSize}
-                      onChange={(e) => setModalPreviewSize(Number(e.target.value))}
-                    />
                   </div>
                 </div>
               </div>
 
-              {/* Right Column: Metadata & Code Generator */}
-              <div className="inspector-meta-col">
-                {/* Meta details */}
-                <div className="meta-details-card">
-                  <div className="meta-row">
-                    <span className="meta-label">Optical ViewBox:</span>
-                    <code className="meta-val">0 0 24 24</code>
-                  </div>
-                  <div className="meta-row">
-                    <span className="meta-label">Export Package:</span>
-                    <code className="meta-val">@inq/icons</code>
-                  </div>
-                  <div className="meta-row">
-                    <span className="meta-label">Search Keywords:</span>
-                    <div className="keywords-wrap">
-                      {inspectingIcon.keywords.map((k) => (
-                        <span key={k} className="keyword-tag">{k}</span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+              {/* Code Format Switcher */}
+              <div className="code-format-wrap">
+                <SegmentedControl
+                  size="sm"
+                  value={codeFormat}
+                  onChange={(fmt) => setCodeFormat(fmt as any)}
+                  options={[
+                    { value: 'jsx', label: 'React JSX' },
+                    { value: 'import', label: 'ES Import' },
+                    { value: 'ui', label: '@inq/ui' },
+                    { value: 'svg', label: 'Raw SVG' },
+                  ]}
+                />
+              </div>
 
-                {/* Code Format Switcher */}
-                <div className="code-format-tabs">
-                  <button
-                    type="button"
-                    className={`format-tab ${codeFormat === 'jsx' ? 'active' : ''}`}
-                    onClick={() => setCodeFormat('jsx')}
-                  >
-                    React JSX
-                  </button>
-                  <button
-                    type="button"
-                    className={`format-tab ${codeFormat === 'import' ? 'active' : ''}`}
-                    onClick={() => setCodeFormat('import')}
-                  >
-                    ES Import
-                  </button>
-                  <button
-                    type="button"
-                    className={`format-tab ${codeFormat === 'ui' ? 'active' : ''}`}
-                    onClick={() => setCodeFormat('ui')}
-                  >
-                    @inq/ui Usage
-                  </button>
-                  <button
-                    type="button"
-                    className={`format-tab ${codeFormat === 'svg' ? 'active' : ''}`}
-                    onClick={() => setCodeFormat('svg')}
-                  >
-                    Raw SVG
-                  </button>
-                </div>
-
-                {/* Code Block & Copy Button */}
-                <div className="inspector-code-block-wrapper">
-                  <pre className="inspector-code-block">
-                    <code>{getInspectCodeSnippet(inspectingIcon)}</code>
-                  </pre>
-                  <button
-                    type="button"
-                    className="modal-copy-btn"
-                    onClick={() => handleCopy(getInspectCodeSnippet(inspectingIcon), `${codeFormat.toUpperCase()} snippet`)}
-                  >
-                    Copy Snippet
-                  </button>
-                </div>
+              {/* Code Block & Copy Button */}
+              <div className="inspector-code-block-wrapper">
+                <pre className="inspector-code-block">
+                  <code>{getInspectCodeSnippet(inspectingIcon)}</code>
+                </pre>
+                <Button
+                  size="sm"
+                  variant="primary"
+                  className="modal-copy-btn"
+                  onClick={() => handleCopy(getInspectCodeSnippet(inspectingIcon), `${codeFormat.toUpperCase()} snippet`)}
+                >
+                  Copy Snippet
+                </Button>
               </div>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

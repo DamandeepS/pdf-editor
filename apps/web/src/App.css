@@ -112,9 +112,11 @@ body {
   background: transparent;
   border: 1px solid transparent;
   border-radius: var(--border-radius-sm);
-  padding: var(--spacing-2) var(--spacing-4);
+  padding: var(--spacing-2) var(--spacing-3);
   outline: none;
-  max-width: 220px;
+  min-width: 185px;
+  max-width: 280px;
+  field-sizing: content;
   text-overflow: ellipsis;
   white-space: nowrap;
   transition: all var(--transition-fast);
@@ -165,6 +167,17 @@ body {
 
 .sample-select-wrapper {
   position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.sample-select-prefix {
+  font-size: var(--typography-font-size-xs, 12px);
+  color: var(--text-muted);
+  font-weight: var(--typography-font-weight-medium, 500);
+  margin-right: var(--spacing-2, 8px);
+  user-select: none;
+  flex-shrink: 0;
 }
 
 .sample-select {

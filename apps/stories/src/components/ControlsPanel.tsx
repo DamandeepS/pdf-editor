@@ -1,6 +1,12 @@
 import React from 'react';
 import { useWorkbench } from '../context/WorkbenchContext';
-import type { ComponentStoryMeta, ControlDef } from '../types';
+import type { ComponentStoryMeta } from '../types';
+import { Select } from '@inq/ui/select';
+import { Switch } from '@inq/ui/switch';
+import { TextInput } from '@inq/ui/text-input';
+import { Slider } from '@inq/ui/slider';
+import { ColorPickerPill } from '@inq/ui/color-picker-pill';
+import { Badge } from '@inq/ui/badge';
 
 export interface ControlsPanelProps {
   story: ComponentStoryMeta;
@@ -41,59 +47,59 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ story }) => {
 
               {/* Type Badge */}
               <div className="col-type">
-                <span className="type-badge">{def.type}</span>
+                <Badge className="type-badge-inq">
+                  <code>{def.type}</code>
+                </Badge>
               </div>
 
               {/* Control Input */}
               <div className="col-control">
                 {/* SELECT */}
                 {def.type === 'select' && (
-                  <select
-                    className="workbench-select"
-                    value={currentValue ?? ''}
-                    onChange={(e) => setPropValue(propKey, e.target.value)}
-                  >
-                    {def.options?.map((opt) => (
-                      <option key={String(opt)} value={String(opt)}>
-                        {String(opt)}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="control-input-wrapper">
+                    <Select
+                      size="sm"
+                      value={String(currentValue ?? '')}
+                      onChange={(e) => setPropValue(propKey, e.target.value)}
+                      options={def.options?.map((opt) => ({
+                        value: String(opt),
+                        label: String(opt),
+                      }))}
+                    />
+                  </div>
                 )}
 
                 {/* BOOLEAN */}
                 {def.type === 'boolean' && (
-                  <label className="toggle-switch">
-                    <input
-                      type="checkbox"
+                  <div className="control-switch-wrapper">
+                    <Switch
+                      size="sm"
                       checked={Boolean(currentValue)}
-                      onChange={(e) => setPropValue(propKey, e.target.checked)}
+                      onChange={(checked) => setPropValue(propKey, checked)}
+                      label={currentValue ? 'true' : 'false'}
                     />
-                    <span className="toggle-slider" />
-                    <span className="toggle-status-text">
-                      {currentValue ? 'true' : 'false'}
-                    </span>
-                  </label>
+                  </div>
                 )}
 
                 {/* TEXT */}
                 {def.type === 'text' && (
-                  <input
-                    type="text"
-                    className="workbench-text-input"
-                    value={String(currentValue ?? '')}
-                    onChange={(e) => setPropValue(propKey, e.target.value)}
-                  />
+                  <div className="control-input-wrapper">
+                    <TextInput
+                      size="sm"
+                      value={String(currentValue ?? '')}
+                      onChange={(e) => setPropValue(propKey, e.target.value)}
+                      placeholder={`Enter ${def.label || propKey}`}
+                    />
+                  </div>
                 )}
 
                 {/* COLOR */}
                 {def.type === 'color' && (
                   <div className="color-control-wrapper">
-                    <input
-                      type="color"
-                      className="color-input"
-                      value={String(currentValue ?? '#4285f4')}
-                      onChange={(e) => setPropValue(propKey, e.target.value)}
+                    <ColorPickerPill
+                      color={String(currentValue ?? '#4285f4')}
+                      onChange={(color) => setPropValue(propKey, color)}
+                      title={`Pick color for ${def.label || propKey}`}
                     />
                     <span className="color-value-label">{String(currentValue)}</span>
                   </div>
@@ -102,16 +108,13 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ story }) => {
                 {/* NUMBER */}
                 {def.type === 'number' && (
                   <div className="number-control-wrapper">
-                    <input
-                      type="range"
-                      className="range-input"
+                    <Slider
                       min={def.min ?? 0}
                       max={def.max ?? 100}
                       step={def.step ?? 1}
                       value={Number(currentValue) || 0}
-                      onChange={(e) => setPropValue(propKey, Number(e.target.value))}
+                      onChange={(val) => setPropValue(propKey, val)}
                     />
-                    <span className="number-value-label">{currentValue}</span>
                   </div>
                 )}
               </div>
@@ -122,3 +125,4 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({ story }) => {
     </div>
   );
 };
+

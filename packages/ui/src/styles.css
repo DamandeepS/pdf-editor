@@ -28,3 +28,5 @@
 @import './components/avatar/Avatar.css';
 @import './components/tabs/Tabs.css';
 @import './components/skeleton/Skeleton.css';
+@import './components/segmented-control/SegmentedControl.css';
+@import './components/textarea/Textarea.css';

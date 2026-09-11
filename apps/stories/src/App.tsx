@@ -10,6 +10,11 @@ import { TokensView } from './components/TokensView';
 import { TypographyView } from './components/TypographyView';
 import { IconsView } from './components/IconsView';
 import { SunIcon, MoonIcon, MenuIcon } from '@inq/icons';
+import { BrandBadge } from '@inq/ui/brand-badge';
+import { Badge } from '@inq/ui/badge';
+import { Button } from '@inq/ui/button';
+import { IconButton } from '@inq/ui/icon-button';
+import { Tabs } from '@inq/ui/tabs';
 import './App.css';
 
 export const App: React.FC = () => {
@@ -51,58 +56,44 @@ export const App: React.FC = () => {
       {/* Top Application Bar */}
       <header className="stories-header">
         <div className="header-left">
-          <button
-            type="button"
+          <IconButton
+            size="sm"
             className="mobile-nav-toggle"
             onClick={() => setIsMobileDrawerOpen((prev) => !prev)}
             aria-label="Open Navigation Drawer"
-            title="Browse Components & Foundations"
+            tooltip="Browse Components & Foundations"
           >
             <MenuIcon size={18} />
-          </button>
+          </IconButton>
 
           <div className="brand-badge-group">
-            <div className="google-color-bar">
-              <span className="dot blue" />
-              <span className="dot red" />
-              <span className="dot yellow" />
-              <span className="dot green" />
-            </div>
-            <span className="brand-title">Inq Stories</span>
+            <BrandBadge label="Inq Stories" size="md" />
             <span className="brand-tag">Design System & UI Workbench</span>
           </div>
         </div>
 
         <div className="header-center">
           <div className="stack-badges">
-            <span className="badge-pill">React 19</span>
-            <span className="badge-pill">Vite 8</span>
-            <span className="badge-pill">Turborepo 2</span>
-            <span className="badge-pill">TypeScript 7</span>
+            <Badge className="badge-pill">React 19</Badge>
+            <Badge className="badge-pill">Vite 8</Badge>
+            <Badge className="badge-pill">Turborepo 2</Badge>
+            <Badge className="badge-pill">TypeScript 5.8</Badge>
           </div>
         </div>
 
         <div className="header-right">
           {/* Theme Toggle Button */}
-          <button
+          <Button
             type="button"
-            className="theme-toggle-btn"
+            variant="ghost"
+            size="sm"
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
             title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
             aria-label="Toggle light/dark theme"
+            icon={theme === 'light' ? <MoonIcon size={14} /> : <SunIcon size={14} />}
           >
-            {theme === 'light' ? (
-              <>
-                <MoonIcon size={14} />
-                <span className="theme-label">Dark</span>
-              </>
-            ) : (
-              <>
-                <SunIcon size={14} />
-                <span className="theme-label">Light</span>
-              </>
-            )}
-          </button>
+            <span>{theme === 'light' ? 'Dark' : 'Light'}</span>
+          </Button>
 
           {/* External Link to Inq PDF Editor web app */}
           <a
@@ -149,44 +140,30 @@ export const App: React.FC = () => {
 
               {/* Bottom: Tabs & Inspector Panels */}
               <div className="inspector-section">
-                <div className="inspector-tabs-bar" role="tablist">
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={activeTab === 'controls'}
-                    className={`inspector-tab ${activeTab === 'controls' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('controls')}
-                  >
-                    Controls & Knobs
-                    <span className="tab-badge">
-                      {Object.keys(activeStory.controls).length}
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={activeTab === 'code'}
-                    className={`inspector-tab ${activeTab === 'code' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('code')}
-                  >
-                    JSX Code
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={activeTab === 'a11y'}
-                    className={`inspector-tab ${activeTab === 'a11y' ? 'active' : ''}`}
-                    onClick={() => setActiveTab('a11y')}
-                  >
-                    Accessibility (a11y)
-                  </button>
-                </div>
-
-                <div className="inspector-content">
-                  {activeTab === 'controls' && <ControlsPanel story={activeStory} />}
-                  {activeTab === 'code' && <CodeInspector story={activeStory} />}
-                  {activeTab === 'a11y' && <A11yPanel story={activeStory} />}
-                </div>
+                <Tabs
+                  size="sm"
+                  variant="underline"
+                  activeId={activeTab}
+                  onChange={(id) => setActiveTab(id as 'controls' | 'code' | 'a11y')}
+                  aria-label="Component Inspector Tabs"
+                  tabs={[
+                    {
+                      id: 'controls',
+                      label: `Controls & Knobs (${Object.keys(activeStory.controls).length})`,
+                      content: <ControlsPanel story={activeStory} />,
+                    },
+                    {
+                      id: 'code',
+                      label: 'JSX Code',
+                      content: <CodeInspector story={activeStory} />,
+                    },
+                    {
+                      id: 'a11y',
+                      label: 'Accessibility (a11y)',
+                      content: <A11yPanel story={activeStory} />,
+                    },
+                  ]}
+                />
               </div>
             </div>
           )}

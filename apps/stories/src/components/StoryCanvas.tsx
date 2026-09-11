@@ -1,6 +1,9 @@
 import React from 'react';
 import { useWorkbench } from '../context/WorkbenchContext';
 import type { ComponentStoryMeta, ViewportMode, CanvasBg } from '../types';
+import { SegmentedControl } from '@inq/ui/segmented-control';
+import { Badge } from '@inq/ui/badge';
+import { Button } from '@inq/ui/button';
 
 export interface StoryCanvasProps {
   story: ComponentStoryMeta;
@@ -75,7 +78,7 @@ export const StoryCanvas: React.FC<StoryCanvasProps> = ({ story }) => {
       <div className="story-header">
         <div className="story-title-row">
           <h1 className="story-title">{story.name}</h1>
-          <span className="story-category-badge">{story.category}</span>
+          <Badge className="story-category-badge">{story.category}</Badge>
         </div>
         <p className="story-description">{story.description}</p>
       </div>
@@ -83,39 +86,19 @@ export const StoryCanvas: React.FC<StoryCanvasProps> = ({ story }) => {
       {/* Canvas Toolbar (Viewport, Background & Variant switchers) */}
       <div className="canvas-toolbar">
         {/* Left: Viewport Resizer Toggles (Desktop only) */}
-        <div className="toolbar-button-group viewport-switcher" role="group" aria-label="Viewport Size">
-          <button
-            type="button"
-            className={`toolbar-btn ${viewport === 'desktop' ? 'active' : ''}`}
-            onClick={() => setViewport('desktop')}
-            title="Desktop (100%)"
-          >
-            Desktop (100%)
-          </button>
-          <button
-            type="button"
-            className={`toolbar-btn ${viewport === 'laptop' ? 'active' : ''}`}
-            onClick={() => setViewport('laptop')}
-            title="Laptop (1024px)"
-          >
-            Laptop (1024)
-          </button>
-          <button
-            type="button"
-            className={`toolbar-btn ${viewport === 'tablet' ? 'active' : ''}`}
-            onClick={() => setViewport('tablet')}
-            title="Tablet (768px)"
-          >
-            Tablet (768)
-          </button>
-          <button
-            type="button"
-            className={`toolbar-btn ${viewport === 'mobile' ? 'active' : ''}`}
-            onClick={() => setViewport('mobile')}
-            title="Mobile (375px)"
-          >
-            Mobile (375)
-          </button>
+        <div className="viewport-switcher-wrap">
+          <SegmentedControl
+            size="sm"
+            value={viewport}
+            onChange={(val) => setViewport(val as ViewportMode)}
+            options={[
+              { value: 'desktop', label: 'Desktop (100%)' },
+              { value: 'laptop', label: 'Laptop (1024)' },
+              { value: 'tablet', label: 'Tablet (768)' },
+              { value: 'mobile', label: 'Mobile (375)' },
+            ]}
+            aria-label="Viewport Size"
+          />
         </div>
 
         {/* Mobile Viewport Indicator: Shows true mobile canvas */}
@@ -125,39 +108,19 @@ export const StoryCanvas: React.FC<StoryCanvasProps> = ({ story }) => {
         </div>
 
         {/* Right: Canvas Background Switcher */}
-        <div className="toolbar-button-group" role="group" aria-label="Canvas Background">
-          <button
-            type="button"
-            className={`toolbar-btn ${canvasBg === 'canvas' ? 'active' : ''}`}
-            onClick={() => setCanvasBg('canvas')}
-            title="Theme Background"
-          >
-            Default
-          </button>
-          <button
-            type="button"
-            className={`toolbar-btn ${canvasBg === 'white' ? 'active' : ''}`}
-            onClick={() => setCanvasBg('white')}
-            title="Solid White"
-          >
-            White
-          </button>
-          <button
-            type="button"
-            className={`toolbar-btn ${canvasBg === 'dark' ? 'active' : ''}`}
-            onClick={() => setCanvasBg('dark')}
-            title="Gemini Dark"
-          >
-            Dark
-          </button>
-          <button
-            type="button"
-            className={`toolbar-btn ${canvasBg === 'grid' ? 'active' : ''}`}
-            onClick={() => setCanvasBg('grid')}
-            title="Checkerboard Grid"
-          >
-            Grid
-          </button>
+        <div className="canvas-bg-switcher-wrap">
+          <SegmentedControl
+            size="sm"
+            value={canvasBg}
+            onChange={(val) => setCanvasBg(val as CanvasBg)}
+            options={[
+              { value: 'canvas', label: 'Default' },
+              { value: 'white', label: 'White' },
+              { value: 'dark', label: 'Dark' },
+              { value: 'grid', label: 'Grid' },
+            ]}
+            aria-label="Canvas Background"
+          />
         </div>
       </div>
 
@@ -166,23 +129,25 @@ export const StoryCanvas: React.FC<StoryCanvasProps> = ({ story }) => {
         <div className="variants-row">
           <span className="variants-label">Presets:</span>
           {story.variants.map((v) => (
-            <button
+            <Button
               key={v.name}
-              type="button"
-              className="variant-pill"
+              size="sm"
+              variant="secondary"
+              className="variant-pill-btn"
               onClick={() => handleApplyVariant(v.props)}
             >
               {v.name}
-            </button>
+            </Button>
           ))}
-          <button
-            type="button"
-            className="variant-pill reset"
+          <Button
+            size="sm"
+            variant="ghost"
+            className="variant-pill-btn reset"
             onClick={() => setCurrentProps(story.defaultProps)}
-            title="Reset to default props"
+            title="Reset props to default"
           >
-            Reset
-          </button>
+            Reset Defaults
+          </Button>
         </div>
       )}
 

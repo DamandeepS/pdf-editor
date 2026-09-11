@@ -114,6 +114,14 @@
     "./skeleton": {
       "types": "./dist/components/skeleton/index.d.ts",
       "import": "./dist/components/skeleton/index.js"
+    },
+    "./segmented-control": {
+      "types": "./dist/components/segmented-control/index.d.ts",
+      "import": "./dist/components/segmented-control/index.js"
+    },
+    "./textarea": {
+      "types": "./dist/components/textarea/index.d.ts",
+      "import": "./dist/components/textarea/index.js"
     }
   },
   "scripts": {

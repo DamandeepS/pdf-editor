@@ -123,14 +123,15 @@ export const TopNav: React.FC<TopNavProps> = ({
         />
 
         {/* Sample Document Dropdown */}
-        <div className="sample-select-wrapper">
+        <div className="sample-select-wrapper" title="Load sample bill or document template">
+          <span className="sample-select-prefix">Template:</span>
           <select
             className="sample-select"
             value={currentSampleId}
             onChange={(e) => onSelectSample(e.target.value)}
-            title="Switch Sample PDF"
+            title="Switch Sample Template"
           >
-            <option value="" disabled>Load Sample PDF...</option>
+            <option value="" disabled>Load Template...</option>
             {sampleBills.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.title}
