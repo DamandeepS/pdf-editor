@@ -1639,6 +1639,8 @@ html, body {
   color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tokens-cat-pill:hover {
@@ -3967,6 +3969,7 @@ html, body {
     display: flex !important;
   }
 
+  .tokens-view-switcher-inq .inq-segmented-item,
   .tokens-view-switcher-inq .inq-segmented-control-item {
     flex: 1 !important;
     justify-content: center !important;
@@ -4126,6 +4129,7 @@ html, body {
     display: flex !important;
   }
 
+  .stage-controls-row .inq-segmented-item,
   .stage-controls-row .inq-segmented-control-item {
     flex: 1 !important;
     justify-content: center !important;
@@ -4149,6 +4153,173 @@ html, body {
     margin-bottom: 8px !important;
     width: 100% !important;
     justify-content: center !important;
+  }
+
+  /* Mobile Developer Spec Sheet Table -> High-density Card Layout */
+  .tokens-table-container {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
+  }
+
+  .tokens-spec-table {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .tokens-th-row {
+    display: none !important;
+  }
+
+  .tokens-tr-row {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    grid-template-areas:
+      "name cat"
+      "var action"
+      "val val"
+      "desc desc" !important;
+    row-gap: 8px !important;
+    column-gap: 10px !important;
+    align-items: center !important;
+    padding: 14px 16px !important;
+    background: var(--surface-card) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-md, 8px) !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  }
+
+  .tokens-tr-row:last-child {
+    border-bottom: 1px solid var(--border-subtle) !important;
+  }
+
+  .tokens-tr-row .td-name {
+    grid-area: name !important;
+    width: auto !important;
+  }
+
+  .tokens-tr-row .table-token-name {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+    display: block !important;
+  }
+
+  .tokens-tr-row .td-cat {
+    grid-area: cat !important;
+    width: auto !important;
+    justify-self: end !important;
+  }
+
+  .tokens-tr-row .table-cat-badge {
+    font-size: 10px !important;
+    padding: 2px 8px !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  .tokens-tr-row .td-var {
+    grid-area: var !important;
+    width: auto !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .tokens-tr-row .table-var-code {
+    font-family: var(--font-family-mono) !important;
+    font-size: 12px !important;
+    color: var(--color-brand-primary, #4285f4) !important;
+    word-break: break-all !important;
+    display: block !important;
+  }
+
+  .tokens-tr-row .td-action {
+    grid-area: action !important;
+    width: auto !important;
+    justify-self: end !important;
+  }
+
+  .tokens-tr-row .td-action .copy-chip-btn {
+    padding: 5px 12px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    border-radius: var(--radius-sm, 6px) !important;
+  }
+
+  .tokens-tr-row .td-val {
+    grid-area: val !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 8px 12px !important;
+    background: var(--surface-canvas) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-sm, 6px) !important;
+    box-sizing: border-box !important;
+  }
+
+  .tokens-tr-row .td-val code {
+    font-family: var(--font-family-mono) !important;
+    font-size: 12px !important;
+    color: var(--text-primary) !important;
+    word-break: break-word !important;
+  }
+
+  .tokens-tr-row .table-color-chip {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+
+  .tokens-tr-row .chip-dot {
+    width: 16px !important;
+    height: 16px !important;
+    flex-shrink: 0 !important;
+    border-radius: 50% !important;
+    border: 1px solid var(--border-subtle) !important;
+  }
+
+  .tokens-tr-row .td-desc {
+    grid-area: desc !important;
+    width: 100% !important;
+  }
+
+  .tokens-tr-row .table-desc-text {
+    font-size: 12px !important;
+    color: var(--text-secondary) !important;
+    line-height: 1.45 !important;
+  }
+
+  /* Type Scale Specimen Table on Mobile */
+  .type-specimen-table {
+    border-radius: var(--radius-md, 8px) !important;
+  }
+
+  .specimen-header-row {
+    display: none !important;
+  }
+
+  .specimen-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    padding: 14px 16px !important;
+  }
+
+  .col-token {
+    width: 100% !important;
+  }
+
+  .col-metrics {
+    width: 100% !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  .col-sample {
+    width: 100% !important;
+    padding-top: 4px !important;
   }
 }
 

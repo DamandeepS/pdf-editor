@@ -133,6 +133,7 @@ export const TokensView: React.FC = () => {
           <div className="tokens-view-switcher-inq">
             <SegmentedControl
               size="sm"
+              fullWidth
               value={viewMode}
               onChange={(val) => setViewMode(val as 'cards' | 'table')}
               options={[
@@ -471,7 +472,7 @@ export const TokensView: React.FC = () => {
                   <code className="table-var-code">{t.cssVariable}</code>
                 </div>
                 <div className="td-col td-val">
-                  {t.category === 'brand' ? (
+                  {t.category === 'brand' || t.category === 'semantic' ? (
                     <div className="table-color-chip">
                       <span className="chip-dot" style={{ backgroundColor: `var(${t.cssVariable})` }} />
                       <code>{t.value}</code>
