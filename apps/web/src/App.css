@@ -14,6 +14,7 @@
   padding: 0;
 }
 
+html,
 body {
   font-family: var(--font-sans);
   background-color: var(--surface-canvas);
@@ -21,6 +22,7 @@ body {
   min-height: 100vh;
   overflow: hidden;
   user-select: none;
+  touch-action: manipulation;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -32,6 +34,7 @@ body {
   width: 100vw;
   overflow: hidden;
   background-color: var(--surface-canvas);
+  touch-action: manipulation;
   transition: background-color var(--transition-normal);
 }
 
@@ -350,7 +353,9 @@ body {
   justify-content: safe center;
   padding: var(--spacing-10);
   background: radial-gradient(circle, var(--surface-canvas) 0%, rgba(0, 0, 0, 0.03) 100%);
+  touch-action: pan-x pan-y;
   -webkit-overflow-scrolling: touch;
+  -webkit-touch-callout: none;
 }
 
 .canvas-container {
@@ -360,6 +365,7 @@ body {
   border-radius: 2px;
   background-color: #ffffff;
   transition: transform var(--transition-fast);
+  touch-action: pan-x pan-y;
   flex-shrink: 0;
 }
 

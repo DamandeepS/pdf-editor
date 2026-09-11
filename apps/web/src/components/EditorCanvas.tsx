@@ -43,6 +43,7 @@ export interface EditorCanvasProps {
   pdfDocument: PDFDocumentProxy | null;
   currentPage: number;
   scale: number;
+  onScaleChange?: (scale: number | ((prev: number) => number)) => void;
   activeTool: EditorTool;
   pageModifications: PageModifications;
   onUpdatePageModifications: (updater: (prev: PageModifications) => PageModifications) => void;
@@ -54,6 +55,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
   pdfDocument,
   currentPage,
   scale,
+  onScaleChange,
   activeTool,
   pageModifications,
   onUpdatePageModifications,
@@ -88,8 +90,167 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
     initBaselineY: number;
   } | null>(null);
   const stampFileInputRef = useRef<HTMLInputElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+
+  const scaleRef = useRef(scale);
+  scaleRef.current = scale;
+  const onScaleChangeRef = useRef(onScaleChange);
+  onScaleChangeRef.current = onScaleChange;
 
   const renderTaskRef = useRef<any>(null);
+
+  // Dedicated pinch-to-zoom on canvas container (zooms ONLY PDF, not whole site)
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    let initialPinchDistance: number | null = null;
+    let initialPinchScale: number = scaleRef.current;
+    let pinchCenter: { x: number; y: number } | null = null;
+    let initialScroll: { left: number; top: number } | null = null;
+
+    const getTouchDistance = (t1: Touch, t2: Touch) => {
+      return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+    };
+
+    const getTouchMidpoint = (t1: Touch, t2: Touch) => {
+      return {
+        x: (t1.clientX + t2.clientX) / 2,
+        y: (t1.clientY + t2.clientY) / 2,
+      };
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        initialPinchDistance = getTouchDistance(e.touches[0], e.touches[1]);
+        initialPinchScale = scaleRef.current;
+        pinchCenter = getTouchMidpoint(e.touches[0], e.touches[1]);
+        initialScroll = { left: viewport.scrollLeft, top: viewport.scrollTop };
+
+        // Cancel any active drag or whiteout creation when pinch begins
+        setDraggingStampId(null);
+        setDraggingTextId(null);
+        setIsDrawingWhiteout(false);
+        setCurrentWhiteoutRect(null);
+      } else {
+        initialPinchDistance = null;
+        pinchCenter = null;
+        initialScroll = null;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (
+        e.touches.length === 2 &&
+        initialPinchDistance &&
+        initialPinchDistance > 0 &&
+        initialScroll &&
+        pinchCenter
+      ) {
+        // Stop browser default whole-page viewport scaling
+        e.preventDefault();
+
+        const currentDistance = getTouchDistance(e.touches[0], e.touches[1]);
+        if (currentDistance <= 0) return;
+
+        const ratio = currentDistance / initialPinchDistance;
+        const targetScale = Math.min(
+          3.0,
+          Math.max(0.4, Math.round(initialPinchScale * ratio * 100) / 100)
+        );
+
+        if (onScaleChangeRef.current && Math.abs(targetScale - scaleRef.current) >= 0.01) {
+          const rect = viewport.getBoundingClientRect();
+          const focalX = pinchCenter.x - rect.left;
+          const focalY = pinchCenter.y - rect.top;
+          const scaleDelta = targetScale / scaleRef.current;
+
+          onScaleChangeRef.current(targetScale);
+
+          viewport.scrollLeft = (focalX + initialScroll.left) * scaleDelta - focalX;
+          viewport.scrollTop = (focalY + initialScroll.top) * scaleDelta - focalY;
+        }
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) {
+        initialPinchDistance = null;
+        pinchCenter = null;
+        initialScroll = null;
+      }
+    };
+
+    // Trackpad Pinch (Mac) & Ctrl + Mouse Wheel Zoom within canvas viewport
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) {
+        e.preventDefault();
+        const zoomFactor = Math.exp(-e.deltaY * 0.01);
+        const targetScale = Math.min(
+          3.0,
+          Math.max(0.4, Math.round(scaleRef.current * zoomFactor * 100) / 100)
+        );
+
+        if (onScaleChangeRef.current && targetScale !== scaleRef.current) {
+          const rect = viewport.getBoundingClientRect();
+          const focalX = e.clientX - rect.left;
+          const focalY = e.clientY - rect.top;
+          const scaleDelta = targetScale / scaleRef.current;
+
+          onScaleChangeRef.current(targetScale);
+
+          viewport.scrollLeft = (focalX + viewport.scrollLeft) * scaleDelta - focalX;
+          viewport.scrollTop = (focalY + viewport.scrollTop) * scaleDelta - focalY;
+        }
+      }
+    };
+
+    // Safari iOS gesture events for native pinch smoothness
+    let gestureStartScale = scaleRef.current;
+    const handleGestureStart = (e: any) => {
+      e.preventDefault();
+      gestureStartScale = scaleRef.current;
+    };
+
+    const handleGestureChange = (e: any) => {
+      e.preventDefault();
+      if (typeof e.scale === 'number' && onScaleChangeRef.current) {
+        const targetScale = Math.min(
+          3.0,
+          Math.max(0.4, Math.round(gestureStartScale * e.scale * 100) / 100)
+        );
+        if (targetScale !== scaleRef.current) {
+          onScaleChangeRef.current(targetScale);
+        }
+      }
+    };
+
+    const handleGestureEnd = (e: any) => {
+      e.preventDefault();
+    };
+
+    viewport.addEventListener('touchstart', handleTouchStart, { passive: true, capture: true });
+    viewport.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
+    viewport.addEventListener('touchend', handleTouchEnd, { passive: true, capture: true });
+    viewport.addEventListener('touchcancel', handleTouchEnd, { passive: true, capture: true });
+    viewport.addEventListener('wheel', handleWheel, { passive: false });
+
+    viewport.addEventListener('gesturestart', handleGestureStart, { passive: false });
+    viewport.addEventListener('gesturechange', handleGestureChange, { passive: false });
+    viewport.addEventListener('gestureend', handleGestureEnd, { passive: false });
+
+    return () => {
+      viewport.removeEventListener('touchstart', handleTouchStart, { capture: true });
+      viewport.removeEventListener('touchmove', handleTouchMove, { capture: true });
+      viewport.removeEventListener('touchend', handleTouchEnd, { capture: true });
+      viewport.removeEventListener('touchcancel', handleTouchEnd, { capture: true });
+      viewport.removeEventListener('wheel', handleWheel);
+
+      viewport.removeEventListener('gesturestart', handleGestureStart);
+      viewport.removeEventListener('gesturechange', handleGestureChange);
+      viewport.removeEventListener('gestureend', handleGestureEnd);
+    };
+  }, []);
 
   // Render current PDF page whenever document, page, or scale changes
   useEffect(() => {
@@ -311,6 +472,37 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
     setIsDrawingWhiteout(true);
     setDrawStart({ x, y });
     setCurrentWhiteoutRect({ x, y, w: 0, h: 0 });
+  };
+
+  const handleTouchStartContainer = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (e.touches.length !== 1 || activeTool !== 'whiteout') return;
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const touch = e.touches[0];
+    const x = touch.clientX - rect.left;
+    const y = touch.clientY - rect.top;
+    setIsDrawingWhiteout(true);
+    setDrawStart({ x, y });
+    setCurrentWhiteoutRect({ x, y, w: 0, h: 0 });
+  };
+
+  const handleTouchMoveContainer = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!isDrawingWhiteout || !drawStart || !containerRef.current || e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    const rect = containerRef.current.getBoundingClientRect();
+    const currentX = Math.max(0, Math.min(pageSize.width, touch.clientX - rect.left));
+    const currentY = Math.max(0, Math.min(pageSize.height, touch.clientY - rect.top));
+
+    const x = Math.min(drawStart.x, currentX);
+    const y = Math.min(drawStart.y, currentY);
+    const w = Math.abs(currentX - drawStart.x);
+    const h = Math.abs(currentY - drawStart.y);
+
+    setCurrentWhiteoutRect({ x, y, w, h });
+  };
+
+  const handleTouchEndContainer = () => {
+    handleMouseUp();
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -679,6 +871,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
 
   return (
     <div
+      ref={viewportRef}
       className="canvas-viewport"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -697,6 +890,9 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        onTouchStart={handleTouchStartContainer}
+        onTouchMove={handleTouchMoveContainer}
+        onTouchEnd={handleTouchEndContainer}
       >
         <canvas ref={canvasRef} className="pdf-canvas" />
 

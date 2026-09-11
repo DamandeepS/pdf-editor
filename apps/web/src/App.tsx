@@ -262,6 +262,29 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleUndo, handleRedo]);
 
+  // Prevent browser viewport zooming the whole site outside the canvas viewport
+  useEffect(() => {
+    const handleGestureStart = (e: Event) => {
+      if (!document.querySelector('.canvas-viewport')?.contains(e.target as Node)) {
+        e.preventDefault();
+      }
+    };
+
+    const handleWheel = (e: WheelEvent) => {
+      if (e.ctrlKey && !document.querySelector('.canvas-viewport')?.contains(e.target as Node)) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('gesturestart', handleGestureStart, { passive: false });
+    window.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      document.removeEventListener('gesturestart', handleGestureStart);
+      window.removeEventListener('wheel', handleWheel);
+    };
+  }, []);
+
   // Export PDF: Calls tRPC export with client-side fallback
   const handleExport = async () => {
     if (!pdfBytes || pdfBytes.byteLength === 0 || pdfBytes.buffer?.byteLength === 0) {
@@ -385,6 +408,7 @@ export const App: React.FC = () => {
           pdfDocument={pdfDocument}
           currentPage={currentPage}
           scale={scale}
+          onScaleChange={setScale}
           activeTool={activeTool}
           pageModifications={currentPageModifications}
           onUpdatePageModifications={updateCurrentPageModifications}
