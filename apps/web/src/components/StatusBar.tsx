@@ -22,23 +22,25 @@ export const StatusBar: React.FC<StatusBarProps> = ({
       <div className="status-left">
         <span>Page {currentPage} of {Math.max(1, totalPages)}</span>
         <span>•</span>
-        <span>Zoom: {Math.round(scale * 100)}%</span>
-        <span>•</span>
-        <span>{totalEdits === 0 ? 'No changes' : `${totalEdits} vector modification${totalEdits > 1 ? 's' : ''}`}</span>
+        <span className="status-zoom-desktop">Zoom: {Math.round(scale * 100)}%</span>
+        <span className="status-zoom-mobile">{Math.round(scale * 100)}%</span>
+        <span className="status-edits-desktop">
+          <span>•</span>
+          <span>{totalEdits === 0 ? 'No changes' : `${totalEdits} vector modification${totalEdits > 1 ? 's' : ''}`}</span>
+        </span>
+        {totalEdits > 0 && (
+          <span className="status-edits-mobile">
+            <span>•</span>
+            <span>{totalEdits} edit{totalEdits > 1 ? 's' : ''}</span>
+          </span>
+        )}
       </div>
 
       <div className="status-right">
         {onOpenPrivacy && (
           <button
             type="button"
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: 'var(--text-secondary)',
-              fontSize: '11px',
-              textDecoration: 'underline',
-            }}
+            className="status-link-btn"
             onClick={onOpenPrivacy}
             title="View Privacy Policy & Data Ethics"
           >
@@ -50,11 +52,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
           href={import.meta.env.DEV ? 'http://localhost:3001' : '/design-system'}
           target="_blank"
           rel="noopener noreferrer"
-          style={{
-            color: 'var(--text-secondary)',
-            fontSize: '11px',
-            textDecoration: 'underline',
-          }}
+          className="status-link"
           title="Explore Inq UI Components & Design Tokens Workbench"
         >
           Design System ↗
@@ -64,11 +62,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
           href="https://github.com/DamandeepS/pdf-editor"
           target="_blank"
           rel="noopener noreferrer"
-          style={{
-            color: 'var(--text-secondary)',
-            fontSize: '11px',
-            textDecoration: 'underline',
-          }}
+          className="status-link"
           title="View source repository on GitHub"
         >
           GitHub ↗
@@ -76,15 +70,9 @@ export const StatusBar: React.FC<StatusBarProps> = ({
 
         <button
           type="button"
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            color: 'var(--color-brand-primary)',
-            fontSize: '11px',
-            textDecoration: 'underline',
-          }}
+          className="status-shortcut-btn"
           onClick={onOpenShortcuts}
+          title="Keyboard shortcuts (⌘/)"
         >
           Shortcuts (⌘/)
         </button>

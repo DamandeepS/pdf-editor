@@ -631,6 +631,53 @@ body {
   gap: var(--spacing-6);
 }
 
+.status-link-btn,
+.status-shortcut-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+
+.status-link-btn,
+.status-link {
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-decoration: underline;
+  transition: color var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+.status-link-btn:hover,
+.status-link:hover {
+  color: var(--text-primary);
+}
+
+.status-shortcut-btn {
+  color: var(--color-brand-primary);
+  font-size: 11px;
+  text-decoration: underline;
+  transition: opacity var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+.status-shortcut-btn:hover {
+  opacity: 0.85;
+}
+
+.status-zoom-mobile {
+  display: none;
+}
+
+.status-edits-desktop {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-6);
+}
+
+.status-edits-mobile {
+  display: none;
+}
+
 /* =========================================
    SHORTCUTS MODAL
    ========================================= */
@@ -840,7 +887,7 @@ body {
   .status-bar {
     padding: 0 var(--spacing-3);
     font-size: 11px;
-    gap: var(--spacing-3);
+    gap: var(--spacing-2);
     overflow-x: auto;
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
@@ -858,5 +905,27 @@ body {
   .status-right {
     gap: var(--spacing-3);
     flex-shrink: 0;
+  }
+
+  .status-zoom-desktop {
+    display: none !important;
+  }
+
+  .status-zoom-mobile {
+    display: inline !important;
+  }
+
+  .status-edits-desktop {
+    display: none !important;
+  }
+
+  .status-edits-mobile {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-2);
+  }
+
+  .status-shortcut-btn {
+    display: none !important;
   }
 }
