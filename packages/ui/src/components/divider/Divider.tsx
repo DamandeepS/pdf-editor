@@ -5,6 +5,7 @@ export interface DividerProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'subtle' | 'default' | 'dashed';
   label?: React.ReactNode;
   labelPosition?: 'left' | 'center' | 'right';
+  ref?: React.Ref<HTMLDivElement>;
 }
 
 export const Divider: React.FC<DividerProps> = ({
@@ -13,6 +14,7 @@ export const Divider: React.FC<DividerProps> = ({
   label,
   labelPosition = 'center',
   className = '',
+  ref,
   ...rest
 }) => {
   const isHorizontal = orientation === 'horizontal';
@@ -20,6 +22,7 @@ export const Divider: React.FC<DividerProps> = ({
 
   return (
     <div
+      ref={ref}
       role="separator"
       aria-orientation={orientation}
       className={`inq-divider inq-divider--${orientation} inq-divider--${variant} ${hasLabel ? `inq-divider--with-label inq-divider--label-${labelPosition}` : ''} ${className}`.trim()}
@@ -37,4 +40,3 @@ export const Divider: React.FC<DividerProps> = ({
 };
 
 Divider.displayName = 'Divider';
-

@@ -9,6 +9,7 @@ export interface ProgressBarProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'primary' | 'success' | 'warning' | 'danger' | 'brand';
   label?: string;
   showValue?: boolean;
+  ref?: React.Ref<HTMLDivElement>;
 }
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
@@ -22,6 +23,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   showValue = false,
   className = '',
   'aria-label': customAriaLabel,
+  ref,
   ...rest
 }) => {
   const isIndeterminate = indeterminate || value === undefined;
@@ -29,7 +31,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   const percentage = clampedValue !== undefined ? Math.round(((clampedValue - min) / (max - min)) * 100) : 0;
 
   return (
-    <div className={`inq-progress-wrapper inq-progress--${size} inq-progress--${variant} ${isIndeterminate ? 'is-indeterminate' : ''} ${className}`.trim()}>
+    <div ref={ref} className={`inq-progress-wrapper inq-progress--${size} inq-progress--${variant} ${isIndeterminate ? 'is-indeterminate' : ''} ${className}`.trim()}>
       {(label || showValue) && (
         <div className="inq-progress-header">
           {label && <span className="inq-progress-label">{label}</span>}

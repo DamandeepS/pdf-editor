@@ -6,6 +6,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   icon?: React.ReactNode;
   iconRight?: React.ReactNode;
   loading?: boolean;
+  ref?: React.Ref<HTMLButtonElement>;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -17,16 +18,19 @@ export const Button: React.FC<ButtonProps> = ({
   loading = false,
   className = '',
   disabled,
+  ref,
   ...rest
 }) => {
   return (
     <button
+      ref={ref}
       className={`inq-btn inq-btn--${variant} inq-btn--${size} ${className}`}
       disabled={disabled || loading}
+      aria-busy={loading}
       {...rest}
     >
       {loading ? (
-        <span className="inq-btn-spinner" />
+        <span className="inq-btn-spinner" aria-hidden="true" />
       ) : (
         <>
           {icon && <span className="inq-btn-icon">{icon}</span>}
@@ -37,3 +41,5 @@ export const Button: React.FC<ButtonProps> = ({
     </button>
   );
 };
+
+Button.displayName = 'Button';

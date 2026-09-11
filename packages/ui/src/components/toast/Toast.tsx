@@ -13,6 +13,7 @@ export interface ToastProps {
   actionLabel?: string;
   onAction?: () => void;
   className?: string;
+  ref?: React.Ref<HTMLDivElement>;
 }
 
 const variantIcons: Record<ToastVariant, React.ReactNode> = {
@@ -32,6 +33,7 @@ export const Toast: React.FC<ToastProps> = ({
   actionLabel,
   onAction,
   className = '',
+  ref,
 }) => {
   useEffect(() => {
     if (!duration || duration <= 0 || !onClose) return;
@@ -47,6 +49,7 @@ export const Toast: React.FC<ToastProps> = ({
 
   return (
     <div
+      ref={ref}
       id={id}
       role={isAlert ? 'alert' : 'status'}
       aria-live={variant === 'danger' ? 'assertive' : 'polite'}

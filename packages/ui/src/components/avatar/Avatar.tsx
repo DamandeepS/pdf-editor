@@ -11,6 +11,7 @@ export interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   shape?: 'circle' | 'rounded';
   status?: AvatarStatus;
   fallbackIcon?: React.ReactNode;
+  ref?: React.Ref<HTMLDivElement>;
 }
 
 const getInitials = (name?: string): string => {
@@ -31,6 +32,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   status,
   fallbackIcon,
   className = '',
+  ref,
   ...rest
 }) => {
   const [imgFailed, setImgFailed] = useState(false);
@@ -40,6 +42,7 @@ export const Avatar: React.FC<AvatarProps> = ({
 
   return (
     <div
+      ref={ref}
       role={hasImage ? undefined : 'img'}
       aria-label={hasImage ? undefined : accessibleLabel}
       className={`inq-avatar inq-avatar--${size} inq-avatar--${shape} ${className}`.trim()}
@@ -88,4 +91,3 @@ export const Avatar: React.FC<AvatarProps> = ({
 };
 
 Avatar.displayName = 'Avatar';
-

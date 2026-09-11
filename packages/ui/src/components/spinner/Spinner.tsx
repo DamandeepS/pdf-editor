@@ -5,6 +5,7 @@ export interface SpinnerProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'brand' | 'primary' | 'neutral' | 'white';
   label?: React.ReactNode;
   labelPosition?: 'right' | 'bottom';
+  ref?: React.Ref<HTMLDivElement>;
 }
 
 const sizePixels: Record<'xs' | 'sm' | 'md' | 'lg' | 'xl', number> = {
@@ -22,6 +23,7 @@ export const Spinner: React.FC<SpinnerProps> = ({
   labelPosition = 'right',
   className = '',
   'aria-label': customAriaLabel,
+  ref,
   ...rest
 }) => {
   const px = sizePixels[size];
@@ -31,6 +33,7 @@ export const Spinner: React.FC<SpinnerProps> = ({
 
   return (
     <div
+      ref={ref}
       role="progressbar"
       aria-busy="true"
       aria-label={customAriaLabel || (typeof label === 'string' ? label : 'Loading')}

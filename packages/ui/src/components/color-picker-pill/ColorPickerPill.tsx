@@ -7,6 +7,7 @@ export interface ColorPickerPillProps {
   presetColors?: string[];
   className?: string;
   title?: string;
+  ref?: React.Ref<HTMLDivElement>;
 }
 
 const DEFAULT_PRESETS = [
@@ -28,10 +29,11 @@ export const ColorPickerPill: React.FC<ColorPickerPillProps> = ({
   presetColors = DEFAULT_PRESETS,
   className = '',
   title = 'Select color',
+  ref,
 }) => {
   const [open, setOpen] = useState(false);
   const [hexVal, setHexVal] = useState(color);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const internalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setHexVal(color);
@@ -39,15 +41,24 @@ export const ColorPickerPill: React.FC<ColorPickerPillProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (internalRef.current && !internalRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+      }
+    };
+
     if (open) {
       document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('keydown', handleKeyDown);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [open]);
 
@@ -70,7 +81,18 @@ export const ColorPickerPill: React.FC<ColorPickerPillProps> = ({
   const hasNativeEyeDropper = typeof window !== 'undefined' && 'EyeDropper' in window;
 
   return (
-    <div ref={containerRef} style={{ position: 'relative', display: 'inline-flex' }} className={className}>
+    <div
+      ref={(node) => {
+        (internalRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        if (typeof ref === 'function') {
+          ref(node);
+        } else if (ref) {
+          (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        }
+      }}
+      style={{ position: 'relative', display: 'inline-flex' }}
+      className={className}
+    >
       <button
         type="button"
         className="inq-color-picker-trigger"
@@ -78,10 +100,12 @@ export const ColorPickerPill: React.FC<ColorPickerPillProps> = ({
         onClick={() => setOpen(!open)}
         title={title}
         aria-label={title}
+        aria-haspopup="dialog"
+        aria-expanded={open}
       />
 
       {open && (
-        <div className="inq-color-popover" role="dialog" aria-label="Color Palette">
+        <div className="inq-color-popover" role="dialog" aria-modal="true" aria-label="Color Palette">
           <div className="inq-color-grid">
             {presetColors.map((c) => (
               <button
@@ -150,3 +174,5 @@ export const ColorPickerPill: React.FC<ColorPickerPillProps> = ({
     </div>
   );
 };
+
+ColorPickerPill.displayName = 'ColorPickerPill';

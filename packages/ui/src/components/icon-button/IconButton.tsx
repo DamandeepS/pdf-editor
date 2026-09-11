@@ -4,6 +4,7 @@ export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEl
   active?: boolean;
   tooltip?: string;
   size?: 'sm' | 'md' | 'lg';
+  ref?: React.Ref<HTMLButtonElement>;
 }
 
 export const IconButton: React.FC<IconButtonProps> = ({
@@ -12,15 +13,21 @@ export const IconButton: React.FC<IconButtonProps> = ({
   tooltip,
   size = 'md',
   className = '',
+  ref,
   ...rest
 }) => {
   return (
     <button
-      className={`inq-icon-btn ${active ? 'inq-icon-btn--active' : ''} inq-icon-btn--${size} ${className}`}
+      ref={ref}
+      className={`inq-icon-btn ${active ? 'inq-icon-btn--active' : ''} inq-icon-btn--${size} ${className}`.trim()}
       title={tooltip}
+      aria-label={rest['aria-label'] || tooltip}
+      aria-pressed={active ? true : undefined}
       {...rest}
     >
       {children}
     </button>
   );
 };
+
+IconButton.displayName = 'IconButton';

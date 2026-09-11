@@ -9,6 +9,7 @@ export interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   width?: string | number;
   height?: string | number;
   lines?: number;
+  ref?: React.Ref<HTMLDivElement>;
 }
 
 export const Skeleton: React.FC<SkeletonProps> = ({
@@ -19,6 +20,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   lines = 1,
   className = '',
   style,
+  ref,
   ...rest
 }) => {
   const customStyle: React.CSSProperties = {
@@ -30,6 +32,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   if (variant === 'text' && lines > 1) {
     return (
       <div
+        ref={ref}
         className={`inq-skeleton-group ${className}`.trim()}
         aria-hidden="true"
         {...rest}
@@ -47,6 +50,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 
   return (
     <div
+      ref={ref}
       aria-hidden="true"
       className={`inq-skeleton inq-skeleton--${variant} ${animation ? `inq-skeleton--${animation}` : ''} ${className}`.trim()}
       style={customStyle}

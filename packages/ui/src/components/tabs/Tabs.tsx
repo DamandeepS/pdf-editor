@@ -19,6 +19,7 @@ export interface TabsProps {
   'aria-label'?: string;
   className?: string;
   children?: React.ReactNode;
+  ref?: React.Ref<HTMLDivElement>;
 }
 
 export const Tabs: React.FC<TabsProps> = ({
@@ -31,6 +32,7 @@ export const Tabs: React.FC<TabsProps> = ({
   size = 'md',
   'aria-label': ariaLabel = 'Navigation Tabs',
   className = '',
+  ref,
 }) => {
   const generatedId = useId();
   const tabsPrefix = `inq-tabs-${generatedId.replace(/:/g, '')}`;
@@ -92,7 +94,7 @@ export const Tabs: React.FC<TabsProps> = ({
   const activeTab = tabs.find((t) => t.id === currentId);
 
   return (
-    <div className={`inq-tabs-container inq-tabs--${orientation} inq-tabs--${variant} inq-tabs--${size} ${className}`.trim()}>
+    <div ref={ref} className={`inq-tabs-container inq-tabs--${orientation} inq-tabs--${variant} inq-tabs--${size} ${className}`.trim()}>
       <div
         role="tablist"
         aria-label={ariaLabel}

@@ -17,6 +17,7 @@ export interface AccordionProps {
   className?: string;
   children?: React.ReactNode;
   onChange?: (expandedIds: string[]) => void;
+  ref?: React.Ref<HTMLDivElement>;
 }
 
 interface AccordionContextType {
@@ -33,6 +34,7 @@ export interface AccordionItemProps {
   disabled?: boolean;
   children: React.ReactNode;
   className?: string;
+  ref?: React.Ref<HTMLDivElement>;
 }
 
 export const AccordionItem: React.FC<AccordionItemProps> = ({
@@ -41,6 +43,7 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
   disabled = false,
   children,
   className = '',
+  ref,
 }) => {
   const context = React.useContext(AccordionContext);
   const headerId = `inq-accordion-header-${id}`;
@@ -54,7 +57,7 @@ export const AccordionItem: React.FC<AccordionItemProps> = ({
   };
 
   return (
-    <div className={`inq-accordion-item ${isExpanded ? 'is-expanded' : ''} ${disabled ? 'is-disabled' : ''} ${className}`.trim()}>
+    <div ref={ref} className={`inq-accordion-item ${isExpanded ? 'is-expanded' : ''} ${disabled ? 'is-disabled' : ''} ${className}`.trim()}>
       <h3 className="inq-accordion-heading">
         <button
           type="button"
@@ -96,6 +99,7 @@ export const Accordion: React.FC<AccordionProps> = ({
   className = '',
   children,
   onChange,
+  ref,
 }) => {
   const [uncontrolledIds, setUncontrolledIds] = useState<string[]>(defaultExpandedIds);
   const isControlled = controlledIds !== undefined;
@@ -121,7 +125,7 @@ export const Accordion: React.FC<AccordionProps> = ({
 
   return (
     <AccordionContext.Provider value={{ expandedIds: activeIds, toggleItem, variant }}>
-      <div className={`inq-accordion inq-accordion--${variant} ${className}`.trim()}>
+      <div ref={ref} className={`inq-accordion inq-accordion--${variant} ${className}`.trim()}>
         {items
           ? items.map((item) => (
               <AccordionItem

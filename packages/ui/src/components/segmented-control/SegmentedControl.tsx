@@ -17,6 +17,7 @@ export interface SegmentedControlProps {
   disabled?: boolean;
   'aria-label'?: string;
   className?: string;
+  ref?: React.Ref<HTMLDivElement>;
 }
 
 export const SegmentedControl: React.FC<SegmentedControlProps> = ({
@@ -29,6 +30,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
   disabled = false,
   'aria-label': ariaLabel = 'Segmented Control',
   className = '',
+  ref,
 }) => {
   const generatedId = useId();
   const initialValue = defaultValue || (options.find((o) => !o.disabled)?.value ?? options[0]?.value ?? '');
@@ -80,6 +82,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
 
   return (
     <div
+      ref={ref}
       role="radiogroup"
       aria-label={ariaLabel}
       aria-disabled={disabled}
