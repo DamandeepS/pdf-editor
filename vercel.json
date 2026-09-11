@@ -1,0 +1,29 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build:vercel",
+  "outputDirectory": "apps/web/dist",
+  "framework": "vite",
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/design-system",
+      "destination": "/design-system/index.html"
+    },
+    {
+      "source": "/design-system/(.*)",
+      "destination": "/design-system/$1"
+    },
+    {
+      "source": "/stories",
+      "destination": "/design-system/index.html"
+    },
+    {
+      "source": "/stories/(.*)",
+      "destination": "/design-system/$1"
+    },
+    {
+      "source": "/((?!design-system|stories).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
