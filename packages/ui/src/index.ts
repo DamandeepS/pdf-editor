@@ -25,3 +25,4 @@ export * from './components/tabs';
 export * from './components/skeleton';
 export * from './components/segmented-control';
 export * from './components/textarea';
+export * from './components/table';
