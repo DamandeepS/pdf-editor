@@ -6,6 +6,14 @@ import { TextInput } from '@inq/ui/text-input';
 import { IconButton } from '@inq/ui/icon-button';
 import { Badge } from '@inq/ui/badge';
 
+const CATEGORY_ORDER = [
+  'Actions',
+  'Inputs',
+  'Surfaces',
+  'Navigation',
+  'Feedback',
+] as const;
+
 export interface SidebarProps {
   isOpen?: boolean;
   onClose?: () => void;
@@ -116,26 +124,43 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* UI COMPONENTS LIST */}
+        {/* UI COMPONENTS LIST GROUPED BY TYPE */}
         <div className="nav-group">
           <div className="nav-group-title">
             <span>UI COMPONENTS</span>
             <span className="group-count">({filteredComponents.length})</span>
           </div>
 
-          {filteredComponents.map((story) => {
-            const isSelected = activeSection === 'component' && activeComponentId === story.id;
+          {CATEGORY_ORDER.map((category) => {
+            const categoryComponents = filteredComponents
+              .filter((c) => c.category === category)
+              .sort((a, b) => a.name.localeCompare(b.name));
+
+            if (categoryComponents.length === 0) return null;
+
             return (
-              <button
-                key={story.id}
-                type="button"
-                className={`nav-item ${isSelected ? 'active' : ''}`}
-                onClick={() => handleSelectComponent(story.id)}
-              >
-                <span className="nav-item-bullet" />
-                <span className="nav-item-label">{story.name}</span>
-                <Badge className="nav-item-category-tag">{story.category}</Badge>
-              </button>
+              <div key={category} className="nav-category-section">
+                <div className="nav-category-header">
+                  <span className="nav-category-name">{category}</span>
+                  <span className="nav-category-count">{categoryComponents.length}</span>
+                </div>
+                <div className="nav-category-list">
+                  {categoryComponents.map((story) => {
+                    const isSelected = activeSection === 'component' && activeComponentId === story.id;
+                    return (
+                      <button
+                        key={story.id}
+                        type="button"
+                        className={`nav-item ${isSelected ? 'active' : ''}`}
+                        onClick={() => handleSelectComponent(story.id)}
+                      >
+                        <span className="nav-item-bullet" />
+                        <span className="nav-item-label">{story.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             );
           })}
 
@@ -148,10 +173,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         <div className="sidebar-mobile-footer">
           <span className="mobile-footer-label">Built with</span>
           <div className="stack-badges-mobile">
-            <span className="badge-pill">React 19</span>
-            <span className="badge-pill">Vite 8</span>
-            <span className="badge-pill">Turborepo 2</span>
-            <span className="badge-pill">TypeScript 7</span>
+            <Badge className="badge-pill">React 19</Badge>
+            <Badge className="badge-pill">Vite 8</Badge>
+            <Badge className="badge-pill">Turborepo 2</Badge>
+            <Badge className="badge-pill">TypeScript 7</Badge>
           </div>
         </div>
       </div>

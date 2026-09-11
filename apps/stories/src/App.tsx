@@ -77,7 +77,7 @@ export const App: React.FC = () => {
             <Badge className="badge-pill">React 19</Badge>
             <Badge className="badge-pill">Vite 8</Badge>
             <Badge className="badge-pill">Turborepo 2</Badge>
-            <Badge className="badge-pill">TypeScript 5.8</Badge>
+            <Badge className="badge-pill">TypeScript 7</Badge>
           </div>
         </div>
 
