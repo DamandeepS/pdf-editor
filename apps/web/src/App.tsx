@@ -362,7 +362,7 @@ export const App: React.FC = () => {
         onToggleRail={() => setIsRailCollapsed((c) => !c)}
       />
 
-      <div className="workspace-body">
+      <main className="workspace-body" id="main-content" role="main">
         {!isRailCollapsed && (
           <div
             className="mobile-rail-backdrop"
@@ -389,7 +389,7 @@ export const App: React.FC = () => {
           selectedItem={selectedItem}
           onSelectItem={setSelectedItem}
         />
-      </div>
+      </main>
 
       <StatusBar
         currentPage={currentPage}

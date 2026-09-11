@@ -110,7 +110,7 @@ export const TopNav: React.FC<TopNavProps> = ({
             <span className="brand-dot" />
             <span className="brand-dot" />
           </div>
-          <span className="brand-title">Inq PDF Editor</span>
+          <h1 className="brand-title">Inq PDF Editor</h1>
         </div>
 
         <input

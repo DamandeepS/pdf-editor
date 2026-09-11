@@ -91,6 +91,8 @@ body {
 }
 
 .brand-title {
+  margin: 0;
+  line-height: 1.2;
   font-size: var(--typography-font-size-lg);
   font-weight: var(--typography-font-weight-bold);
   letter-spacing: -0.3px;
