@@ -17,6 +17,28 @@ import { FloatingFormatToolbar } from './FloatingFormatToolbar';
 import { createStampDataUrl, STAMP_PRESETS } from '../utils/stampGenerator';
 import { MoveIcon, UploadIcon } from '@inq/icons';
 
+let measurementCanvas: HTMLCanvasElement | null = null;
+function measureRenderedTextWidth(
+  text: string,
+  fontSize: number,
+  fontFamily: string,
+  isBold: boolean,
+  isItalic: boolean
+): number {
+  if (typeof document === 'undefined') return text.length * fontSize * 0.55;
+  try {
+    if (!measurementCanvas) {
+      measurementCanvas = document.createElement('canvas');
+    }
+    const ctx = measurementCanvas.getContext('2d');
+    if (!ctx) return text.length * fontSize * 0.55;
+    ctx.font = `${isItalic ? 'italic ' : ''}${isBold ? '700 ' : '400 '}${fontSize}px ${fontFamily}, sans-serif`;
+    return ctx.measureText(text).width;
+  } catch {
+    return text.length * fontSize * 0.55;
+  }
+}
+
 export interface EditorCanvasProps {
   pdfDocument: PDFDocumentProxy | null;
   currentPage: number;
@@ -804,16 +826,26 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             const offsetX = deltaX * scale;
             const offsetY = -deltaY * scale; // PDF Y goes UP, screen Y goes DOWN
 
-            const estimatedWidth = Math.max(
-              item.screenWidth + 16,
-              displayText.length * (fontSize * 0.58) + 24
+            // Measure actual rendered text width for snug, pixel-accurate fit
+            const measuredWidth = measureRenderedTextWidth(
+              displayText,
+              fontSize,
+              fontFamily,
+              isBold,
+              isItalic
+            );
+
+            // Container covers at least original text on canvas, plus safety padding for input cursor
+            const textContainerWidth = Math.max(
+              item.screenWidth,
+              measuredWidth + (isSelected ? 8 : 4)
             );
 
             let currentScreenX = item.screenX + offsetX;
             if (textAlign === 'right') {
-              currentScreenX = item.screenX + item.screenWidth + offsetX - estimatedWidth;
+              currentScreenX = item.screenX + item.screenWidth + offsetX - textContainerWidth;
             } else if (textAlign === 'center') {
-              currentScreenX = item.screenX + item.screenWidth / 2 + offsetX - estimatedWidth / 2;
+              currentScreenX = item.screenX + item.screenWidth / 2 + offsetX - textContainerWidth / 2;
             }
             const currentScreenY = item.screenY + offsetY;
 
@@ -826,7 +858,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                 style={{
                   left: `${currentScreenX}px`,
                   top: `${currentScreenY}px`,
-                  width: `${isSelected || edit ? estimatedWidth : Math.max(item.screenWidth, 20)}px`,
+                  width: `${textContainerWidth}px`,
                   height: `${Math.max(item.screenHeight, 16)}px`,
                   fontSize: `${fontSize}px`,
                   fontFamily,
@@ -834,6 +866,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                   fontWeight: isBold ? 700 : 400,
                   fontStyle: isItalic ? 'italic' : 'normal',
                   justifyContent: textAlign === 'right' ? 'flex-end' : textAlign === 'center' ? 'center' : 'flex-start',
+                  backgroundColor: isSelected || edit ? bgColor : 'transparent',
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -851,17 +884,34 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                   </div>
                 )}
 
-                {/* If modified, place whiteout under the original text to cover it */}
+                {/* If modified, place whiteout under the text to cover original canvas rendering */}
                 {edit && (
                   <div
                     style={{
                       position: 'absolute',
-                      top: '-2px',
-                      left: '-4px',
-                      width: 'calc(100% + 8px)',
-                      height: 'calc(100% + 4px)',
+                      top: '-1px',
+                      left: '-2px',
+                      width: 'calc(100% + 4px)',
+                      height: 'calc(100% + 2px)',
                       backgroundColor: bgColor,
                       borderRadius: '2px',
+                      zIndex: -1,
+                    }}
+                  />
+                )}
+
+                {/* When moved away from original position, also whiteout original text position on canvas */}
+                {edit && (deltaX !== 0 || deltaY !== 0) && (
+                  <div
+                    className="original-text-whiteout"
+                    style={{
+                      position: 'absolute',
+                      left: `${item.screenX - currentScreenX - 2}px`,
+                      top: `${item.screenY - currentScreenY - 1}px`,
+                      width: `${item.screenWidth + 4}px`,
+                      height: `${item.screenHeight + 2}px`,
+                      backgroundColor: bgColor,
+                      pointerEvents: 'none',
                       zIndex: -1,
                     }}
                   />

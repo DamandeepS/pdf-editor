@@ -361,14 +361,12 @@ body {
 }
 
 .text-span-box.selected {
-  background-color: #ffffff;
   border: 1.5px solid var(--color-brand-primary);
   box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.25);
   z-index: 50;
 }
 
 .text-span-box.modified {
-  background-color: #ffffff;
   border-bottom: 2px solid var(--color-brand-emerald);
 }
 
@@ -404,7 +402,7 @@ body {
 .inline-edit-input {
   width: 100%;
   height: 100%;
-  background: #ffffff;
+  background: transparent;
   border: none;
   outline: none;
   font-family: inherit;
