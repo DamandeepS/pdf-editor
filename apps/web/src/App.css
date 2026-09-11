@@ -631,25 +631,6 @@ body {
   gap: var(--spacing-6);
 }
 
-.ipc-status-pill {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  padding: 2px 8px;
-  border-radius: var(--border-radius-full);
-  background-color: var(--color-brand-emerald-light);
-  color: var(--color-brand-emerald-hover);
-  font-weight: var(--typography-font-weight-medium);
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: var(--color-brand-emerald);
-  box-shadow: 0 0 0 2px rgba(52, 168, 83, 0.3);
-}
-
 /* =========================================
    SHORTCUTS MODAL
    ========================================= */

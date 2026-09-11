@@ -398,7 +398,6 @@ export const App: React.FC = () => {
         totalPages={numPages}
         scale={scale}
         totalEdits={totalEdits}
-        ipcStatus={ipcStatus}
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
         onOpenPrivacy={() => setIsPrivacyOpen(true)}
       />

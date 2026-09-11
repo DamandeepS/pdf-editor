@@ -5,7 +5,6 @@ export interface StatusBarProps {
   totalPages: number;
   scale: number;
   totalEdits: number;
-  ipcStatus: 'connected' | 'offline' | 'checking';
   onOpenShortcuts: () => void;
   onOpenPrivacy?: () => void;
 }
@@ -15,7 +14,6 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   totalPages,
   scale,
   totalEdits,
-  ipcStatus,
   onOpenShortcuts,
   onOpenPrivacy,
 }) => {
@@ -76,34 +74,6 @@ export const StatusBar: React.FC<StatusBarProps> = ({
         >
           Shortcuts (⌘/)
         </button>
-
-        <div
-          className="ipc-status-pill"
-          title={
-            ipcStatus === 'connected'
-              ? 'tRPC IPC server connected'
-              : 'Client-side vector engine active. Documents are processed 100% locally in your browser.'
-          }
-        >
-          <span
-            className="status-dot"
-            style={{
-              backgroundColor:
-                ipcStatus === 'connected'
-                  ? 'var(--color-brand-emerald)'
-                  : ipcStatus === 'checking'
-                  ? 'var(--color-brand-amber)'
-                  : 'var(--color-brand-primary)',
-            }}
-          />
-          <span>
-            {ipcStatus === 'connected'
-              ? 'tRPC IPC: Connected'
-              : ipcStatus === 'checking'
-              ? 'Connecting...'
-              : 'Vector Engine: Local'}
-          </span>
-        </div>
       </div>
     </footer>
   );
