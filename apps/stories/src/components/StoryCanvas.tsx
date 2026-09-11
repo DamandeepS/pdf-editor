@@ -82,8 +82,8 @@ export const StoryCanvas: React.FC<StoryCanvasProps> = ({ story }) => {
 
       {/* Canvas Toolbar (Viewport, Background & Variant switchers) */}
       <div className="canvas-toolbar">
-        {/* Left: Viewport Resizer Toggles */}
-        <div className="toolbar-button-group" role="group" aria-label="Viewport Size">
+        {/* Left: Viewport Resizer Toggles (Desktop only) */}
+        <div className="toolbar-button-group viewport-switcher" role="group" aria-label="Viewport Size">
           <button
             type="button"
             className={`toolbar-btn ${viewport === 'desktop' ? 'active' : ''}`}
@@ -116,6 +116,12 @@ export const StoryCanvas: React.FC<StoryCanvasProps> = ({ story }) => {
           >
             Mobile (375)
           </button>
+        </div>
+
+        {/* Mobile Viewport Indicator: Shows true mobile canvas */}
+        <div className="mobile-viewport-badge" aria-label="Active Viewport">
+          <span className="dot-pulse-green" aria-hidden="true" />
+          <span>Mobile Canvas</span>
         </div>
 
         {/* Right: Canvas Background Switcher */}

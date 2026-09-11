@@ -126,29 +126,36 @@ export const IconsView: React.FC = () => {
           </div>
 
           {/* Sizing Controls */}
-          <div className="icon-ctrl-block">
-            <span className="ctrl-label">Size: <strong>{iconSize}px</strong></span>
-            <div className="size-presets-row">
-              {[16, 20, 24, 32, 48].map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  className={`size-preset-pill ${iconSize === s ? 'active' : ''}`}
-                  onClick={() => setIconSize(s)}
-                >
-                  {s}
-                </button>
-              ))}
+          <div className="icon-ctrl-block size-ctrl-block">
+            <div className="size-header-row">
+              <span className="ctrl-label">Size: <strong>{iconSize}px</strong></span>
+              <div className="size-presets-row">
+                {[16, 20, 24, 32, 48].map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    className={`size-preset-pill ${iconSize === s ? 'active' : ''}`}
+                    onClick={() => setIconSize(s)}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
             </div>
-            <input
-              type="range"
-              className="range-input small"
-              min={14}
-              max={64}
-              step={2}
-              value={iconSize}
-              onChange={(e) => setIconSize(Number(e.target.value))}
-            />
+            <div className="size-slider-wrapper">
+              <span className="slider-bound-label">14px</span>
+              <input
+                type="range"
+                className="range-input size-slider"
+                min={14}
+                max={64}
+                step={2}
+                value={iconSize}
+                onChange={(e) => setIconSize(Number(e.target.value))}
+                aria-label="Icon size slider"
+              />
+              <span className="slider-bound-label">64px</span>
+            </div>
           </div>
 
           {/* Color Tinting */}
