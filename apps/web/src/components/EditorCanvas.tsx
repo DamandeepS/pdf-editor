@@ -11,6 +11,7 @@ import type {
 import {
   renderPageToCanvas,
   extractPageTextItems,
+  getFontAscentRatio,
   type ExtractedTextItem,
 } from '../utils/pdfRenderer';
 import { FloatingFormatToolbar } from './FloatingFormatToolbar';
@@ -1022,6 +1023,11 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             const offsetX = deltaX * scale;
             const offsetY = -deltaY * scale; // PDF Y goes UP, screen Y goes DOWN
 
+            const currentAscentRatio = item.ascentRatio || getFontAscentRatio(fontFamily);
+            const currentScreenHeight = fontSize;
+            const baselineScreenY = item.baselineScreenY ?? (item.screenY + currentAscentRatio * item.fontSize * scale);
+            const currentScreenY = baselineScreenY - currentAscentRatio * fontSize + offsetY;
+
             // Measure actual rendered text width for snug, pixel-accurate fit
             const measuredWidth = measureRenderedTextWidth(
               displayText,
@@ -1034,7 +1040,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             // Container covers at least original text on canvas, plus safety padding for input cursor
             const textContainerWidth = Math.max(
               item.screenWidth,
-              measuredWidth + (isSelected ? 8 : 4)
+              measuredWidth + (isSelected ? 6 : 0)
             );
 
             let currentScreenX = item.screenX + offsetX;
@@ -1043,7 +1049,6 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             } else if (textAlign === 'center') {
               currentScreenX = item.screenX + item.screenWidth / 2 + offsetX - textContainerWidth / 2;
             }
-            const currentScreenY = item.screenY + offsetY;
 
             return (
               <div
@@ -1055,12 +1060,13 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                   left: `${currentScreenX}px`,
                   top: `${currentScreenY}px`,
                   width: `${textContainerWidth}px`,
-                  height: `${Math.max(item.screenHeight, 16)}px`,
+                  height: `${currentScreenHeight}px`,
                   fontSize: `${fontSize}px`,
                   fontFamily,
                   color,
                   fontWeight: isBold ? 700 : 400,
                   fontStyle: isItalic ? 'italic' : 'normal',
+                  lineHeight: 1,
                   justifyContent: textAlign === 'right' ? 'flex-end' : textAlign === 'center' ? 'center' : 'flex-start',
                   backgroundColor: isSelected || edit ? bgColor : 'transparent',
                 }}
@@ -1080,8 +1086,8 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                   </div>
                 )}
 
-                {/* If modified, place whiteout under the text to cover original canvas rendering */}
-                {edit && (
+                {/* If modified or selected, place whiteout under the text to cover original canvas rendering */}
+                {(edit || isSelected) && (
                   <div
                     style={{
                       position: 'absolute',
@@ -1126,6 +1132,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                       fontWeight: isBold ? 700 : 400,
                       fontStyle: isItalic ? 'italic' : 'normal',
                       textAlign,
+                      lineHeight: 1,
                       backgroundColor: 'transparent',
                     }}
                     onChange={(e) => {
@@ -1181,7 +1188,22 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                     }}
                   />
                 ) : edit ? (
-                  <span style={{ width: '100%', textAlign }}>{displayText}</span>
+                  <span
+                    className="inline-display-span"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      textAlign,
+                      lineHeight: 1,
+                      fontFamily,
+                      fontSize: `${fontSize}px`,
+                      color,
+                      fontWeight: isBold ? 700 : 400,
+                      fontStyle: isItalic ? 'italic' : 'normal',
+                    }}
+                  >
+                    {displayText}
+                  </span>
                 ) : null}
               </div>
             );

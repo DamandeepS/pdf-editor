@@ -402,28 +402,32 @@ body {
 
 .text-span-box {
   position: absolute;
-  border: 1px solid transparent;
+  border: none;
   cursor: text;
   border-radius: 2px;
-  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+  transition: background-color var(--transition-fast);
   box-sizing: border-box;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  line-height: 1;
 }
 
 .text-span-box:hover {
-  background-color: rgba(66, 133, 244, 0.15);
-  border-color: rgba(66, 133, 244, 0.5);
+  background-color: rgba(66, 133, 244, 0.12);
+  outline: 1px solid rgba(66, 133, 244, 0.45);
+  outline-offset: 1px;
 }
 
 .text-span-box.selected {
-  border: 1.5px solid var(--color-brand-primary);
+  outline: 1.5px solid var(--color-brand-primary);
+  outline-offset: 1px;
   box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.25);
   z-index: 50;
 }
 
-.text-span-box.modified {
-  border-bottom: 2px solid var(--color-brand-emerald);
+.text-span-box.modified:not(.selected) {
+  outline: 1px dashed var(--color-brand-emerald);
+  outline-offset: 1px;
 }
 
 .text-move-handle {
@@ -467,10 +471,32 @@ body {
   font-weight: inherit;
   font-style: inherit;
   letter-spacing: inherit;
-  padding: 0 2px;
+  padding: 0;
   margin: 0;
+  line-height: 1;
   cursor: text;
   user-select: text;
+  box-sizing: border-box;
+}
+
+.inline-display-span {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  font-weight: inherit;
+  font-style: inherit;
+  letter-spacing: inherit;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+  user-select: text;
+  box-sizing: border-box;
+  display: block;
+  overflow: visible;
 }
 
 /* Whiteout Rectangles */

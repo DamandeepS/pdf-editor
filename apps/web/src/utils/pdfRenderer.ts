@@ -26,6 +26,9 @@ export interface ExtractedTextItem {
   screenHeight: number;
   // Enhanced typographic & visual attributes
   baselineY: number;
+  baselineScreenX: number;
+  baselineScreenY: number;
+  ascentRatio: number;
   isBold: boolean;
   isItalic: boolean;
   fontFamily: string;
@@ -196,6 +199,21 @@ function inferFontProperties(page: PDFPageProxy, fontName: string): {
 }
 
 /**
+ * Returns typographic ascent ratio (fraction of font size from baseline to em-box top).
+ * Matches standard browser typography rendering when line-height is 1.
+ */
+export function getFontAscentRatio(fontFamily: string): number {
+  const lower = fontFamily.toLowerCase();
+  if (/times|serif|roman/i.test(lower)) {
+    return 0.75;
+  }
+  if (/courier|mono|consolas|code/i.test(lower)) {
+    return 0.65;
+  }
+  return 0.77; // Helvetica, Arial, Roboto, Inter, standard sans-serif
+}
+
+/**
  * Loads a PDFDocumentProxy from binary Uint8Array or base64
  */
 export async function loadPdfDocument(data: Uint8Array | string): Promise<PDFDocumentProxy> {
@@ -286,21 +304,20 @@ export async function extractPageTextItems(
     const fontHeight = fontSize;
     const fontWidth = item.width || (item.str.length * fontSize * 0.6);
 
-    const descent = fontSize * 0.28;
-    const ascent = fontSize * 0.85;
+    // Infer font properties
+    const fontProps = inferFontProperties(page, item.fontName);
+    const ascentRatio = getFontAscentRatio(fontProps.fontFamily);
 
     // Convert PDF pt coordinates to screen coordinates
     // PDF coordinates: (pdfX, pdfY) is baseline in bottom-left origin
     const [screenXBaseline, screenYBaseline] = viewport.convertToViewportPoint(pdfX, pdfY);
 
     const screenWidth = fontWidth * scale;
-    const screenHeight = (ascent + descent) * scale;
-    // Top of text bounding box on screen
-    const screenY = screenYBaseline - ascent * scale;
+    // Standard em-box height at current scale
+    const screenHeight = fontSize * scale;
+    // Top of em-box on screen such that typographic baseline exactly matches screenYBaseline
+    const screenY = screenYBaseline - ascentRatio * fontSize * scale;
     const screenX = screenXBaseline;
-
-    // Infer font properties
-    const fontProps = inferFontProperties(page, item.fontName);
 
     // Sample colors from canvas if available
     const colors = sampleColorsFromCanvas(
@@ -323,8 +340,11 @@ export async function extractPageTextItems(
       screenX: Math.max(0, screenX),
       screenY: Math.max(0, screenY),
       screenWidth: Math.max(12, screenWidth),
-      screenHeight: Math.max(12, screenHeight),
+      screenHeight: Math.max(8, screenHeight),
       baselineY: pdfY,
+      baselineScreenX: screenXBaseline,
+      baselineScreenY: screenYBaseline,
+      ascentRatio,
       isBold: fontProps.isBold,
       isItalic: fontProps.isItalic,
       fontFamily: fontProps.fontFamily,
