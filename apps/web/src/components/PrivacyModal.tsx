@@ -145,7 +145,15 @@ export const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) =
             5. Open Source License
           </h4>
           <p style={{ margin: 0, color: 'var(--text-secondary)' }}>
-            Inq PDF Editor is open-source software provided under the <strong>MIT License</strong>.
+            Inq PDF Editor is open-source software provided under the <strong>MIT License</strong>. View source code and contribute on{' '}
+            <a
+              href="https://github.com/DamandeepS/pdf-editor"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: 'var(--color-brand-primary)', textDecoration: 'underline' }}
+            >
+              GitHub ↗
+            </a>.
           </p>
         </div>
       </div>

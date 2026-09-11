@@ -60,6 +60,20 @@ export const StatusBar: React.FC<StatusBarProps> = ({
           Design System ↗
         </a>
 
+        <a
+          href="https://github.com/DamandeepS/pdf-editor"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            color: 'var(--text-secondary)',
+            fontSize: '11px',
+            textDecoration: 'underline',
+          }}
+          title="View source repository on GitHub"
+        >
+          GitHub ↗
+        </a>
+
         <button
           type="button"
           style={{

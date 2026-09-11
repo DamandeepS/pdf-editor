@@ -840,18 +840,23 @@ body {
   .status-bar {
     padding: 0 var(--spacing-3);
     font-size: 11px;
+    gap: var(--spacing-3);
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .status-bar::-webkit-scrollbar {
+    display: none;
   }
 
   .status-left {
     gap: var(--spacing-2);
+    flex-shrink: 0;
   }
 
   .status-right {
-    gap: var(--spacing-2);
-  }
-
-  .status-bar button[onClick*="Shortcuts"],
-  .status-left span:nth-child(5) {
-    display: none;
+    gap: var(--spacing-3);
+    flex-shrink: 0;
   }
 }
