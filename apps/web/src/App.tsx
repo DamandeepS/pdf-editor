@@ -377,6 +377,8 @@ export const App: React.FC = () => {
           onSelectPage={setCurrentPage}
           isCollapsed={isRailCollapsed}
           onToggleCollapse={() => setIsRailCollapsed((c) => !c)}
+          pdfDocument={pdfDocument}
+          modifications={delta.pages}
         />
 
         <EditorCanvas

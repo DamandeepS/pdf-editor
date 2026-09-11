@@ -218,8 +218,16 @@ body {
 }
 
 .page-rail.collapsed {
-  width: 56px;
-  padding: var(--spacing-4);
+  width: 64px;
+  padding: var(--spacing-4) var(--spacing-2);
+}
+
+.page-rail.collapsed .page-rail-header {
+  justify-content: center;
+}
+
+.page-rail.collapsed .page-card {
+  padding: var(--spacing-1);
 }
 
 .page-rail-header {
@@ -266,35 +274,62 @@ body {
   box-shadow: 0 0 0 1px var(--color-brand-primary);
 }
 
-.page-thumbnail-mock {
+/* Real PDF Canvas Thumbnail */
+.page-thumbnail-container {
   width: 100%;
   aspect-ratio: 1 / 1.35;
   background-color: #ffffff;
-  border-radius: 4px;
-  box-shadow: var(--elevation-shadow-sm);
-  display: flex;
-  flex-direction: column;
-  padding: 8px;
-  gap: 4px;
+  border-radius: var(--border-radius-sm);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--border-subtle);
   overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.mock-line {
-  height: 4px;
-  background-color: #e0e0e0;
-  border-radius: 2px;
+[data-theme='dark'] .page-thumbnail-container {
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-.mock-line.heading {
-  width: 50%;
-  height: 6px;
-  background-color: var(--color-brand-primary);
+.page-thumbnail-canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
 }
 
-.mock-line.short { width: 40%; }
-.mock-line.medium { width: 70%; }
-.mock-line.full { width: 100%; }
+.page-thumbnail-canvas.visible {
+  opacity: 1;
+}
+
+.page-thumbnail-skeleton {
+  position: absolute;
+  inset: 0;
+  background-color: var(--surface-hover);
+  overflow: hidden;
+}
+
+.page-thumbnail-skeleton .skeleton-shimmer {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 100%
+  );
+  animation: page-thumbnail-shimmer 1.5s infinite;
+}
+
+@keyframes page-thumbnail-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
 
 .page-number-tag {
   margin-top: var(--spacing-2);
