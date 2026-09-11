@@ -10,7 +10,13 @@
     "10": { "value": "20px", "type": "spacing" },
     "12": { "value": "24px", "type": "spacing" },
     "16": { "value": "32px", "type": "spacing" },
-    "20": { "value": "40px", "type": "spacing" }
+    "20": { "value": "40px", "type": "spacing" },
+    "24": { "value": "48px", "type": "spacing" },
+    "28": { "value": "56px", "type": "spacing" },
+    "32": { "value": "64px", "type": "spacing" },
+    "40": { "value": "80px", "type": "spacing" },
+    "48": { "value": "96px", "type": "spacing" },
+    "64": { "value": "128px", "type": "spacing" }
   },
   "borderRadius": {
     "none": { "value": "0px", "type": "borderRadius" },
