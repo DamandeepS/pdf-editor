@@ -9,7 +9,7 @@ import { A11yPanel } from './components/A11yPanel';
 import { TokensView } from './components/TokensView';
 import { TypographyView } from './components/TypographyView';
 import { IconsView } from './components/IconsView';
-import { SunIcon, MoonIcon } from '@inq/icons';
+import { SunIcon, MoonIcon, MenuIcon } from '@inq/icons';
 import './App.css';
 
 export const App: React.FC = () => {
@@ -23,6 +23,7 @@ export const App: React.FC = () => {
   } = useWorkbench();
 
   const [activeTab, setActiveTab] = useState<'controls' | 'code' | 'a11y'>('controls');
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   const activeStory =
     COMPONENT_STORIES.find((s) => s.id === activeComponentId) || COMPONENT_STORIES[0];
@@ -34,11 +35,32 @@ export const App: React.FC = () => {
     }
   }, [activeStory, currentProps, setCurrentProps]);
 
+  // Close mobile drawer on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isMobileDrawerOpen) {
+        setIsMobileDrawerOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMobileDrawerOpen]);
+
   return (
     <div className="stories-app-shell">
       {/* Top Application Bar */}
       <header className="stories-header">
         <div className="header-left">
+          <button
+            type="button"
+            className="mobile-nav-toggle"
+            onClick={() => setIsMobileDrawerOpen((prev) => !prev)}
+            aria-label="Open Navigation Drawer"
+            title="Browse Components & Foundations"
+          >
+            <MenuIcon size={18} />
+          </button>
+
           <div className="brand-badge-group">
             <div className="google-color-bar">
               <span className="dot blue" />
@@ -72,12 +94,12 @@ export const App: React.FC = () => {
             {theme === 'light' ? (
               <>
                 <MoonIcon size={14} />
-                <span>Dark</span>
+                <span className="theme-label">Dark</span>
               </>
             ) : (
               <>
                 <SunIcon size={14} />
-                <span>Light</span>
+                <span className="theme-label">Light</span>
               </>
             )}
           </button>
@@ -90,7 +112,7 @@ export const App: React.FC = () => {
             className="app-link-btn"
             title="Open Inq PDF Editor App"
           >
-            <span>PDF Editor App</span>
+            <span className="app-link-label">PDF Editor</span>
             <span className="external-arrow">↗</span>
           </a>
         </div>
@@ -98,8 +120,20 @@ export const App: React.FC = () => {
 
       {/* Main App Layout */}
       <div className="stories-body">
+        {/* Mobile Drawer Backdrop */}
+        {isMobileDrawerOpen && (
+          <div
+            className="mobile-drawer-backdrop"
+            onClick={() => setIsMobileDrawerOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+
         {/* Left Nav Sidebar */}
-        <Sidebar />
+        <Sidebar
+          isOpen={isMobileDrawerOpen}
+          onClose={() => setIsMobileDrawerOpen(false)}
+        />
 
         {/* Right Stage & Inspector Workspace */}
         <main className="stories-workspace">

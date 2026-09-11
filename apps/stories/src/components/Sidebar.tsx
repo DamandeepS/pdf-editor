@@ -3,7 +3,12 @@ import { useWorkbench } from '../context/WorkbenchContext';
 import { COMPONENT_STORIES, DESIGN_TOKENS, ICON_CATALOG } from '../registry';
 import { LayersIcon, TextEditIcon, AutoFitIcon, CloseIcon } from '@inq/icons';
 
-export const Sidebar: React.FC = () => {
+export interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const {
     activeSection,
     setActiveSection,
@@ -27,10 +32,38 @@ export const Sidebar: React.FC = () => {
     if (story) {
       setCurrentProps(story.defaultProps);
     }
+    onClose?.();
+  };
+
+  const handleSelectFoundation = (section: 'tokens' | 'typography' | 'icons') => {
+    setActiveSection(section);
+    onClose?.();
   };
 
   return (
-    <aside className="stories-sidebar" role="navigation" aria-label="Component Navigation">
+    <aside className={`stories-sidebar ${isOpen ? 'drawer-open' : ''}`} role="navigation" aria-label="Component Navigation">
+      {/* Mobile Drawer Header */}
+      <div className="sidebar-drawer-header">
+        <div className="drawer-header-left">
+          <div className="google-color-bar">
+            <span className="dot blue" />
+            <span className="dot red" />
+            <span className="dot yellow" />
+            <span className="dot green" />
+          </div>
+          <span className="drawer-header-title">Components & Design Tokens</span>
+        </div>
+        <button
+          type="button"
+          className="drawer-close-btn"
+          onClick={onClose}
+          aria-label="Close Navigation"
+          title="Close Navigation"
+        >
+          <CloseIcon size={16} />
+        </button>
+      </div>
+
       {/* Search Bar */}
       <div className="sidebar-search-box">
         <input
@@ -55,7 +88,7 @@ export const Sidebar: React.FC = () => {
           <button
             type="button"
             className={`nav-item ${activeSection === 'tokens' ? 'active' : ''}`}
-            onClick={() => setActiveSection('tokens')}
+            onClick={() => handleSelectFoundation('tokens')}
           >
             <span className="nav-item-icon"><LayersIcon size={16} /></span>
             <span className="nav-item-label">Design Tokens</span>
@@ -65,7 +98,7 @@ export const Sidebar: React.FC = () => {
           <button
             type="button"
             className={`nav-item ${activeSection === 'typography' ? 'active' : ''}`}
-            onClick={() => setActiveSection('typography')}
+            onClick={() => handleSelectFoundation('typography')}
           >
             <span className="nav-item-icon"><TextEditIcon size={16} /></span>
             <span className="nav-item-label">Typography Studio</span>
@@ -75,7 +108,7 @@ export const Sidebar: React.FC = () => {
           <button
             type="button"
             className={`nav-item ${activeSection === 'icons' ? 'active' : ''}`}
-            onClick={() => setActiveSection('icons')}
+            onClick={() => handleSelectFoundation('icons')}
           >
             <span className="nav-item-icon"><AutoFitIcon size={16} /></span>
             <span className="nav-item-label">Material Icons</span>
@@ -109,6 +142,17 @@ export const Sidebar: React.FC = () => {
           {filteredComponents.length === 0 && (
             <div className="nav-empty-state">No components match "{searchQuery}"</div>
           )}
+        </div>
+
+        {/* Mobile Tech Stack Footer */}
+        <div className="sidebar-mobile-footer">
+          <span className="mobile-footer-label">Built with</span>
+          <div className="stack-badges-mobile">
+            <span className="badge-pill">React 19</span>
+            <span className="badge-pill">Vite 8</span>
+            <span className="badge-pill">Turborepo 2</span>
+            <span className="badge-pill">TypeScript 7</span>
+          </div>
         </div>
       </div>
     </aside>
