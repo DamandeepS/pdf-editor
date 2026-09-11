@@ -121,20 +121,20 @@ export const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) =
           >
             <div>
               <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Telemetry Status:</div>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: consentStatus === 'accepted' ? 'var(--color-brand-emerald)' : 'var(--text-primary)' }}>
-                {consentStatus === 'accepted'
-                  ? 'Active (Anonymous Analytics Granted)'
-                  : consentStatus === 'declined'
+              <div style={{ fontSize: '13px', fontWeight: 600, color: consentStatus === 'declined' ? 'var(--text-muted)' : 'var(--color-brand-emerald)' }}>
+                {consentStatus === 'declined'
                   ? 'Disabled (Essential Only)'
-                  : 'Undecided (Blocked by Default)'}
+                  : consentStatus === 'accepted'
+                  ? 'Active (Anonymous Analytics Granted)'
+                  : 'Active (Standard Anonymous Telemetry)'}
               </div>
             </div>
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => handleToggleConsent(consentStatus === 'accepted' ? 'declined' : 'accepted')}
+              onClick={() => handleToggleConsent(consentStatus === 'declined' ? 'accepted' : 'declined')}
             >
-              {consentStatus === 'accepted' ? 'Revoke Analytics Consent' : 'Enable Anonymous Analytics'}
+              {consentStatus === 'declined' ? 'Enable Anonymous Analytics' : 'Disable Anonymous Analytics'}
             </Button>
           </div>
         </div>

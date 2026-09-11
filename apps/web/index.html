@@ -41,25 +41,31 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
 
-    <!-- Google Consent Mode v2 & Google Analytics (GA4) -->
+    <!-- Google tag (gtag.js) - Google Analytics GA4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7H2T7R4K5S"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
 
-      // Initialize Consent Mode v2: default to denied until explicit user consent
+      // Google Consent Mode v2: default to granted for anonymous analytics, denied for ad trackers
       var storedConsent = null;
       try {
         storedConsent = localStorage.getItem('inq_cookie_consent');
       } catch (e) {}
 
       gtag('consent', 'default', {
-        'analytics_storage': storedConsent === 'accepted' ? 'granted' : 'denied',
+        'analytics_storage': storedConsent === 'declined' ? 'denied' : 'granted',
         'ad_storage': 'denied',
         'ad_user_data': 'denied',
         'ad_personalization': 'denied',
         'wait_for_update': 500
       });
+
       gtag('js', new Date());
+      gtag('config', 'G-7H2T7R4K5S', {
+        anonymize_ip: true,
+        send_page_view: true
+      });
     </script>
 
     <!-- JSON-LD Structured Data: WebApplication & FAQPage -->

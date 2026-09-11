@@ -41,6 +41,9 @@ export function updateAnalyticsConsent(consent: 'accepted' | 'declined'): void {
   }
 }
 
+export const GA_MEASUREMENT_ID: string =
+  import.meta.env.VITE_GA_MEASUREMENT_ID || 'G-7H2T7R4K5S';
+
 /**
  * Tracks custom anonymous interaction event in GA4
  */
@@ -48,27 +51,27 @@ export function trackEvent(eventName: string, params?: Record<string, string | n
   if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
     window.gtag('event', eventName, {
       ...params,
-      send_to: import.meta.env.VITE_GA_MEASUREMENT_ID || undefined,
+      send_to: GA_MEASUREMENT_ID,
     });
   }
 }
 
 /**
- * Initializes the GA4 script if a valid VITE_GA_MEASUREMENT_ID is provided
+ * Initializes the GA4 script if a valid measurement ID is provided
  */
 export function initGoogleAnalytics(): void {
   if (typeof window === 'undefined') return;
 
-  const gaId = import.meta.env.VITE_GA_MEASUREMENT_ID;
+  const gaId = GA_MEASUREMENT_ID;
   if (!gaId || typeof gaId !== 'string' || !gaId.startsWith('G-')) return;
 
   // Prevent duplicate script tag injection
-  if (document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${gaId}"]`)) return;
-
-  const script = document.createElement('script');
-  script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
-  document.head.appendChild(script);
+  if (!document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${gaId}"]`)) {
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+    document.head.appendChild(script);
+  }
 
   if (typeof window.gtag === 'function') {
     window.gtag('config', gaId, { anonymize_ip: true });
