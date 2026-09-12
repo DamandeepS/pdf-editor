@@ -19,7 +19,7 @@ import { ColorPickerPill } from '@inq/ui/color-picker-pill';
 
 export interface FloatingFormatToolbarProps {
   position: { top: number; left: number };
-  type: 'text' | 'whiteout' | 'image';
+  type: 'text' | 'whiteout' | 'image' | 'new-text';
   // Text formatting
   fontFamily?: string;
   onFontFamilyChange?: (font: string) => void;
@@ -110,7 +110,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = ({
       aria-label="Format Selection"
       onMouseDown={(e) => e.stopPropagation()}
     >
-      {type === 'text' && (
+      {(type === 'text' || type === 'new-text') && (
         <>
           {/* Font Family */}
           <select

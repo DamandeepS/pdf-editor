@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
-import type { SampleBillMeta, ModificationDelta, PageModifications, EditorTool } from '@inq/types';
+import type { SampleBillMeta, ModificationDelta, PageModifications, EditorTool, SelectedItem } from '@inq/types';
 import { PdfEngine, getSamplePdfBytes, SAMPLE_BILLS_META } from '@inq/pdf-engine';
 import { trpc } from './trpc';
 import { loadPdfDocument } from './utils/pdfRenderer';
@@ -50,7 +50,7 @@ export const App: React.FC = () => {
     return 1.25;
   });
   const [activeTool, setActiveTool] = useState<EditorTool>('select');
-  const [selectedItem, setSelectedItem] = useState<{ type: 'text' | 'whiteout' | 'image'; id: string } | null>(null);
+  const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
 
   // History & Delta
   const [delta, setDelta] = useState<ModificationDelta>({ pages: {} });

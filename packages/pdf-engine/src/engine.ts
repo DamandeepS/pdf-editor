@@ -87,9 +87,23 @@ export class PdfEngine {
         const deltaY = edit.currentBbox ? edit.currentBbox.y - edit.originalBbox.y : 0;
         const isMoved = Math.abs(deltaX) > 0.1 || Math.abs(deltaY) > 0.1;
 
-        // Determine effective baseline accounting for vertical shift
-        const baseBaselineY = edit.baselineY !== undefined ? edit.baselineY : edit.originalBbox.y;
-        const effectiveBaselineY = baseBaselineY + deltaY;
+        // Determine exact original baseline and effective moved baseline
+        let origBaselineY: number;
+        let effectiveBaselineY: number;
+
+        if (edit.baselineY !== undefined) {
+          // If baselineY was already shifted along with currentBbox (i.e. closer to currentBbox.y than originalBbox.y)
+          if (isMoved && Math.abs(edit.baselineY - edit.currentBbox.y) < Math.abs(edit.baselineY - edit.originalBbox.y)) {
+            effectiveBaselineY = edit.baselineY;
+            origBaselineY = edit.baselineY - deltaY;
+          } else {
+            origBaselineY = edit.baselineY;
+            effectiveBaselineY = edit.baselineY + deltaY;
+          }
+        } else {
+          origBaselineY = edit.originalBbox.y;
+          effectiveBaselineY = edit.originalBbox.y + deltaY;
+        }
 
         // Calculate horizontal position of new text based on alignment
         const targetX = edit.currentBbox ? edit.currentBbox.x : edit.originalBbox.x;
@@ -113,10 +127,7 @@ export class PdfEngine {
           const whiteoutX = unionMinX - padX;
           const whiteoutWidth = (unionMaxX - unionMinX) + 2 * padX;
 
-          const whiteoutY =
-            edit.baselineY !== undefined
-              ? baseBaselineY - effectiveDescent - padY
-              : Math.min(edit.originalBbox.y, edit.currentBbox ? edit.currentBbox.y : edit.originalBbox.y) - padY;
+          const whiteoutY = origBaselineY - effectiveDescent - padY;
           const whiteoutHeight = effectiveHeight + 2 * padY;
 
           const textWhiteout: WhiteoutBlock = {
@@ -133,10 +144,7 @@ export class PdfEngine {
           applyWhiteout(page, textWhiteout);
         } else {
           // Moved: 1. Erase original text at original location
-          const origWhiteoutY =
-            edit.baselineY !== undefined
-              ? baseBaselineY - (origHeight * 0.25) - padY
-              : edit.originalBbox.y - padY;
+          const origWhiteoutY = origBaselineY - (origHeight * 0.25) - padY;
           const origWhiteoutHeight = origHeight + 2 * padY;
 
           const origWhiteout: WhiteoutBlock = {

@@ -7,6 +7,8 @@ import type {
   ImageStamp,
   EditorTool,
   TextStyleOptions,
+  NewTextBlock,
+  SelectedItem,
 } from '@inq/types';
 import {
   renderPageToCanvas,
@@ -48,8 +50,8 @@ export interface EditorCanvasProps {
   activeTool: EditorTool;
   pageModifications: PageModifications;
   onUpdatePageModifications: (updater: (prev: PageModifications) => PageModifications) => void;
-  selectedItem: { type: 'text' | 'whiteout' | 'image'; id: string } | null;
-  onSelectItem: (item: { type: 'text' | 'whiteout' | 'image'; id: string } | null) => void;
+  selectedItem: SelectedItem | null;
+  onSelectItem: (item: SelectedItem | null) => void;
 }
 
 export const EditorCanvas: React.FC<EditorCanvasProps> = ({
@@ -90,6 +92,14 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
     initPdfY: number;
     initBaselineY: number;
   } | null>(null);
+  const [draggingNewTextId, setDraggingNewTextId] = useState<string | null>(null);
+  const [newTextDragStartPos, setNewTextDragStartPos] = useState<{
+    mouseX: number;
+    mouseY: number;
+    initPdfX: number;
+    initPdfY: number;
+  } | null>(null);
+  const isDraggingRef = useRef(false);
   const stampFileInputRef = useRef<HTMLInputElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
 
@@ -433,6 +443,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
 
   const handleStampMouseDown = (e: React.MouseEvent, stamp: ImageStamp) => {
     e.stopPropagation();
+    isDraggingRef.current = true;
     onSelectItem({ type: 'image', id: stamp.id });
     setDraggingStampId(stamp.id);
     setDragStartPos({
@@ -449,7 +460,8 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
     edit?: TextBlockEdit
   ) => {
     e.stopPropagation();
-    onSelectItem({ type: 'text', id: item.id });
+    isDraggingRef.current = true;
+    onSelectItem({ type: 'text', id: item.id, isEditing: false });
     setDraggingTextId(item.id);
     setTextDragStartPos({
       mouseX: e.clientX,
@@ -457,6 +469,22 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
       initPdfX: edit?.currentBbox.x ?? item.x,
       initPdfY: edit?.currentBbox.y ?? item.y,
       initBaselineY: edit?.baselineY ?? item.baselineY ?? item.y,
+    });
+  };
+
+  const handleNewTextDragStart = (
+    e: React.MouseEvent,
+    block: NewTextBlock
+  ) => {
+    e.stopPropagation();
+    isDraggingRef.current = true;
+    onSelectItem({ type: 'new-text', id: block.id, isEditing: false });
+    setDraggingNewTextId(block.id);
+    setNewTextDragStartPos({
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      initPdfX: block.bbox.x,
+      initPdfY: block.bbox.y,
     });
   };
 
@@ -609,17 +637,43 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
       });
       return;
     }
+
+    // 4. New text field dragging
+    if (draggingNewTextId && newTextDragStartPos) {
+      const dx = (e.clientX - newTextDragStartPos.mouseX) / scale;
+      const dy = (newTextDragStartPos.mouseY - e.clientY) / scale;
+      const newPdfX = Math.round((newTextDragStartPos.initPdfX + dx) * 10) / 10;
+      const newPdfY = Math.round((newTextDragStartPos.initPdfY + dy) * 10) / 10;
+
+      onUpdatePageModifications((prev: PageModifications) => ({
+        ...prev,
+        newTexts: (prev.newTexts || []).map((b: NewTextBlock) =>
+          b.id === draggingNewTextId
+            ? { ...b, bbox: { ...b.bbox, x: newPdfX, y: newPdfY } }
+            : b
+        ),
+      }));
+      return;
+    }
   };
 
   const handleMouseUp = () => {
     if (draggingStampId) {
       setDraggingStampId(null);
       setDragStartPos(null);
+      setTimeout(() => { isDraggingRef.current = false; }, 80);
     }
 
     if (draggingTextId) {
       setDraggingTextId(null);
       setTextDragStartPos(null);
+      setTimeout(() => { isDraggingRef.current = false; }, 80);
+    }
+
+    if (draggingNewTextId) {
+      setDraggingNewTextId(null);
+      setNewTextDragStartPos(null);
+      setTimeout(() => { isDraggingRef.current = false; }, 80);
     }
 
     if (!isDrawingWhiteout || !currentWhiteoutRect) return;
@@ -662,9 +716,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
   // Nudge text field position in PDF points
   const handleNudgeText = useCallback(
     (direction: 'left' | 'right' | 'up' | 'down', step = 1) => {
-      if (!selectedItem || selectedItem.type !== 'text') return;
-      const targetItem = textItems.find((t) => t.id === selectedItem.id);
-      if (!targetItem) return;
+      if (!selectedItem || (selectedItem.type !== 'text' && selectedItem.type !== 'new-text')) return;
 
       let deltaX = 0;
       let deltaY = 0;
@@ -672,6 +724,28 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
       if (direction === 'right') deltaX = step;
       if (direction === 'up') deltaY = step; // PDF Y goes UP
       if (direction === 'down') deltaY = -step; // PDF Y goes DOWN
+
+      if (selectedItem.type === 'new-text') {
+        onUpdatePageModifications((prev: PageModifications) => ({
+          ...prev,
+          newTexts: (prev.newTexts || []).map((b: NewTextBlock) =>
+            b.id === selectedItem.id
+              ? {
+                  ...b,
+                  bbox: {
+                    ...b.bbox,
+                    x: Math.round((b.bbox.x + deltaX) * 10) / 10,
+                    y: Math.round((b.bbox.y + deltaY) * 10) / 10,
+                  },
+                }
+              : b
+          ),
+        }));
+        return;
+      }
+
+      const targetItem = textItems.find((t) => t.id === selectedItem.id);
+      if (!targetItem) return;
 
       onUpdatePageModifications((prev: PageModifications) => {
         const existingEdits = prev.textEdits || [];
@@ -767,7 +841,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
   // Keyboard shortcut listener for arrow keys (Alt + Arrow / Arrow when not input focused)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!selectedItem || selectedItem.type !== 'text') return;
+      if (!selectedItem || (selectedItem.type !== 'text' && selectedItem.type !== 'new-text')) return;
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
         const isInput =
           document.activeElement?.tagName === 'INPUT' ||
@@ -792,6 +866,9 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
   const activeTextEdit = pageModifications.textEdits?.find((t: TextBlockEdit) => t.id === selectedItem?.id);
   const activeWhiteout = pageModifications.whiteouts?.find((w: WhiteoutBlock) => w.id === selectedItem?.id);
   const activeImage = pageModifications.images?.find((img: ImageStamp) => img.id === selectedItem?.id);
+  const activeNewTextBlock = selectedItem?.type === 'new-text'
+    ? pageModifications.newTexts?.find((b: NewTextBlock) => b.id === selectedItem.id)
+    : undefined;
 
   const hasPositionOffset = Boolean(
     activeTextEdit &&
@@ -868,6 +945,17 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
       top: coords.screenY,
       left: coords.screenX,
     };
+  } else if (selectedItem?.type === 'new-text' && activeNewTextBlock) {
+    const coords = pdfToScreen(
+      activeNewTextBlock.bbox.x,
+      activeNewTextBlock.bbox.y,
+      activeNewTextBlock.bbox.width,
+      activeNewTextBlock.bbox.height
+    );
+    toolbarPosition = {
+      top: coords.screenY - 12,
+      left: Math.max(10, Math.min(pageSize.width - 540, coords.screenX)),
+    };
   }
 
   return (
@@ -898,7 +986,55 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
         <canvas ref={canvasRef} className="pdf-canvas" />
 
         {/* Interactive Overlay */}
-        <div className="interactive-overlay">
+        <div
+          className="interactive-overlay"
+          onClick={(e) => {
+            if (isDraggingRef.current) return;
+            if (e.target === e.currentTarget) {
+              if (activeTool === 'text' && containerRef.current) {
+                const rect = containerRef.current.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+
+                const pdfX = Math.round((clickX / scale) * 10) / 10;
+                const pdfY = Math.max(0, Math.round(((pageSize.height - clickY) / scale) * 10) / 10 - 14);
+
+                const newId = `new-text-${Date.now()}`;
+                const newBlock: NewTextBlock = {
+                  id: newId,
+                  pageIndex: currentPage - 1,
+                  text: '',
+                  bbox: {
+                    x: pdfX,
+                    y: pdfY,
+                    width: 100,
+                    height: 16,
+                  },
+                  style: {
+                    fontFamily: 'Helvetica',
+                    fontSize: 14,
+                    colorHex: '#1f1f1f',
+                    isBold: false,
+                    isItalic: false,
+                    letterSpacing: 0,
+                    lineHeight: 1.2,
+                    textAlign: 'left',
+                    autoFit: false,
+                  },
+                };
+
+                onUpdatePageModifications((prev: PageModifications) => ({
+                  ...prev,
+                  newTexts: [...(prev.newTexts || []), newBlock],
+                }));
+
+                onSelectItem({ type: 'new-text', id: newId, isEditing: true });
+                return;
+              }
+              onSelectItem(null);
+            }
+          }}
+        >
           {/* Stamp Picker Floating Dock when Image/Stamp tool is active */}
           {activeTool === 'image' && (
             <div className="stamp-picker-dock">
@@ -952,6 +1088,9 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                   width: `${coords.screenW}px`,
                   height: `${coords.screenH}px`,
                   backgroundColor: w.fillColorHex || '#ffffff',
+                }}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -1007,6 +1146,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
           {textItems.map((item) => {
             const edit = pageModifications.textEdits?.find((e: TextBlockEdit) => e.id === item.id);
             const isSelected = selectedItem?.type === 'text' && selectedItem.id === item.id;
+            const isEditing = Boolean(isSelected && (activeTool === 'text' || selectedItem?.isEditing));
             const displayText = edit ? edit.newText : item.text;
             const fontSize = (edit?.style.fontSize || item.fontSize) * scale;
             const color = edit?.style.colorHex || item.detectedColorHex || '#1f1f1f';
@@ -1037,10 +1177,10 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
               isItalic
             );
 
-            // Container covers at least original text on canvas, plus safety padding for input cursor
+            // Snug container width matching detected item or measured text
             const textContainerWidth = Math.max(
               item.screenWidth,
-              measuredWidth + (isSelected ? 6 : 0)
+              measuredWidth
             );
 
             let currentScreenX = item.screenX + offsetX;
@@ -1055,7 +1195,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                 key={item.id}
                 className={`text-span-box ${isSelected ? 'selected' : ''} ${edit ? 'modified' : ''}`}
                 data-text={item.text}
-                title={`Click to edit "${item.text}" (Alt+Arrows to nudge)`}
+                title={activeTool === 'text' ? `Click to edit "${item.text}"` : `Click to select "${item.text}" (Double-click to edit)`}
                 style={{
                   left: `${currentScreenX}px`,
                   top: `${currentScreenY}px`,
@@ -1072,7 +1212,16 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
-                  onSelectItem({ type: 'text', id: item.id });
+                  if (activeTool === 'text') {
+                    onSelectItem({ type: 'text', id: item.id, isEditing: true });
+                  } else {
+                    const alreadySelected = selectedItem?.type === 'text' && selectedItem.id === item.id;
+                    onSelectItem({ type: 'text', id: item.id, isEditing: alreadySelected });
+                  }
+                }}
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  onSelectItem({ type: 'text', id: item.id, isEditing: true });
                 }}
               >
                 {/* Drag Move Handle when Selected */}
@@ -1119,12 +1268,16 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                   />
                 )}
 
-                {isSelected ? (
+                {isEditing ? (
                   <input
                     type="text"
                     className="inline-edit-input"
                     value={displayText}
-                    autoFocus
+                    ref={(el) => {
+                      if (el && isEditing) {
+                        el.focus({ preventScroll: true });
+                      }
+                    }}
                     style={{
                       fontFamily,
                       fontSize: `${fontSize}px`,
@@ -1199,7 +1352,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                       }
                     }}
                   />
-                ) : edit ? (
+                ) : (edit || isSelected) ? (
                   <span
                     className="inline-display-span"
                     style={{
@@ -1222,14 +1375,189 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
           })}
 
 
+          {/* Render Newly Placed Text Blocks */}
+          {pageModifications.newTexts?.map((newBlock: NewTextBlock) => {
+            const isSelected = selectedItem?.type === 'new-text' && selectedItem.id === newBlock.id;
+            const isEditing = Boolean(isSelected && (activeTool === 'text' || selectedItem?.isEditing));
+            const fontSize = (newBlock.style.fontSize || 14) * scale;
+            const fontFamily = newBlock.style.fontFamily || 'Helvetica';
+            const color = newBlock.style.colorHex || '#1f1f1f';
+            const isBold = Boolean(newBlock.style.isBold);
+            const isItalic = Boolean(newBlock.style.isItalic);
+            const textAlign = newBlock.style.textAlign || 'left';
+            const displayText = newBlock.text;
+
+            const measuredWidth = measureRenderedTextWidth(
+              displayText || 'Type text...',
+              fontSize,
+              fontFamily,
+              isBold,
+              isItalic
+            );
+            const blockWidth = Math.max(newBlock.bbox.width * scale, measuredWidth + 8);
+            const blockHeight = Math.max(newBlock.bbox.height * scale, fontSize * 1.25);
+
+            const coords = pdfToScreen(
+              newBlock.bbox.x,
+              newBlock.bbox.y,
+              newBlock.bbox.width,
+              newBlock.bbox.height
+            );
+
+            return (
+              <div
+                key={newBlock.id}
+                className={`new-text-box ${isSelected ? 'selected' : ''}`}
+                style={{
+                  left: `${coords.screenX}px`,
+                  top: `${coords.screenY}px`,
+                  width: `${blockWidth}px`,
+                  minHeight: `${blockHeight}px`,
+                  fontSize: `${fontSize}px`,
+                  fontFamily,
+                  color,
+                  fontWeight: isBold ? 700 : 400,
+                  fontStyle: isItalic ? 'italic' : 'normal',
+                  justifyContent: textAlign === 'right' ? 'flex-end' : textAlign === 'center' ? 'center' : 'flex-start',
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (activeTool === 'text') {
+                    onSelectItem({ type: 'new-text', id: newBlock.id, isEditing: true });
+                  } else {
+                    const alreadySelected = selectedItem?.type === 'new-text' && selectedItem.id === newBlock.id;
+                    onSelectItem({ type: 'new-text', id: newBlock.id, isEditing: alreadySelected });
+                  }
+                }}
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  onSelectItem({ type: 'new-text', id: newBlock.id, isEditing: true });
+                }}
+              >
+                {/* Drag Move Handle when Selected */}
+                {isSelected && (
+                  <div
+                    className="text-move-handle"
+                    title="Drag to move text (or use Alt+Arrow keys to nudge)"
+                    onMouseDown={(e) => handleNewTextDragStart(e, newBlock)}
+                  >
+                    <MoveIcon size={11} />
+                  </div>
+                )}
+
+                {isEditing ? (
+                  <input
+                    type="text"
+                    className="new-text-input"
+                    placeholder="Type text..."
+                    value={displayText}
+                    ref={(el) => {
+                      if (el && isEditing) {
+                        el.focus({ preventScroll: true });
+                      }
+                    }}
+                    style={{
+                      fontFamily,
+                      fontSize: `${fontSize}px`,
+                      color,
+                      fontWeight: isBold ? 700 : 400,
+                      fontStyle: isItalic ? 'italic' : 'normal',
+                      textAlign,
+                      lineHeight: 1.2,
+                    }}
+                    onChange={(e) => {
+                      const newText = e.target.value;
+                      const newMeasuredWidth = measureRenderedTextWidth(
+                        newText,
+                        fontSize,
+                        fontFamily,
+                        isBold,
+                        isItalic
+                      );
+                      const computedPdfWidth = Math.max(
+                        60,
+                        Math.round((newMeasuredWidth / scale) * 10) / 10
+                      );
+
+                      onUpdatePageModifications((prev: PageModifications) => ({
+                        ...prev,
+                        newTexts: (prev.newTexts || []).map((b: NewTextBlock) =>
+                          b.id === newBlock.id
+                            ? {
+                                ...b,
+                                text: newText,
+                                bbox: {
+                                  ...b.bbox,
+                                  width: computedPdfWidth,
+                                },
+                              }
+                            : b
+                        ),
+                      }));
+                    }}
+                    onBlur={() => {
+                      // Auto-discard if empty
+                      if (!displayText || displayText.trim() === '') {
+                        onUpdatePageModifications((prev: PageModifications) => ({
+                          ...prev,
+                          newTexts: (prev.newTexts || []).filter((b: NewTextBlock) => b.id !== newBlock.id),
+                        }));
+                        onSelectItem(null);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape' || e.key === 'Enter') {
+                        e.currentTarget.blur();
+                      }
+                    }}
+                  />
+                ) : (
+                  <span
+                    className="inline-display-span"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      textAlign,
+                      lineHeight: 1.2,
+                      fontFamily,
+                      fontSize: `${fontSize}px`,
+                      color,
+                      fontWeight: isBold ? 700 : 400,
+                      fontStyle: isItalic ? 'italic' : 'normal',
+                    }}
+                  >
+                    {displayText}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+
           {/* Floating Formatting Toolbar */}
           {toolbarPosition && selectedItem && (
             <FloatingFormatToolbar
               position={toolbarPosition}
               type={selectedItem.type}
-              fontFamily={activeTextEdit?.style.fontFamily || activeTextItem?.fontFamily || 'Helvetica'}
-              detectedFontName={activeTextEdit?.detectedFontName || activeTextItem?.fontName}
+              fontFamily={
+                selectedItem.type === 'new-text'
+                  ? activeNewTextBlock?.style.fontFamily || 'Helvetica'
+                  : activeTextEdit?.style.fontFamily || activeTextItem?.fontFamily || 'Helvetica'
+              }
+              detectedFontName={
+                selectedItem.type === 'new-text'
+                  ? undefined
+                  : activeTextEdit?.detectedFontName || activeTextItem?.fontName
+              }
               onFontFamilyChange={(fontFamily) => {
+                if (selectedItem.type === 'new-text') {
+                  onUpdatePageModifications((prev: PageModifications) => ({
+                    ...prev,
+                    newTexts: (prev.newTexts || []).map((b: NewTextBlock) =>
+                      b.id === selectedItem.id ? { ...b, style: { ...b.style, fontFamily } } : b
+                    ),
+                  }));
+                  return;
+                }
                 onUpdatePageModifications((prev: PageModifications) => {
                   const existingEdits = prev.textEdits || [];
                   const existing = existingEdits.find((t: TextBlockEdit) => t.id === selectedItem.id);
@@ -1268,8 +1596,21 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                   return prev;
                 });
               }}
-              fontSize={activeTextEdit?.style.fontSize || activeTextItem?.fontSize || 12}
+              fontSize={
+                selectedItem.type === 'new-text'
+                  ? activeNewTextBlock?.style.fontSize || 14
+                  : activeTextEdit?.style.fontSize || activeTextItem?.fontSize || 12
+              }
               onFontSizeChange={(fontSize) => {
+                if (selectedItem.type === 'new-text') {
+                  onUpdatePageModifications((prev: PageModifications) => ({
+                    ...prev,
+                    newTexts: (prev.newTexts || []).map((b: NewTextBlock) =>
+                      b.id === selectedItem.id ? { ...b, style: { ...b.style, fontSize } } : b
+                    ),
+                  }));
+                  return;
+                }
                 onUpdatePageModifications((prev: PageModifications) => {
                   const existingEdits = prev.textEdits || [];
                   const existing = existingEdits.find((t: TextBlockEdit) => t.id === selectedItem.id);
@@ -1308,8 +1649,21 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                   return prev;
                 });
               }}
-              isBold={activeTextEdit?.style.isBold ?? activeTextItem?.isBold ?? false}
+              isBold={
+                selectedItem.type === 'new-text'
+                  ? Boolean(activeNewTextBlock?.style.isBold)
+                  : activeTextEdit?.style.isBold ?? activeTextItem?.isBold ?? false
+              }
               onToggleBold={() => {
+                if (selectedItem.type === 'new-text') {
+                  onUpdatePageModifications((prev: PageModifications) => ({
+                    ...prev,
+                    newTexts: (prev.newTexts || []).map((b: NewTextBlock) =>
+                      b.id === selectedItem.id ? { ...b, style: { ...b.style, isBold: !b.style.isBold } } : b
+                    ),
+                  }));
+                  return;
+                }
                 onUpdatePageModifications((prev: PageModifications) => {
                   const existingEdits = prev.textEdits || [];
                   const existing = existingEdits.find((t: TextBlockEdit) => t.id === selectedItem.id);
@@ -1349,8 +1703,21 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                   return prev;
                 });
               }}
-              isItalic={activeTextEdit?.style.isItalic ?? activeTextItem?.isItalic ?? false}
+              isItalic={
+                selectedItem.type === 'new-text'
+                  ? Boolean(activeNewTextBlock?.style.isItalic)
+                  : activeTextEdit?.style.isItalic ?? activeTextItem?.isItalic ?? false
+              }
               onToggleItalic={() => {
+                if (selectedItem.type === 'new-text') {
+                  onUpdatePageModifications((prev: PageModifications) => ({
+                    ...prev,
+                    newTexts: (prev.newTexts || []).map((b: NewTextBlock) =>
+                      b.id === selectedItem.id ? { ...b, style: { ...b.style, isItalic: !b.style.isItalic } } : b
+                    ),
+                  }));
+                  return;
+                }
                 onUpdatePageModifications((prev: PageModifications) => {
                   const existingEdits = prev.textEdits || [];
                   const existing = existingEdits.find((t: TextBlockEdit) => t.id === selectedItem.id);
@@ -1390,8 +1757,21 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                   return prev;
                 });
               }}
-              color={activeTextEdit?.style.colorHex || activeTextItem?.detectedColorHex || '#1f1f1f'}
+              color={
+                selectedItem.type === 'new-text'
+                  ? activeNewTextBlock?.style.colorHex || '#1f1f1f'
+                  : activeTextEdit?.style.colorHex || activeTextItem?.detectedColorHex || '#1f1f1f'
+              }
               onColorChange={(colorHex) => {
+                if (selectedItem.type === 'new-text') {
+                  onUpdatePageModifications((prev: PageModifications) => ({
+                    ...prev,
+                    newTexts: (prev.newTexts || []).map((b: NewTextBlock) =>
+                      b.id === selectedItem.id ? { ...b, style: { ...b.style, colorHex } } : b
+                    ),
+                  }));
+                  return;
+                }
                 onUpdatePageModifications((prev: PageModifications) => {
                   const existingEdits = prev.textEdits || [];
                   const existing = existingEdits.find((t: TextBlockEdit) => t.id === selectedItem.id);
@@ -1471,10 +1851,21 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                 });
               }}
               textAlign={
-                activeTextEdit?.style.textAlign ||
-                (activeTextItem && /^\$?\s*[\d,]+(\.\d+)?$/i.test(activeTextItem.text.trim()) ? 'right' : 'left')
+                selectedItem.type === 'new-text'
+                  ? activeNewTextBlock?.style.textAlign || 'left'
+                  : activeTextEdit?.style.textAlign ||
+                    (activeTextItem && /^\$?\s*[\d,]+(\.\d+)?$/i.test(activeTextItem.text.trim()) ? 'right' : 'left')
               }
               onTextAlignChange={(textAlign) => {
+                if (selectedItem.type === 'new-text') {
+                  onUpdatePageModifications((prev: PageModifications) => ({
+                    ...prev,
+                    newTexts: (prev.newTexts || []).map((b: NewTextBlock) =>
+                      b.id === selectedItem.id ? { ...b, style: { ...b.style, textAlign } } : b
+                    ),
+                  }));
+                  return;
+                }
                 onUpdatePageModifications((prev: PageModifications) => {
                   const existingEdits = prev.textEdits || [];
                   const existing = existingEdits.find((t: TextBlockEdit) => t.id === selectedItem.id);
@@ -1545,7 +1936,12 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                 }));
               }}
               onDelete={() => {
-                if (selectedItem.type === 'text') {
+                if (selectedItem.type === 'new-text') {
+                  onUpdatePageModifications((prev: PageModifications) => ({
+                    ...prev,
+                    newTexts: (prev.newTexts || []).filter((b: NewTextBlock) => b.id !== selectedItem.id),
+                  }));
+                } else if (selectedItem.type === 'text') {
                   // Whiteout / Erase original text
                   const item = textItems.find((t) => t.id === selectedItem.id);
                   if (item) {

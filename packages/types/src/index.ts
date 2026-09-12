@@ -158,6 +158,20 @@ export type ThemeMode = 'light' | 'dark';
 export type EditorTool = 'select' | 'text' | 'whiteout' | 'image';
 
 /**
+ * Item types that can be selected on the canvas
+ */
+export type SelectedItemType = 'text' | 'whiteout' | 'image' | 'new-text';
+
+/**
+ * Currently selected canvas element representation
+ */
+export interface SelectedItem {
+  type: SelectedItemType;
+  id: string;
+  isEditing?: boolean;
+}
+
+/**
  * Payload sent to backend `/api/export`
  */
 export interface ExportRequestPayload {

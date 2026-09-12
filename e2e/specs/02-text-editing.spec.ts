@@ -100,4 +100,70 @@ test.describe('In-Place Text Editing & Floating Format Toolbar', () => {
     const statusBar = page.locator('.status-bar, footer');
     await expect(statusBar).toContainText('edit');
   });
+
+  test('spawns new text field in blank space with Text tool and edits it', async ({ page }) => {
+    await editor.selectTool('text');
+
+    // Click in a blank canvas area
+    const overlay = page.locator('.interactive-overlay');
+    await overlay.click({ position: { x: 350, y: 280 } });
+
+    // New text box and auto-focused input should appear
+    const newTextBox = page.locator('.new-text-box');
+    await expect(newTextBox).toBeVisible();
+    const newTextInput = newTextBox.locator('input.new-text-input');
+    await expect(newTextInput).toBeVisible();
+    await expect(newTextInput).toBeFocused();
+
+    // Type text
+    await newTextInput.fill('Custom Note 2026');
+
+    // Floating toolbar should be visible overhead
+    const toolbar = page.locator('.floating-toolbar');
+    await expect(toolbar).toBeVisible();
+
+    // Blur by clicking background outside
+    await editor.canvasViewport.click({ position: { x: 20, y: 20 } });
+    await page.waitForTimeout(300);
+
+    // Text remains rendered on canvas
+    await expect(newTextBox).toContainText('Custom Note 2026');
+  });
+
+  test('auto-discards empty new text field on blur', async ({ page }) => {
+    await editor.selectTool('text');
+
+    // Click in blank space to spawn
+    const overlay = page.locator('.interactive-overlay');
+    await overlay.click({ position: { x: 350, y: 320 } });
+
+    const newTextBox = page.locator('.new-text-box');
+    await expect(newTextBox).toBeVisible();
+
+    // Immediately click canvas background to blur without typing
+    await editor.canvasViewport.click({ position: { x: 20, y: 20 } });
+    await page.waitForTimeout(300);
+
+    // Should be removed from DOM
+    await expect(page.locator('.new-text-box')).toHaveCount(0);
+  });
+
+  test('select tool selects text without immediately opening text input cursor unless double-clicked', async ({ page }) => {
+    await editor.selectTool('select');
+    const targetBlock = editor.locateText('INV-2026-0891');
+
+    // Single click: selects element
+    await targetBlock.click();
+    await expect(targetBlock).toHaveClass(/selected/);
+
+    // Input cursor should NOT be present; span is shown
+    await expect(targetBlock.locator('input.inline-edit-input')).toHaveCount(0);
+    await expect(targetBlock.locator('span.inline-display-span')).toBeVisible();
+
+    // Double click enters inline edit mode
+    await targetBlock.dblclick();
+    await expect(targetBlock.locator('input.inline-edit-input')).toBeVisible();
+    await expect(targetBlock.locator('input.inline-edit-input')).toBeFocused();
+  });
 });
+

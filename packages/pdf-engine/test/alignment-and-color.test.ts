@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { PDFDocument, rgb } from 'pdf-lib';
+import zlib from 'node:zlib';
 import { PdfEngine } from '../src/engine';
 import { hexToPdfColor, parseColorAndOpacity } from '../src/colors';
 import { ModificationDelta } from '@inq/types';
@@ -272,6 +273,64 @@ describe('PDF Engine - Critique QA: Alignment, Geometry & Color Fidelity', () =>
       const modifiedBytes = await engine.modifyPdf(pdfBytes, delta);
       const reloaded = await PDFDocument.load(modifiedBytes);
       expect(reloaded.getPageCount()).toBe(1);
+    });
+
+    it('moved text baseline precision: prevents doubling of deltaY and covers original text baseline', async () => {
+      const doc = await PDFDocument.create();
+      const page = doc.addPage([600, 800]);
+      page.drawText('Price: $100', { x: 50, y: 503, size: 12 });
+      const pdfBytes = await doc.save();
+
+      const engine = new PdfEngine();
+      // Moving upwards by deltaY = +30.
+      // With EditorCanvas providing shifted baselineY = 533:
+      const deltaWithShiftedBaseline: ModificationDelta = {
+        pages: {
+          0: {
+            pageIndex: 0,
+            textEdits: [
+              {
+                id: 'move-1',
+                pageIndex: 0,
+                originalText: 'Price: $100',
+                newText: 'Price: $200',
+                originalBbox: { x: 50, y: 500, width: 60, height: 14 },
+                currentBbox: { x: 50, y: 530, width: 60, height: 14 }, // deltaY = +30
+                baselineY: 533, // shifted baseline
+                style: {
+                  fontFamily: 'Helvetica',
+                  fontSize: 12,
+                  colorHex: '#000000',
+                  isBold: false,
+                  isItalic: false,
+                  letterSpacing: 0,
+                  lineHeight: 1.2,
+                  textAlign: 'left',
+                  autoFit: false,
+                },
+              },
+            ],
+            whiteouts: [],
+            newTexts: [],
+            images: [],
+          },
+        },
+      };
+
+      const modifiedBytes = await engine.modifyPdf(pdfBytes, deltaWithShiftedBaseline);
+      const reloaded = await PDFDocument.load(modifiedBytes);
+      const modifiedPage = reloaded.getPages()[0];
+      const contents = modifiedPage.node.Contents() as any;
+      
+      // Inflate and inspect the injected modification stream
+      const streamObj = reloaded.context.lookup(contents.get(3)) as any;
+      const streamText = zlib.inflateSync(Buffer.from(streamObj.contents)).toString('utf-8');
+
+      // 1. Injected text MUST be drawn at y = 533 (503 + 30), NOT doubled at y = 563
+      expect(streamText).toContain('1 0 0 1 50 533 Tm');
+
+      // 2. Original whiteout MUST cover the original baseline at y = 503 (y ~ 498)
+      expect(streamText).toContain('1 0 0 1 48 498 cm');
     });
   });
 });
