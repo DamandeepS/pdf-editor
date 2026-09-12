@@ -11,6 +11,9 @@
     "test": {
       "dependsOn": ["^build"]
     },
+    "@inq/tokens#typecheck": {
+      "dependsOn": ["build"]
+    },
     "typecheck": {
       "dependsOn": ["^build"]
     },
