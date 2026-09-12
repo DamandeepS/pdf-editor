@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { PDFDocument, rgb } from 'pdf-lib';
 import { PdfEngine } from '../src/engine';
 import { hexToPdfColor, parseColorAndOpacity } from '../src/colors';
-import { DocumentDelta } from '@inq/types';
+import { ModificationDelta } from '@inq/types';
 
 describe('PDF Engine - Critique QA: Alignment, Geometry & Color Fidelity', () => {
   describe('Color and Opacity parsing', () => {
@@ -60,9 +60,10 @@ describe('PDF Engine - Critique QA: Alignment, Geometry & Color Fidelity', () =>
 
       // Original amount: $10.00 (x: 450, width: 40) -> right edge is at 490
       // New amount: $125,000.00 (much wider)
-      const delta: DocumentDelta = {
+      const delta: ModificationDelta = {
         pages: {
           0: {
+            pageIndex: 0,
             textEdits: [
               {
                 id: 'price-edit',
@@ -106,9 +107,10 @@ describe('PDF Engine - Critique QA: Alignment, Geometry & Color Fidelity', () =>
 
       // Original: 28pt heading (height: 28, baseline: 650)
       // New text: 10pt small caption
-      const delta: DocumentDelta = {
+      const delta: ModificationDelta = {
         pages: {
           0: {
+            pageIndex: 0,
             textEdits: [
               {
                 id: 'heading-shrink',
@@ -151,9 +153,10 @@ describe('PDF Engine - Critique QA: Alignment, Geometry & Color Fidelity', () =>
 
       // Original bbox width is 30pt. New text is 120pt wide.
       // With autoFit: false, font size must remain 16pt!
-      const delta: DocumentDelta = {
+      const delta: ModificationDelta = {
         pages: {
           0: {
+            pageIndex: 0,
             textEdits: [
               {
                 id: 'no-autofit',
@@ -190,9 +193,10 @@ describe('PDF Engine - Critique QA: Alignment, Geometry & Color Fidelity', () =>
       const pdfBytes = await createBasePdf();
       const engine = new PdfEngine();
 
-      const delta: DocumentDelta = {
+      const delta: ModificationDelta = {
         pages: {
           0: {
+            pageIndex: 0,
             textEdits: [
               {
                 id: 'center-edit',
@@ -231,9 +235,10 @@ describe('PDF Engine - Critique QA: Alignment, Geometry & Color Fidelity', () =>
       const pdfBytes = await createBasePdf();
       const engine = new PdfEngine();
 
-      const delta: DocumentDelta = {
+      const delta: ModificationDelta = {
         pages: {
           0: {
+            pageIndex: 0,
             textEdits: [
               {
                 id: 'moved-edit',

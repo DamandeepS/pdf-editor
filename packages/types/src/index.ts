@@ -120,6 +120,8 @@ export interface ModificationDelta {
   pages: Record<number, PageModifications>;
 }
 
+export type DocumentDelta = ModificationDelta;
+
 /**
  * Sample bill gallery metadata
  */
