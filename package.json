@@ -15,6 +15,10 @@
     "build": "turbo run build",
     "build:vercel": "node scripts/build-vercel.js",
     "test": "turbo run test",
+    "test:e2e": "playwright test",
+    "test:visual": "playwright test e2e/specs/08-visual-regression.spec.ts",
+    "test:all": "npm test && npm run test:e2e",
+    "fixtures:generate": "node scripts/generate-fixtures.js",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "clean": "turbo run clean",
@@ -22,12 +26,13 @@
     "gen:component": "plop component"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "jsdom": "^30.0.1",
     "plop": "^4.0.5",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
     "turbo": "^2.10.12",
     "typescript": "^7.0.2"
   }

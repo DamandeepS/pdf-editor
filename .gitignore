@@ -15,6 +15,8 @@ out/
 # Testing & Coverage
 coverage/
 *.lcov
+test-results/
+playwright-report/
 
 # Environment Variables & Local Configs
 .env
