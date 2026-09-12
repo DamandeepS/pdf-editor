@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import type { SampleBillMeta, ModificationDelta, PageModifications, EditorTool } from '@inq/types';
 import { PdfEngine, getSamplePdfBytes, SAMPLE_BILLS_META } from '@inq/pdf-engine';
@@ -67,6 +67,7 @@ export const App: React.FC = () => {
   const [isPrivacyOpen, setIsPrivacyOpen] = useState<boolean>(false);
   const [ipcStatus, setIpcStatus] = useState<'connected' | 'offline' | 'checking'>('checking');
   const [isExporting, setIsExporting] = useState<boolean>(false);
+  const activeLoadIdRef = useRef<number>(0);
 
   // Apply theme to document element
   useEffect(() => {
@@ -76,6 +77,7 @@ export const App: React.FC = () => {
 
   // Load sample bill via tRPC with client-side fallback
   const loadSample = useCallback(async (sampleId: string) => {
+    const loadId = ++activeLoadIdRef.current;
     setCurrentSampleId(sampleId);
     let bytes: Uint8Array | null = null;
     let title: string | undefined;
@@ -97,8 +99,10 @@ export const App: React.FC = () => {
     }
 
     if (bytes) {
+      if (loadId !== activeLoadIdRef.current) return;
       setPdfBytes(bytes.slice());
       const doc = await loadPdfDocument(bytes.slice());
+      if (loadId !== activeLoadIdRef.current) return;
       setPdfDocument(doc);
       setNumPages(doc.numPages);
       setCurrentPage(1);
@@ -138,14 +142,17 @@ export const App: React.FC = () => {
 
   // Handle custom PDF file upload
   const handleUploadFile = async (file: File) => {
+    const loadId = ++activeLoadIdRef.current;
     try {
       const arrayBuffer = await file.arrayBuffer();
       const bytes = new Uint8Array(arrayBuffer);
+      if (loadId !== activeLoadIdRef.current) return;
       setPdfBytes(bytes.slice());
       setCurrentSampleId('');
       setDocumentTitle(file.name.replace(/\.[^/.]+$/, ''));
 
       const doc = await loadPdfDocument(bytes.slice());
+      if (loadId !== activeLoadIdRef.current) return;
       setPdfDocument(doc);
       setNumPages(doc.numPages);
       setCurrentPage(1);

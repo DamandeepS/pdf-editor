@@ -37,7 +37,7 @@ export class EditorPage {
 
   async goto(theme: 'light' | 'dark' = 'light') {
     await this.page.goto('/');
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('domcontentloaded');
 
     // Dismiss cookie banner if visible so it doesn't block clicks
     try {
@@ -48,11 +48,9 @@ export class EditorPage {
       // safe ignore
     }
 
-    if (theme === 'dark') {
-      const currentTheme = await this.page.evaluate(() => document.documentElement.getAttribute('data-theme'));
-      if (currentTheme !== 'dark') {
-        await this.toggleTheme();
-      }
+    const currentTheme = await this.page.evaluate(() => document.documentElement.getAttribute('data-theme') || 'light');
+    if (currentTheme !== theme) {
+      await this.toggleTheme();
     }
 
     await this.waitForCanvasReady();

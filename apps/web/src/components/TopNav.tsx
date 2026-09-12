@@ -76,6 +76,7 @@ export const TopNav: React.FC<TopNavProps> = ({
     const file = e.target.files?.[0];
     if (file) {
       onUploadFile(file);
+      e.target.value = '';
     }
   };
 

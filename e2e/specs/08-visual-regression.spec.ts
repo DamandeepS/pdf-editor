@@ -17,7 +17,7 @@ test.describe('Visual Regression Snapshot Testing', () => {
   });
 
   test('visual baseline: Inq Web Editor - Dark Mode', async ({ page }) => {
-    await editor.toggleTheme();
+    await editor.goto('dark');
     await page.waitForTimeout(600);
     await expect(page).toHaveScreenshot('web-editor-dark-mode.png', {
       fullPage: false,
@@ -57,7 +57,7 @@ test.describe('Visual Regression Snapshot Testing', () => {
 
   test('visual baseline: Living Design System Workbench', async ({ page }) => {
     await page.goto('http://localhost:3001/design-system/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
     await page.waitForTimeout(600);
 
     await expect(page).toHaveScreenshot('design-system-workbench.png', {

@@ -106,6 +106,9 @@ jobs:
       - name: Deterministic Custom PDF Fixture Generation
         run: npm run fixtures:generate
 
+      - name: Compile Workspace Packages
+        run: npm run build
+
       - name: Run Playwright E2E & Visual Regression Tests
         run: npx playwright test
 

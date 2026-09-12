@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Design System Living Component & Token Workbench', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3001/design-system/');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('domcontentloaded');
   });
 
   test('loads design system workbench with brand header and navigation items', async ({ page }) => {
