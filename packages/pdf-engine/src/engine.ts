@@ -50,77 +50,139 @@ export class PdfEngine {
 
       // 2. Process Text Block Edits (Auto-Whiteout old text + Inject new text)
       for (const edit of pageMods.textEdits || []) {
-        const fontSize = edit.style?.fontSize || 12;
+        // Resolve font first to get exact metrics before whiteout computation
+        const font = await this.fontResolver.resolveFont(
+          doc,
+          edit.style?.fontFamily,
+          edit.style?.isBold,
+          edit.style?.isItalic,
+          options?.customFontBuffers
+        );
+
+        let fontSize = edit.style?.fontSize || 12;
+        const autoFit = edit.style?.autoFit ?? false;
+
+        // Auto-fit calculation: If explicitly requested and text overflows the bounding box, scale down
+        if (autoFit && edit.originalBbox.width > 0) {
+          const rawWidth = font.widthOfTextAtSize(edit.newText, fontSize);
+          if (rawWidth > edit.originalBbox.width) {
+            const scaleFactor = edit.originalBbox.width / rawWidth;
+            fontSize = Math.max(5, Math.floor(fontSize * scaleFactor * 10) / 10);
+          }
+        }
+
+        const textWidth = font.widthOfTextAtSize(edit.newText, fontSize);
+        const textHeight = font.heightAtSize(fontSize);
+
         // In PDF typography, descent extends below baseline by ~0.25 to 0.3 * fontSize
         // We add protective padding so descenders, commas, and anti-aliased subpixels are 100% blanketed
-        const descent = fontSize * 0.28;
-        const padY = Math.max(1.5, fontSize * 0.1);
+        const origHeight = edit.originalBbox.height || fontSize;
+        const effectiveHeight = Math.max(origHeight, fontSize * 1.25);
+        const effectiveDescent = Math.max(origHeight * 0.25, fontSize * 0.28);
+        const padY = Math.max(1.5, Math.max(origHeight, fontSize) * 0.1);
         const padX = Math.max(2, fontSize * 0.1);
 
         // Determine position delta in PDF coordinate space
         const deltaX = edit.currentBbox ? edit.currentBbox.x - edit.originalBbox.x : 0;
         const deltaY = edit.currentBbox ? edit.currentBbox.y - edit.originalBbox.y : 0;
+        const isMoved = Math.abs(deltaX) > 0.1 || Math.abs(deltaY) > 0.1;
 
         // Determine effective baseline accounting for vertical shift
         const baseBaselineY = edit.baselineY !== undefined ? edit.baselineY : edit.originalBbox.y;
         const effectiveBaselineY = baseBaselineY + deltaY;
 
-        // Calculate robust whiteout bbox that covers from below descenders to above ascenders
-        const originalWidth = edit.originalBbox.width || 40;
-        const currentWidth = edit.currentBbox?.width || originalWidth;
-        const whiteoutWidth = Math.max(originalWidth, currentWidth) + 2 * padX;
-        const whiteoutHeight =
-          edit.baselineY !== undefined
-            ? fontSize * 1.25 + 2 * padY
-            : edit.originalBbox.height + 2 * padY;
-        const whiteoutY =
-          edit.baselineY !== undefined
-            ? baseBaselineY - descent - padY
-            : edit.originalBbox.y - padY;
+        // Calculate horizontal position of new text based on alignment
+        const targetX = edit.currentBbox ? edit.currentBbox.x : edit.originalBbox.x;
+        const anchorWidth = edit.originalBbox.width || textWidth;
 
-        const textWhiteout: WhiteoutBlock = {
-          id: `whiteout-${edit.id}`,
-          pageIndex,
-          bbox: {
-            x: edit.originalBbox.x - padX,
-            y: whiteoutY,
-            width: whiteoutWidth,
-            height: whiteoutHeight,
-          },
-          fillColorHex: edit.backgroundColorHex || '#ffffff',
-        };
-        applyWhiteout(page, textWhiteout);
+        let newStartX = targetX;
+        if (edit.style.textAlign === 'right') {
+          newStartX = (targetX + anchorWidth) - textWidth;
+        } else if (edit.style.textAlign === 'center') {
+          newStartX = targetX + (anchorWidth - textWidth) / 2;
+        }
+        const newEndX = newStartX + textWidth;
 
-        // If moved, also apply background whiteout at current position if background color is set
-        if ((deltaX !== 0 || deltaY !== 0) && edit.backgroundColorHex) {
-          const movedWhiteout: WhiteoutBlock = {
-            id: `whiteout-moved-${edit.id}`,
+        const origStartX = edit.originalBbox.x;
+        const origEndX = edit.originalBbox.x + (edit.originalBbox.width || 0);
+
+        if (!isMoved) {
+          // In-place replacement: Whiteout covers the full union envelope of both original and new text
+          const unionMinX = Math.min(origStartX, newStartX);
+          const unionMaxX = Math.max(origEndX, newEndX);
+          const whiteoutX = unionMinX - padX;
+          const whiteoutWidth = (unionMaxX - unionMinX) + 2 * padX;
+
+          const whiteoutY =
+            edit.baselineY !== undefined
+              ? baseBaselineY - effectiveDescent - padY
+              : Math.min(edit.originalBbox.y, edit.currentBbox ? edit.currentBbox.y : edit.originalBbox.y) - padY;
+          const whiteoutHeight = effectiveHeight + 2 * padY;
+
+          const textWhiteout: WhiteoutBlock = {
+            id: `whiteout-${edit.id}`,
             pageIndex,
             bbox: {
-              x: edit.currentBbox.x - padX,
-              y: effectiveBaselineY - descent - padY,
-              width: currentWidth + 2 * padX,
+              x: whiteoutX,
+              y: whiteoutY,
+              width: whiteoutWidth,
               height: whiteoutHeight,
             },
-            fillColorHex: edit.backgroundColorHex,
+            fillColorHex: edit.backgroundColorHex || '#ffffff',
           };
-          applyWhiteout(page, movedWhiteout);
-        }
+          applyWhiteout(page, textWhiteout);
+        } else {
+          // Moved: 1. Erase original text at original location
+          const origWhiteoutY =
+            edit.baselineY !== undefined
+              ? baseBaselineY - (origHeight * 0.25) - padY
+              : edit.originalBbox.y - padY;
+          const origWhiteoutHeight = origHeight + 2 * padY;
 
-        // Resolve font
-        const font = await this.fontResolver.resolveFont(
-          doc,
-          edit.style.fontFamily,
-          edit.style.isBold,
-          edit.style.isItalic,
-          options?.customFontBuffers
-        );
+          const origWhiteout: WhiteoutBlock = {
+            id: `whiteout-orig-${edit.id}`,
+            pageIndex,
+            bbox: {
+              x: origStartX - padX,
+              y: origWhiteoutY,
+              width: (edit.originalBbox.width || 40) + 2 * padX,
+              height: origWhiteoutHeight,
+            },
+            fillColorHex: edit.backgroundColorHex || '#ffffff',
+          };
+          applyWhiteout(page, origWhiteout);
+
+          // 2. If background color specified, whiteout moved destination
+          if (edit.backgroundColorHex) {
+            const movedWhiteout: WhiteoutBlock = {
+              id: `whiteout-moved-${edit.id}`,
+              pageIndex,
+              bbox: {
+                x: newStartX - padX,
+                y: effectiveBaselineY - (fontSize * 0.28) - padY,
+                width: textWidth + 2 * padX,
+                height: (fontSize * 1.25) + 2 * padY,
+              },
+              fillColorHex: edit.backgroundColorHex,
+            };
+            applyWhiteout(page, movedWhiteout);
+          }
+        }
 
         // Inject new vector text at the exact baseline and position
         injectVectorText(page, font, {
           text: edit.newText,
-          bbox: edit.currentBbox,
-          style: edit.style,
+          bbox: {
+            x: targetX,
+            y: edit.currentBbox ? edit.currentBbox.y : edit.originalBbox.y,
+            width: anchorWidth,
+            height: edit.currentBbox?.height || textHeight,
+          },
+          style: {
+            ...edit.style,
+            fontSize,
+            autoFit: false,
+          },
           baselineY: effectiveBaselineY,
         });
       }

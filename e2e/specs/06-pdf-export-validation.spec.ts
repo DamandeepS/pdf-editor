@@ -85,4 +85,31 @@ test.describe('End-to-End PDF Export & Vector Stream Verification', () => {
     const meta = await validatePdfBuffer(pdfBuffer);
     expect(meta.pageCount).toBe(3);
   });
+
+  test('critique QA: exports invoice with expanded right-aligned amount and verifies byte integrity', async ({ page }) => {
+    await editor.selectTool('text');
+    const priceBlock = editor.locateText('$1,250.00');
+    if (await priceBlock.isVisible()) {
+      await priceBlock.click();
+      const input = priceBlock.locator('input.inline-edit-input');
+      await input.fill('$125,000.00');
+      await editor.canvasViewport.click({ position: { x: 20, y: 20 } });
+      await page.waitForTimeout(300);
+
+      const downloadPromise = page.waitForEvent('download', { timeout: 20000 });
+      await editor.exportButton.click();
+      const download = await downloadPromise;
+
+      const stream = await download.createReadStream();
+      const chunks: Buffer[] = [];
+      for await (const chunk of stream) {
+        chunks.push(Buffer.from(chunk));
+      }
+      const pdfBuffer = Buffer.concat(chunks);
+
+      expect(pdfBuffer.length).toBeGreaterThan(1000);
+      const meta = await validatePdfBuffer(pdfBuffer);
+      expect(meta.pageCount).toBe(1);
+    }
+  });
 });

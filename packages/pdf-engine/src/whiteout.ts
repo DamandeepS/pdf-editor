@@ -1,6 +1,6 @@
 import { PDFPage } from 'pdf-lib';
 import { WhiteoutBlock } from '@inq/types';
-import { hexToPdfColor } from './colors';
+import { parseColorAndOpacity } from './colors';
 
 /**
  * Applies a vector whiteout / redaction box onto a PDF page.
@@ -8,15 +8,15 @@ import { hexToPdfColor } from './colors';
  */
 export function applyWhiteout(page: PDFPage, block: WhiteoutBlock): void {
   const { x, y, width, height } = block.bbox;
-  const color = hexToPdfColor(block.fillColorHex || '#ffffff');
+  const { color, opacity } = parseColorAndOpacity(block.fillColorHex || '#ffffff', undefined, 1);
 
-  // Draw opaque vector rectangle over the area
+  // Draw opaque or tinted vector rectangle over the area
   page.drawRectangle({
     x,
     y,
     width,
     height,
     color,
-    opacity: 1,
+    opacity,
   });
 }

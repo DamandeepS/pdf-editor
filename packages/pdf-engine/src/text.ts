@@ -1,6 +1,6 @@
 import { PDFPage, PDFFont } from 'pdf-lib';
 import { TextBlockEdit, NewTextBlock, TextStyleOptions } from '@inq/types';
-import { hexToPdfColor } from './colors';
+import { parseColorAndOpacity } from './colors';
 
 export interface TextInjectionOptions {
   text: string;
@@ -22,7 +22,7 @@ export function injectVectorText(
   if (!text) return;
 
   let fontSize = style.fontSize || 12;
-  const color = hexToPdfColor(style.colorHex || '#1f1f1f');
+  const { color, opacity } = parseColorAndOpacity(style.colorHex || '#1f1f1f');
 
   // Auto-fit calculation: If text overflows the bounding box width, scale font size
   if (style.autoFit && bbox.width > 0) {
@@ -60,6 +60,7 @@ export function injectVectorText(
     size: fontSize,
     font,
     color,
+    opacity: opacity < 1 ? opacity : undefined,
     lineHeight: style.lineHeight ? style.lineHeight * fontSize : undefined,
   });
 }

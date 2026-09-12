@@ -598,7 +598,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
               letterSpacing: 0,
               lineHeight: 1.2,
               textAlign: isCurrencyOrNumber ? 'right' : 'left',
-              autoFit: true,
+              autoFit: false,
             },
           };
           return {
@@ -727,7 +727,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
               letterSpacing: 0,
               lineHeight: 1.2,
               textAlign: isCurrencyOrNumber ? 'right' : 'left',
-              autoFit: true,
+              autoFit: false,
             },
           };
           return { ...prev, textEdits: [...existingEdits, newEdit] };
@@ -1137,6 +1137,18 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                     }}
                     onChange={(e) => {
                       const newText = e.target.value;
+                      const newMeasuredWidth = measureRenderedTextWidth(
+                        newText,
+                        fontSize,
+                        fontFamily,
+                        isBold,
+                        isItalic
+                      );
+                      const computedPdfWidth = Math.max(
+                        item.width,
+                        Math.round((newMeasuredWidth / scale) * 10) / 10
+                      );
+
                       onUpdatePageModifications((prev: PageModifications) => {
                         const existingEdits = prev.textEdits || [];
                         const withoutCurrent = existingEdits.filter((t: TextBlockEdit) => t.id !== item.id);
@@ -1150,7 +1162,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                           letterSpacing: 0,
                           lineHeight: 1.2,
                           textAlign,
-                          autoFit: true,
+                          autoFit: false,
                         };
 
                         const updatedEdit: TextBlockEdit = {
@@ -1164,16 +1176,16 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                             width: item.width,
                             height: item.height,
                           },
-                          currentBbox: edit?.currentBbox || {
-                            x: item.x,
-                            y: item.y,
-                            width: item.width,
-                            height: item.height,
+                          currentBbox: {
+                            x: edit?.currentBbox.x ?? item.x,
+                            y: edit?.currentBbox.y ?? item.y,
+                            width: computedPdfWidth,
+                            height: edit?.currentBbox.height ?? item.height,
                           },
                           baselineY: edit?.baselineY ?? item.baselineY ?? item.y,
                           backgroundColorHex: edit?.backgroundColorHex || item.detectedBackgroundColorHex || '#ffffff',
                           detectedFontName: item.fontName,
-                          style: edit?.style || defaultStyle,
+                          style: edit?.style ? { ...edit.style, autoFit: false } : defaultStyle,
                         };
                         return {
                           ...prev,
@@ -1248,7 +1260,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                         letterSpacing: 0,
                         lineHeight: 1.2,
                         textAlign: 'left',
-                        autoFit: true,
+                        autoFit: false,
                       },
                     };
                     return { ...prev, textEdits: [...existingEdits, newEdit] };
@@ -1288,7 +1300,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                         letterSpacing: 0,
                         lineHeight: 1.2,
                         textAlign: 'left',
-                        autoFit: true,
+                        autoFit: false,
                       },
                     };
                     return { ...prev, textEdits: [...existingEdits, newEdit] };
@@ -1329,7 +1341,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                         letterSpacing: 0,
                         lineHeight: 1.2,
                         textAlign: 'left',
-                        autoFit: true,
+                        autoFit: false,
                       },
                     };
                     return { ...prev, textEdits: [...existingEdits, newEdit] };
@@ -1370,7 +1382,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                         letterSpacing: 0,
                         lineHeight: 1.2,
                         textAlign: 'left',
-                        autoFit: true,
+                        autoFit: false,
                       },
                     };
                     return { ...prev, textEdits: [...existingEdits, newEdit] };
@@ -1410,7 +1422,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                         letterSpacing: 0,
                         lineHeight: 1.2,
                         textAlign: 'left',
-                        autoFit: true,
+                        autoFit: false,
                       },
                     };
                     return { ...prev, textEdits: [...existingEdits, newEdit] };
@@ -1450,7 +1462,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                         letterSpacing: 0,
                         lineHeight: 1.2,
                         textAlign: 'left',
-                        autoFit: true,
+                        autoFit: false,
                       },
                     };
                     return { ...prev, textEdits: [...existingEdits, newEdit] };
@@ -1503,7 +1515,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                         letterSpacing: 0,
                         lineHeight: 1.2,
                         textAlign,
-                        autoFit: true,
+                        autoFit: false,
                       },
                     };
                     return { ...prev, textEdits: [...existingEdits, newEdit] };
