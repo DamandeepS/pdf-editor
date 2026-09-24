@@ -4,6 +4,9 @@
   "outputDirectory": "apps/web/dist",
   "framework": "vite",
   "cleanUrls": true,
+  "git": {
+    "deploymentEnabled": false
+  },
   "rewrites": [
     {
       "source": "/design-system",

@@ -119,3 +119,102 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 14
+
+  # -------------------------------------------------------------
+  # Job 5: Gated Production Deployment to Vercel
+  # Deploys to Vercel Production ONLY after all 4 quality gates pass
+  # -------------------------------------------------------------
+  deploy-production:
+    name: Deploy to Vercel (Production)
+    runs-on: ubuntu-latest
+    needs: [quality-and-typecheck, unit-and-component-tests, build, e2e-and-visual-regression]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Verify Vercel Deployment Secrets
+        id: check-credentials
+        run: |
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
+            echo "::notice title=Vercel Token Not Configured::VERCEL_TOKEN secret is not configured in repository secrets. Automated deployment via GitHub Actions will be skipped. See DEPLOYMENT.md for setup instructions."
+            echo "has_token=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_token=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install Dependencies
+        if: steps.check-credentials.outputs.has_token == 'true'
+        run: npm ci
+
+      - name: Compile Vercel Production Bundle
+        if: steps.check-credentials.outputs.has_token == 'true'
+        run: npm run build:vercel
+
+      - name: Deploy Verified Build to Vercel Production
+        if: steps.check-credentials.outputs.has_token == 'true'
+        uses: amondnet/vercel-action@v25.2.0
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./
+
+  # -------------------------------------------------------------
+  # Job 6: Gated Pull Request Preview Deployment to Vercel
+  # Generates an ephemeral preview URL ONLY after all 4 quality gates pass
+  # -------------------------------------------------------------
+  deploy-preview:
+    name: Deploy to Vercel (Preview)
+    runs-on: ubuntu-latest
+    needs: [quality-and-typecheck, unit-and-component-tests, build, e2e-and-visual-regression]
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Verify Vercel Deployment Secrets
+        id: check-credentials
+        run: |
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
+            echo "::notice title=Vercel Token Not Configured::VERCEL_TOKEN secret is not configured in repository secrets. Skipping preview deployment."
+            echo "has_token=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_token=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install Dependencies
+        if: steps.check-credentials.outputs.has_token == 'true'
+        run: npm ci
+
+      - name: Compile Vercel Production Bundle
+        if: steps.check-credentials.outputs.has_token == 'true'
+        run: npm run build:vercel
+
+      - name: Deploy Verified Preview to Vercel
+        if: steps.check-credentials.outputs.has_token == 'true'
+        uses: amondnet/vercel-action@v25.2.0
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-comment: true
+          working-directory: ./
+

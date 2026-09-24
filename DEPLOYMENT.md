@@ -115,3 +115,69 @@ This ensures:
 2. Both `@inq/web` and `@inq/stories` are built in parallel.
 3. The design system bundle is mounted into `/design-system` (with `/stories` alias) with portable relative asset resolution.
 4. Client-side SPA routing handles all main editor paths without 404 conflicts.
+
+---
+
+## Gating Vercel Deployments on CI Success
+
+By default, Vercel connects directly to GitHub and triggers a deployment on every `git push` — **before or independently of your GitHub Actions CI pipeline**. If a commit has a broken type, failing unit tests, or broken PDF export logic, Vercel would still deploy it!
+
+Deploying **only when CI is successful** is the industry gold standard. There are two recommended approaches to enforce this:
+
+---
+
+### Option 1: Direct CD via GitHub Actions (Recommended for Complete Control)
+
+In this approach, GitHub Actions acts as the single source of truth. Vercel only receives the deployment command **after** all 4 quality gates pass.
+
+#### How It Works:
+In `.github/workflows/ci.yml`:
+1. **Job 1**: `Typecheck & Code Quality` (`npm run typecheck`, `npm run lint`)
+2. **Job 2**: `Unit & Component Tests (Vitest)` (`npm test` — all 164 unit tests)
+3. **Job 3**: `Production Build Verification` (`npm run build`)
+4. **Job 4**: `Playwright E2E & Visual Regression` (`npx playwright test`)
+5. **Job 5 (`deploy-production`)**: Only runs on `push` to `main` **if jobs 1–4 all succeed**.
+6. **Job 6 (`deploy-preview`)**: Only runs on `pull_request` **if jobs 1–4 all succeed**, and comments the preview URL directly on the PR.
+
+#### Step-by-Step Setup:
+1. **Disable automatic Git builds in Vercel**:
+   - Go to your Project on [vercel.com](https://vercel.com) -> **Settings** -> **Git**.
+   - Under **Connected Git Repository**, turn off automatic deployments, OR under **Ignored Build Step**, set a custom command (e.g. `exit 0` to skip automatic Git builds).
+2. **Add GitHub Repository Secrets**:
+   - In GitHub, go to your repository -> **Settings** -> **Secrets and variables** -> **Actions**.
+   - Add the following secrets:
+     - `VERCEL_TOKEN`: Generate a personal access token at [vercel.com/account/tokens](https://vercel.com/account/tokens).
+     - `VERCEL_ORG_ID`: Found in your Vercel Project Settings (General -> Project ID & Team/Org ID) or in `.vercel/project.json`.
+     - `VERCEL_PROJECT_ID`: Found in your Vercel Project Settings (General -> Project ID).
+3. **Push to `main` or open a PR**:
+   - GitHub Actions will run all test suites first.
+   - If any test fails, deployment is automatically aborted.
+   - If all tests pass, the build is compiled and deployed to Vercel.
+
+---
+
+### Option 2: GitHub Branch Protection & Vercel Deployment Checks (Zero Token Setup)
+
+If you prefer using Vercel's native GitHub App integration without configuring Vercel API tokens in GitHub Secrets, you can gate deployments through **GitHub Branch Protection Rules**:
+
+#### How It Works:
+1. Developers cannot push directly to `main`; all changes must go through a Pull Request.
+2. The Pull Request cannot be merged until all 4 GitHub Actions checks pass.
+3. Once all checks pass and the PR is merged into `main`, Vercel deploys `main` — knowing that every single line of code was verified by CI.
+
+#### Step-by-Step Setup:
+1. **Enable GitHub Branch Protection**:
+   - In your GitHub repo, go to **Settings** -> **Branches** (or **Rules** -> **Rulesets**).
+   - Click **Add branch protection rule** for branch pattern `main`.
+   - Check **Require a pull request before merging**.
+   - Check **Require status checks to pass before merging**.
+   - In the search box, select the following 4 required checks:
+     - `Typecheck & Code Quality`
+     - `Unit & Component Tests (Vitest)`
+     - `Production Build Verification`
+     - `Playwright E2E & Visual Regression`
+   - Check **Require branches to be up to date before merging**.
+   - Save changes.
+2. **Enable Vercel Deployment Checks (Optional)**:
+   - In [vercel.com](https://vercel.com) -> **Settings** -> **Deployment Protection** (or **Git**), enable **Deployment Checks** to hold production promotion until the status checks complete.
+
