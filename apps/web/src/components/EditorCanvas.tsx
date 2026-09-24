@@ -42,6 +42,11 @@ function measureRenderedTextWidth(
   }
 }
 
+export function isCurrencyOrNumeric(text: string): boolean {
+  if (!text) return false;
+  return /^[-+]?\s*[$€£¥₹Rs\.]*\s*[\d,]+(\.\d+)?\s*[$€£¥₹%]*$/i.test(text.trim());
+}
+
 export interface EditorCanvasProps {
   pdfDocument: PDFDocumentProxy | null;
   currentPage: number;
@@ -597,7 +602,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             ),
           };
         } else {
-          const isCurrencyOrNumber = /^\$?\s*[\d,]+(\.\d+)?$/i.test(targetItem.text.trim());
+          const isCurrencyOrNumber = isCurrencyOrNumeric(targetItem.text);
           const newEdit: TextBlockEdit = {
             id: targetItem.id,
             pageIndex: currentPage - 1,
@@ -772,7 +777,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             ),
           };
         } else {
-          const isCurrencyOrNumber = /^\$?\s*[\d,]+(\.\d+)?$/i.test(targetItem.text.trim());
+          const isCurrencyOrNumber = isCurrencyOrNumeric(targetItem.text);
           const newEdit: TextBlockEdit = {
             id: targetItem.id,
             pageIndex: currentPage - 1,
@@ -883,7 +888,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
     const textItem = textItems.find((t) => t.id === selectedItem.id);
     if (textItem) {
       const edit = activeTextEdit;
-      const isCurrencyOrNumber = /^\$?\s*[\d,]+(\.\d+)?$/i.test(textItem.text.trim());
+      const isCurrencyOrNumber = isCurrencyOrNumeric(textItem.text);
       const textAlign = edit?.style.textAlign || (isCurrencyOrNumber ? 'right' : 'left');
       const deltaX = edit ? edit.currentBbox.x - textItem.x : 0;
       const deltaY = edit ? edit.currentBbox.y - textItem.y : 0;
@@ -1155,7 +1160,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
             const isItalic = edit?.style.isItalic ?? item.isItalic ?? false;
             const fontFamily = edit?.style.fontFamily || item.fontFamily || 'Helvetica';
             const bgColor = edit?.backgroundColorHex || item.detectedBackgroundColorHex || '#ffffff';
-            const isCurrencyOrNumber = /^\$?\s*[\d,]+(\.\d+)?$/i.test(item.text.trim());
+            const isCurrencyOrNumber = isCurrencyOrNumeric(item.text);
             const textAlign = edit?.style.textAlign || (isCurrencyOrNumber ? 'right' : 'left');
 
             // Position calculation accounting for user movement and alignment
@@ -1570,6 +1575,8 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                       ),
                     };
                   } else if (activeTextItem) {
+                    const isCurrencyOrNumber = isCurrencyOrNumeric(activeTextItem.text);
+                    const defaultTextAlign = isCurrencyOrNumber ? 'right' : 'left';
                     const newEdit: TextBlockEdit = {
                       id: activeTextItem.id,
                       pageIndex: currentPage - 1,
@@ -1588,7 +1595,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                         isItalic: activeTextItem.isItalic,
                         letterSpacing: 0,
                         lineHeight: 1.2,
-                        textAlign: 'left',
+                        textAlign: defaultTextAlign,
                         autoFit: false,
                       },
                     };
@@ -1623,6 +1630,8 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                       ),
                     };
                   } else if (activeTextItem) {
+                    const isCurrencyOrNumber = isCurrencyOrNumeric(activeTextItem.text);
+                    const defaultTextAlign = isCurrencyOrNumber ? 'right' : 'left';
                     const newEdit: TextBlockEdit = {
                       id: activeTextItem.id,
                       pageIndex: currentPage - 1,
@@ -1641,7 +1650,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                         isItalic: activeTextItem.isItalic,
                         letterSpacing: 0,
                         lineHeight: 1.2,
-                        textAlign: 'left',
+                        textAlign: defaultTextAlign,
                         autoFit: false,
                       },
                     };
@@ -1677,6 +1686,8 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                       ),
                     };
                   } else if (activeTextItem) {
+                    const isCurrencyOrNumber = isCurrencyOrNumeric(activeTextItem.text);
+                    const defaultTextAlign = isCurrencyOrNumber ? 'right' : 'left';
                     const newEdit: TextBlockEdit = {
                       id: activeTextItem.id,
                       pageIndex: currentPage - 1,
@@ -1695,7 +1706,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                         isItalic: activeTextItem.isItalic,
                         letterSpacing: 0,
                         lineHeight: 1.2,
-                        textAlign: 'left',
+                        textAlign: defaultTextAlign,
                         autoFit: false,
                       },
                     };
@@ -1731,6 +1742,8 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                       ),
                     };
                   } else if (activeTextItem) {
+                    const isCurrencyOrNumber = isCurrencyOrNumeric(activeTextItem.text);
+                    const defaultTextAlign = isCurrencyOrNumber ? 'right' : 'left';
                     const newEdit: TextBlockEdit = {
                       id: activeTextItem.id,
                       pageIndex: currentPage - 1,
@@ -1749,7 +1762,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                         isItalic: !currentItalic,
                         letterSpacing: 0,
                         lineHeight: 1.2,
-                        textAlign: 'left',
+                        textAlign: defaultTextAlign,
                         autoFit: false,
                       },
                     };
@@ -1784,6 +1797,8 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                       ),
                     };
                   } else if (activeTextItem) {
+                    const isCurrencyOrNumber = isCurrencyOrNumeric(activeTextItem.text);
+                    const defaultTextAlign = isCurrencyOrNumber ? 'right' : 'left';
                     const newEdit: TextBlockEdit = {
                       id: activeTextItem.id,
                       pageIndex: currentPage - 1,
@@ -1802,7 +1817,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                         isItalic: activeTextItem.isItalic,
                         letterSpacing: 0,
                         lineHeight: 1.2,
-                        textAlign: 'left',
+                        textAlign: defaultTextAlign,
                         autoFit: false,
                       },
                     };
@@ -1824,6 +1839,8 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                       ),
                     };
                   } else if (activeTextItem) {
+                    const isCurrencyOrNumber = isCurrencyOrNumeric(activeTextItem.text);
+                    const defaultTextAlign = isCurrencyOrNumber ? 'right' : 'left';
                     const newEdit: TextBlockEdit = {
                       id: activeTextItem.id,
                       pageIndex: currentPage - 1,
@@ -1842,7 +1859,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
                         isItalic: activeTextItem.isItalic,
                         letterSpacing: 0,
                         lineHeight: 1.2,
-                        textAlign: 'left',
+                        textAlign: defaultTextAlign,
                         autoFit: false,
                       },
                     };

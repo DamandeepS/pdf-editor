@@ -152,7 +152,16 @@ const PageThumbnail: React.FC<PageThumbnailProps> = ({
               ctx.font = `${fontStyle}${fontWeight}${fontSize}px ${edit.style.fontFamily || 'Roboto'}, sans-serif`;
               ctx.fillStyle = edit.style.colorHex || '#1f1f1f';
               ctx.textBaseline = 'middle';
-              ctx.fillText(edit.newText, curX, curY + curH / 2);
+              if (edit.style.textAlign === 'right') {
+                ctx.textAlign = 'right';
+                ctx.fillText(edit.newText, curX + curW, curY + curH / 2);
+              } else if (edit.style.textAlign === 'center') {
+                ctx.textAlign = 'center';
+                ctx.fillText(edit.newText, curX + curW / 2, curY + curH / 2);
+              } else {
+                ctx.textAlign = 'left';
+                ctx.fillText(edit.newText, curX, curY + curH / 2);
+              }
             }
           }
 

@@ -30,11 +30,13 @@ try {
     serverFontBuffers.set('default-bold', boldBytes);
     serverFontBuffers.set('default-italic', italicBytes);
     serverFontBuffers.set('default-bolditalic', boldItalicBytes);
-    serverFontBuffers.set('Helvetica', regularBytes);
-    serverFontBuffers.set('Helvetica-bold', boldBytes);
-    serverFontBuffers.set('Arial', regularBytes);
-    serverFontBuffers.set('Roboto', regularBytes);
-    serverFontBuffers.set('Inter', regularBytes);
+
+    for (const name of ['Helvetica', 'helvetica', 'Arial', 'arial', 'Roboto', 'roboto', 'Inter', 'inter']) {
+      serverFontBuffers.set(name, regularBytes);
+      serverFontBuffers.set(`${name}-bold`, boldBytes);
+      serverFontBuffers.set(`${name}-italic`, italicBytes);
+      serverFontBuffers.set(`${name}-bolditalic`, boldItalicBytes);
+    }
   }
 } catch (e) {
   console.warn('Could not load Unicode TTF font on server:', e);

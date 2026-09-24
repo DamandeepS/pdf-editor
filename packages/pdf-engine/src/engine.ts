@@ -93,14 +93,8 @@ export class PdfEngine {
         let effectiveBaselineY: number;
 
         if (edit.baselineY !== undefined) {
-          // If baselineY was already shifted along with currentBbox (i.e. closer to currentBbox.y than originalBbox.y)
-          if (isMoved && Math.abs(edit.baselineY - edit.currentBbox.y) < Math.abs(edit.baselineY - edit.originalBbox.y)) {
-            effectiveBaselineY = edit.baselineY;
-            origBaselineY = edit.baselineY - deltaY;
-          } else {
-            origBaselineY = edit.baselineY;
-            effectiveBaselineY = edit.baselineY + deltaY;
-          }
+          effectiveBaselineY = edit.baselineY;
+          origBaselineY = isMoved ? edit.baselineY - deltaY : edit.baselineY;
         } else {
           origBaselineY = edit.originalBbox.y;
           effectiveBaselineY = edit.originalBbox.y + deltaY;

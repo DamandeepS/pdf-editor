@@ -119,23 +119,36 @@ export const App: React.FC = () => {
   useEffect(() => {
     async function loadClientFonts() {
       try {
-        const [regRes, boldRes] = await Promise.allSettled([
+        const [regRes, boldRes, italicRes] = await Promise.allSettled([
           fetch('/fonts/LiberationSans-Regular.ttf'),
           fetch('/fonts/LiberationSans-Bold.ttf'),
+          fetch('/fonts/LiberationSans-Italic.ttf'),
         ]);
 
+        let regBuf: Uint8Array | undefined;
+        let boldBuf: Uint8Array | undefined;
+        let italicBuf: Uint8Array | undefined;
+
         if (regRes.status === 'fulfilled' && regRes.value.ok) {
-          const regBuf = new Uint8Array(await regRes.value.arrayBuffer());
+          regBuf = new Uint8Array(await regRes.value.arrayBuffer());
           customFontBuffersRef.current.set('default', regBuf);
-          customFontBuffersRef.current.set('Helvetica', regBuf);
-          customFontBuffersRef.current.set('Arial', regBuf);
-          customFontBuffersRef.current.set('Roboto', regBuf);
-          customFontBuffersRef.current.set('Inter', regBuf);
         }
         if (boldRes.status === 'fulfilled' && boldRes.value.ok) {
-          const boldBuf = new Uint8Array(await boldRes.value.arrayBuffer());
+          boldBuf = new Uint8Array(await boldRes.value.arrayBuffer());
           customFontBuffersRef.current.set('default-bold', boldBuf);
-          customFontBuffersRef.current.set('Helvetica-bold', boldBuf);
+        }
+        if (italicRes.status === 'fulfilled' && italicRes.value.ok) {
+          italicBuf = new Uint8Array(await italicRes.value.arrayBuffer());
+          customFontBuffersRef.current.set('default-italic', italicBuf);
+        }
+
+        const fallbackBold = boldBuf || regBuf;
+        const fallbackItalic = italicBuf || regBuf;
+
+        for (const name of ['Helvetica', 'helvetica', 'Arial', 'arial', 'Roboto', 'roboto', 'Inter', 'inter']) {
+          if (regBuf) customFontBuffersRef.current.set(name, regBuf);
+          if (fallbackBold) customFontBuffersRef.current.set(`${name}-bold`, fallbackBold);
+          if (fallbackItalic) customFontBuffersRef.current.set(`${name}-italic`, fallbackItalic);
         }
       } catch (err) {
         console.warn('Could not pre-load client TTF font buffers:', err);

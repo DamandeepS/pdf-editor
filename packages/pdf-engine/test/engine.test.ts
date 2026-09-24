@@ -443,6 +443,54 @@ describe('Unicode & Currency Handling in Vector Engine', () => {
     // WinAnsi natively supports typographer quotes, en-dash, ellipsis, so they remain intact
     expect(sanitizeTextForFont('“Smart Quotes” and – en-dash…', helvetica)).toBe('“Smart Quotes” and – en-dash…');
   });
+
+  describe('Font Resolver & Bold Variant Selection', () => {
+    it('correctly maps Helvetica with bold to HelveticaBold standard font when no custom buffer provided', async () => {
+      const doc = await PDFDocument.create();
+      const resolver = new (await import('../src/fonts')).StandardFontResolver();
+      const boldFont = await resolver.resolveFont(doc, 'Helvetica', true, false);
+      expect(boldFont.name).toBe('Helvetica-Bold');
+
+      const boldDetectedFont = await resolver.resolveFont(doc, 'Helvetica (Detected)', true, false);
+      expect(boldDetectedFont.name).toBe('Helvetica-Bold');
+    });
+
+    it('prioritizes bold custom font buffers over regular custom font buffers when bold is requested', async () => {
+      const fontDir = path.resolve(__dirname, '../../../apps/server/src/fonts');
+      if (!fs.existsSync(fontDir)) return;
+
+      const regularBytes = new Uint8Array(fs.readFileSync(path.join(fontDir, 'LiberationSans-Regular.ttf')));
+      const boldBytes = new Uint8Array(fs.readFileSync(path.join(fontDir, 'LiberationSans-Bold.ttf')));
+
+      const customFontBuffers = new Map<string, Uint8Array>([
+        ['Roboto', regularBytes],
+        ['Roboto-bold', boldBytes],
+        ['Helvetica', regularBytes],
+        ['Helvetica-bold', boldBytes],
+        ['default', regularBytes],
+        ['default-bold', boldBytes],
+      ]);
+
+      const doc = await PDFDocument.create();
+      const resolver = new (await import('../src/fonts')).StandardFontResolver();
+
+      // Bold Roboto
+      const robotoBold = await resolver.resolveFont(doc, 'Roboto', true, false, customFontBuffers);
+      expect(robotoBold.name).toMatch(/Bold/i);
+
+      // Bold Helvetica with custom buffers
+      const helveticaBold = await resolver.resolveFont(doc, 'Helvetica', true, false, customFontBuffers);
+      expect(helveticaBold.name).toMatch(/Bold/i);
+
+      // Bold Helvetica (Detected) with custom buffers
+      const detectedBold = await resolver.resolveFont(doc, 'Helvetica (Detected)', true, false, customFontBuffers);
+      expect(detectedBold.name).toMatch(/Bold/i);
+
+      // Regular Roboto
+      const robotoRegular = await resolver.resolveFont(doc, 'Roboto', false, false, customFontBuffers);
+      expect(robotoRegular.name).not.toMatch(/Bold/i);
+    });
+  });
 });
 
 
