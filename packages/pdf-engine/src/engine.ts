@@ -2,7 +2,7 @@ import { PDFDocument } from 'pdf-lib';
 import { ModificationDelta, WhiteoutBlock } from '@inq/types';
 import { StandardFontResolver } from './fonts';
 import { applyWhiteout } from './whiteout';
-import { injectVectorText } from './text';
+import { injectVectorText, sanitizeTextForFont } from './text';
 import { embedImageStamp } from './images';
 
 export interface PdfEngineOptions {
@@ -59,19 +59,20 @@ export class PdfEngine {
           options?.customFontBuffers
         );
 
+        const safeText = sanitizeTextForFont(edit.newText, font);
         let fontSize = edit.style?.fontSize || 12;
         const autoFit = edit.style?.autoFit ?? false;
 
         // Auto-fit calculation: If explicitly requested and text overflows the bounding box, scale down
         if (autoFit && edit.originalBbox.width > 0) {
-          const rawWidth = font.widthOfTextAtSize(edit.newText, fontSize);
+          const rawWidth = font.widthOfTextAtSize(safeText, fontSize);
           if (rawWidth > edit.originalBbox.width) {
             const scaleFactor = edit.originalBbox.width / rawWidth;
             fontSize = Math.max(5, Math.floor(fontSize * scaleFactor * 10) / 10);
           }
         }
 
-        const textWidth = font.widthOfTextAtSize(edit.newText, fontSize);
+        const textWidth = font.widthOfTextAtSize(safeText, fontSize);
         const textHeight = font.heightAtSize(fontSize);
 
         // In PDF typography, descent extends below baseline by ~0.25 to 0.3 * fontSize
@@ -179,7 +180,7 @@ export class PdfEngine {
 
         // Inject new vector text at the exact baseline and position
         injectVectorText(page, font, {
-          text: edit.newText,
+          text: safeText,
           bbox: {
             x: targetX,
             y: edit.currentBbox ? edit.currentBbox.y : edit.originalBbox.y,
@@ -205,8 +206,10 @@ export class PdfEngine {
           options?.customFontBuffers
         );
 
+        const safeNewText = sanitizeTextForFont(newText.text, font);
+
         injectVectorText(page, font, {
-          text: newText.text,
+          text: safeNewText,
           bbox: newText.bbox,
           style: newText.style,
         });

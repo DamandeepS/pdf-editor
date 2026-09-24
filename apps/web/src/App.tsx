@@ -113,6 +113,36 @@ export const App: React.FC = () => {
   const [ipcStatus, setIpcStatus] = useState<'connected' | 'offline' | 'checking'>('checking');
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const activeLoadIdRef = useRef<number>(0);
+  const customFontBuffersRef = useRef<Map<string, Uint8Array>>(new Map());
+
+  // Pre-load Unicode-compatible TrueType font for native vector rendering of symbols like ₹
+  useEffect(() => {
+    async function loadClientFonts() {
+      try {
+        const [regRes, boldRes] = await Promise.allSettled([
+          fetch('/fonts/LiberationSans-Regular.ttf'),
+          fetch('/fonts/LiberationSans-Bold.ttf'),
+        ]);
+
+        if (regRes.status === 'fulfilled' && regRes.value.ok) {
+          const regBuf = new Uint8Array(await regRes.value.arrayBuffer());
+          customFontBuffersRef.current.set('default', regBuf);
+          customFontBuffersRef.current.set('Helvetica', regBuf);
+          customFontBuffersRef.current.set('Arial', regBuf);
+          customFontBuffersRef.current.set('Roboto', regBuf);
+          customFontBuffersRef.current.set('Inter', regBuf);
+        }
+        if (boldRes.status === 'fulfilled' && boldRes.value.ok) {
+          const boldBuf = new Uint8Array(await boldRes.value.arrayBuffer());
+          customFontBuffersRef.current.set('default-bold', boldBuf);
+          customFontBuffersRef.current.set('Helvetica-bold', boldBuf);
+        }
+      } catch (err) {
+        console.warn('Could not pre-load client TTF font buffers:', err);
+      }
+    }
+    loadClientFonts();
+  }, []);
 
   // Apply theme to document element
   useEffect(() => {
@@ -496,7 +526,10 @@ export const App: React.FC = () => {
         const singleDelta: ModificationDelta = {
           pages: { [pageIdx]: delta.pages[pageIdx] },
         };
-        const modified = await clientPdfEngine.modifyPdf(workingBytes, singleDelta);
+        const fontBuffers = customFontBuffersRef.current.size > 0 ? customFontBuffersRef.current : undefined;
+        const modified = await clientPdfEngine.modifyPdf(workingBytes, singleDelta, {
+          customFontBuffers: fontBuffers,
+        });
         workingBytes = Uint8Array.from(modified);
       }
       const singlePageBytes = await extractPage(workingBytes, pageIdx);
@@ -708,7 +741,10 @@ export const App: React.FC = () => {
         }
       } else {
         // Client-side fallback via @inq/pdf-engine
-        finalBytes = await clientPdfEngine.modifyPdf(workingBytes, delta);
+        const fontBuffers = customFontBuffersRef.current.size > 0 ? customFontBuffersRef.current : undefined;
+        finalBytes = await clientPdfEngine.modifyPdf(workingBytes, delta, {
+          customFontBuffers: fontBuffers,
+        });
       }
 
       // Trigger instant browser download

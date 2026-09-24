@@ -1,3 +1,5 @@
+import { createRequire } from 'node:module';
+import fs from 'node:fs';
 import { initTRPC, TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { PdfEngine } from '@inq/pdf-engine';
@@ -8,6 +10,35 @@ export const router = t.router;
 export const publicProcedure = t.procedure;
 
 const pdfEngine = new PdfEngine();
+
+// Pre-load Unicode-compatible TrueType fonts (e.g. for Indian Rupee symbol '₹', currencies, math symbols)
+const serverFontBuffers = new Map<string, Uint8Array>();
+try {
+  const req = createRequire(import.meta.url);
+  const regularPath = req.resolve('pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf');
+  const boldPath = req.resolve('pdfjs-dist/standard_fonts/LiberationSans-Bold.ttf');
+  const italicPath = req.resolve('pdfjs-dist/standard_fonts/LiberationSans-Italic.ttf');
+  const boldItalicPath = req.resolve('pdfjs-dist/standard_fonts/LiberationSans-BoldItalic.ttf');
+
+  if (fs.existsSync(regularPath)) {
+    const regularBytes = fs.readFileSync(regularPath);
+    const boldBytes = fs.existsSync(boldPath) ? fs.readFileSync(boldPath) : regularBytes;
+    const italicBytes = fs.existsSync(italicPath) ? fs.readFileSync(italicPath) : regularBytes;
+    const boldItalicBytes = fs.existsSync(boldItalicPath) ? fs.readFileSync(boldItalicPath) : regularBytes;
+
+    serverFontBuffers.set('default', regularBytes);
+    serverFontBuffers.set('default-bold', boldBytes);
+    serverFontBuffers.set('default-italic', italicBytes);
+    serverFontBuffers.set('default-bolditalic', boldItalicBytes);
+    serverFontBuffers.set('Helvetica', regularBytes);
+    serverFontBuffers.set('Helvetica-bold', boldBytes);
+    serverFontBuffers.set('Arial', regularBytes);
+    serverFontBuffers.set('Roboto', regularBytes);
+    serverFontBuffers.set('Inter', regularBytes);
+  }
+} catch (e) {
+  console.warn('Could not load Unicode TTF font on server:', e);
+}
 
 export const appRouter = router({
   // Health & Diagnostics
@@ -76,7 +107,9 @@ export const appRouter = router({
         }
 
         try {
-          const modifiedBytes = await pdfEngine.modifyPdf(baseBytes, input.delta);
+          const modifiedBytes = await pdfEngine.modifyPdf(baseBytes, input.delta, {
+            customFontBuffers: serverFontBuffers.size > 0 ? serverFontBuffers : undefined,
+          });
           const modifiedBase64 = Buffer.from(modifiedBytes).toString('base64');
           const cleanTitle = (input.documentTitle || 'edited-document')
             .toLowerCase()

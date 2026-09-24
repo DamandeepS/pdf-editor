@@ -1,10 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   PdfEngine,
   viewportToPdfCoordinates,
   pdfToViewportCoordinates,
   hexToPdfColor,
+  sanitizeTextForFont,
 } from '../src/index';
 import { ModificationDelta } from '@inq/types';
 
@@ -274,4 +277,172 @@ describe('Vector PDF Modification Pipeline', () => {
     expect(reloaded.getPageCount()).toBe(1);
   });
 });
+
+describe('Unicode & Currency Handling in Vector Engine', () => {
+  it('safely handles Rupee symbol (₹) with StandardFonts without throwing WinAnsi error', async () => {
+    const doc = await PDFDocument.create();
+    const page = doc.addPage([612, 792]);
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    page.drawText('Original Amount: $100.00', { x: 50, y: 700, size: 14, font });
+    const originalPdfBytes = await doc.save();
+
+    const delta: ModificationDelta = {
+      pages: {
+        0: {
+          pageIndex: 0,
+          textEdits: [
+            {
+              id: 'edit-rupee',
+              pageIndex: 0,
+              originalText: '$100.00',
+              newText: '₹1,452.00',
+              originalBbox: { x: 50, y: 700, width: 80, height: 16 },
+              currentBbox: { x: 50, y: 700, width: 100, height: 16 },
+              baselineY: 700,
+              style: {
+                fontFamily: 'Helvetica',
+                fontSize: 14,
+                colorHex: '#1f1f1f',
+                isBold: false,
+                isItalic: false,
+                letterSpacing: 0,
+                lineHeight: 1.2,
+                textAlign: 'left',
+                autoFit: true,
+              },
+            },
+          ],
+          whiteouts: [],
+          images: [],
+          newTexts: [],
+        },
+      },
+    };
+
+    const engine = new PdfEngine();
+    const modifiedBytes = await engine.modifyPdf(originalPdfBytes, delta);
+    expect(modifiedBytes.length).toBeGreaterThan(0);
+
+    const reloaded = await PDFDocument.load(modifiedBytes);
+    expect(reloaded.getPageCount()).toBe(1);
+  });
+
+  it('safely handles non-WinAnsi symbols (₹, ₽, quotes, dashes, ellipsis)', async () => {
+    const doc = await PDFDocument.create();
+    const page = doc.addPage([612, 792]);
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    page.drawText('Header', { x: 50, y: 700, size: 14, font });
+    const originalPdfBytes = await doc.save();
+
+    const delta: ModificationDelta = {
+      pages: {
+        0: {
+          pageIndex: 0,
+          textEdits: [],
+          whiteouts: [],
+          images: [],
+          newTexts: [
+            {
+              id: 'new-unicode-block',
+              pageIndex: 0,
+              text: 'Price: ₹500 / ₽200 – "Special Offer"…',
+              bbox: { x: 50, y: 650, width: 250, height: 20 },
+              style: {
+                fontFamily: 'Helvetica',
+                fontSize: 12,
+                colorHex: '#34a853',
+                isBold: true,
+                isItalic: false,
+                letterSpacing: 0,
+                lineHeight: 1.2,
+                textAlign: 'left',
+                autoFit: false,
+              },
+            },
+          ],
+        },
+      },
+    };
+
+    const engine = new PdfEngine();
+    const modifiedBytes = await engine.modifyPdf(originalPdfBytes, delta);
+    expect(modifiedBytes.length).toBeGreaterThan(0);
+
+    const reloaded = await PDFDocument.load(modifiedBytes);
+    expect(reloaded.getPageCount()).toBe(1);
+  });
+
+  it('natively encodes Rupee symbol (₹) when custom TrueType font buffer is provided', async () => {
+    const fontPath = path.resolve('../../node_modules/pdfjs-dist/standard_fonts/LiberationSans-Regular.ttf');
+    if (!fs.existsSync(fontPath)) return;
+
+    const fontBytes = fs.readFileSync(fontPath);
+    const customFontBuffers = new Map<string, Uint8Array>([
+      ['default', fontBytes],
+      ['Helvetica', fontBytes],
+    ]);
+
+    const doc = await PDFDocument.create();
+    const page = doc.addPage([612, 792]);
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    page.drawText('Original: $50', { x: 50, y: 700, size: 14, font });
+    const originalPdfBytes = await doc.save();
+
+    const delta: ModificationDelta = {
+      pages: {
+        0: {
+          pageIndex: 0,
+          textEdits: [
+            {
+              id: 'edit-native-rupee',
+              pageIndex: 0,
+              originalText: '$50',
+              newText: '₹2,500.00',
+              originalBbox: { x: 50, y: 700, width: 80, height: 16 },
+              currentBbox: { x: 50, y: 700, width: 100, height: 16 },
+              baselineY: 700,
+              style: {
+                fontFamily: 'Helvetica',
+                fontSize: 14,
+                colorHex: '#1f1f1f',
+                isBold: false,
+                isItalic: false,
+                letterSpacing: 0,
+                lineHeight: 1.2,
+                textAlign: 'left',
+                autoFit: false,
+              },
+            },
+          ],
+          whiteouts: [],
+          images: [],
+          newTexts: [],
+        },
+      },
+    };
+
+    const engine = new PdfEngine();
+    const modifiedBytes = await engine.modifyPdf(originalPdfBytes, delta, { customFontBuffers });
+    expect(modifiedBytes.length).toBeGreaterThan(0);
+
+    const reloaded = await PDFDocument.load(modifiedBytes);
+    expect(reloaded.getPageCount()).toBe(1);
+  });
+
+  it('directly sanitizes text for standard fonts via sanitizeTextForFont', async () => {
+    const doc = await PDFDocument.create();
+    const helvetica = await doc.embedFont(StandardFonts.Helvetica);
+
+    // Standard ASCII remains untouched
+    expect(sanitizeTextForFont('Invoice #101 - $50.00', helvetica)).toBe('Invoice #101 - $50.00');
+
+    // Rupee symbol transliterates to Rs.
+    expect(sanitizeTextForFont('Total: ₹1,452.00', helvetica)).toBe('Total: Rs. 1,452.00');
+    expect(sanitizeTextForFont('1452 ₹', helvetica)).toBe('1452 Rs.');
+
+    // WinAnsi natively supports typographer quotes, en-dash, ellipsis, so they remain intact
+    expect(sanitizeTextForFont('“Smart Quotes” and – en-dash…', helvetica)).toBe('“Smart Quotes” and – en-dash…');
+  });
+});
+
 

@@ -12,7 +12,7 @@ export interface FontResolver {
 }
 
 export class StandardFontResolver implements FontResolver {
-  private embeddedFontCache: Map<string, PDFFont> = new Map();
+  private embeddedFontCache: WeakMap<PDFDocument, Map<string, PDFFont>> = new WeakMap();
 
   async resolveFont(
     doc: PDFDocument,
@@ -23,17 +23,31 @@ export class StandardFontResolver implements FontResolver {
   ): Promise<PDFFont> {
     const key = `${family}-${isBold ? 'bold' : 'normal'}-${isItalic ? 'italic' : 'normal'}`;
 
-    if (this.embeddedFontCache.has(key)) {
-      return this.embeddedFontCache.get(key)!;
+    let docCache = this.embeddedFontCache.get(doc);
+    if (!docCache) {
+      docCache = new Map();
+      this.embeddedFontCache.set(doc, docCache);
     }
 
-    // Check custom font buffer first
-    if (customFontBuffers && customFontBuffers.has(family)) {
-      doc.registerFontkit(fontkit);
-      const fontBuffer = customFontBuffers.get(family)!;
-      const customFont = await doc.embedFont(fontBuffer);
-      this.embeddedFontCache.set(key, customFont);
-      return customFont;
+    if (docCache.has(key)) {
+      return docCache.get(key)!;
+    }
+
+    // Check custom font buffer first (exact variant, family, bold default, or generic default)
+    if (customFontBuffers) {
+      const buffer =
+        customFontBuffers.get(key) ||
+        customFontBuffers.get(`${family}-${isBold ? 'bold' : 'normal'}`) ||
+        customFontBuffers.get(family) ||
+        customFontBuffers.get(isBold ? 'default-bold' : 'default') ||
+        customFontBuffers.get('default');
+
+      if (buffer) {
+        doc.registerFontkit(fontkit);
+        const customFont = await doc.embedFont(buffer);
+        docCache.set(key, customFont);
+        return customFont;
+      }
     }
 
     // Map family to PDF Standard Fonts
@@ -60,7 +74,7 @@ export class StandardFontResolver implements FontResolver {
     }
 
     const font = await doc.embedFont(standardFont);
-    this.embeddedFontCache.set(key, font);
+    docCache.set(key, font);
     return font;
   }
 }
