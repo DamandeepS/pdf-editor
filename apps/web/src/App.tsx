@@ -1,7 +1,20 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import type { SampleBillMeta, ModificationDelta, PageModifications, EditorTool, SelectedItem } from '@inq/types';
-import { PdfEngine, getSamplePdfBytes, SAMPLE_BILLS_META } from '@inq/pdf-engine';
+import {
+  PdfEngine,
+  getSamplePdfBytes,
+  SAMPLE_BILLS_META,
+  deletePage,
+  reorderPages,
+  rotatePage,
+  duplicatePage,
+  addBlankPage,
+  mergePdfs,
+  extractPage,
+} from '@inq/pdf-engine';
+import { UploadIcon } from '@inq/icons';
+import { Toast } from '@inq/ui/toast';
 import { trpc } from './trpc';
 import { loadPdfDocument } from './utils/pdfRenderer';
 import { TopNav } from './components/TopNav';
@@ -16,6 +29,29 @@ import { trackEvent } from './utils/analytics';
 const DEFAULT_SAMPLES: SampleBillMeta[] = SAMPLE_BILLS_META;
 
 const clientPdfEngine = new PdfEngine();
+
+/**
+ * Snapshot for comprehensive Undo / Redo history
+ */
+interface HistorySnapshot {
+  pdfBytes: Uint8Array | null;
+  delta: ModificationDelta;
+  numPages: number;
+  currentPage: number;
+  documentTitle: string;
+}
+
+/**
+ * Toast notification model
+ */
+interface ToastNotification {
+  id: string;
+  message: string;
+  actionLabel?: string;
+  onAction?: () => void;
+  variant?: 'info' | 'success' | 'warning' | 'danger';
+  duration?: number;
+}
 
 /**
  * Safely converts a Uint8Array into a base64 string in chunks without exceeding call stack limits
@@ -40,6 +76,7 @@ export const App: React.FC = () => {
   const [pdfDocument, setPdfDocument] = useState<PDFDocumentProxy | null>(null);
   const [numPages, setNumPages] = useState<number>(1);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [docRevision, setDocRevision] = useState<number>(0);
 
   // Viewport & tool state (auto-fit scale and auto-collapse sidebar on mobile screens)
   const [scale, setScale] = useState<number>(() => {
@@ -54,8 +91,16 @@ export const App: React.FC = () => {
 
   // History & Delta
   const [delta, setDelta] = useState<ModificationDelta>({ pages: {} });
-  const [undoStack, setUndoStack] = useState<ModificationDelta[]>([]);
-  const [redoStack, setRedoStack] = useState<ModificationDelta[]>([]);
+  const [undoStack, setUndoStack] = useState<HistorySnapshot[]>([]);
+  const [redoStack, setRedoStack] = useState<HistorySnapshot[]>([]);
+
+  // Toast feedback state
+  const [toast, setToast] = useState<ToastNotification | null>(null);
+
+  // Drag & drop file ingestion state
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
+  const [dragOverZone, setDragOverZone] = useState<'none' | 'canvas' | 'rail'>('none');
+  const dragCounterRef = useRef(0);
 
   // UI state
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -74,6 +119,19 @@ export const App: React.FC = () => {
     document.documentElement.setAttribute('data-theme', theme);
     document.body.className = `theme-${theme}`;
   }, [theme]);
+
+  // Push unified snapshot before mutations
+  const pushHistorySnapshot = useCallback(() => {
+    const snapshot: HistorySnapshot = {
+      pdfBytes: pdfBytes ? pdfBytes.slice() : null,
+      delta: JSON.parse(JSON.stringify(delta)),
+      numPages,
+      currentPage,
+      documentTitle,
+    };
+    setUndoStack((prev) => [...prev.slice(-30), snapshot]);
+    setRedoStack([]);
+  }, [pdfBytes, delta, numPages, currentPage, documentTitle]);
 
   // Load sample bill via tRPC with client-side fallback
   const loadSample = useCallback(async (sampleId: string) => {
@@ -104,6 +162,7 @@ export const App: React.FC = () => {
       const doc = await loadPdfDocument(bytes.slice());
       if (loadId !== activeLoadIdRef.current) return;
       setPdfDocument(doc);
+      setDocRevision((r) => r + 1);
       setNumPages(doc.numPages);
       setCurrentPage(1);
       setDelta({ pages: {} });
@@ -131,7 +190,7 @@ export const App: React.FC = () => {
 
         await loadSample('saas-invoice');
       } catch {
-        // Operates in standalone client mode when backend is absent (e.g. Vercel static deployment)
+        // Operates in standalone client mode when backend is absent
         setIpcStatus('offline');
         await loadSample('saas-invoice');
       }
@@ -154,6 +213,7 @@ export const App: React.FC = () => {
       const doc = await loadPdfDocument(bytes.slice());
       if (loadId !== activeLoadIdRef.current) return;
       setPdfDocument(doc);
+      setDocRevision((r) => r + 1);
       setNumPages(doc.numPages);
       setCurrentPage(1);
       setDelta({ pages: {} });
@@ -170,11 +230,8 @@ export const App: React.FC = () => {
   // Delta updater with automatic Undo history snapshot
   const updateCurrentPageModifications = useCallback(
     (updater: (prev: PageModifications) => PageModifications) => {
+      pushHistorySnapshot();
       setDelta((prevDelta) => {
-        // Push snapshot to undo stack
-        setUndoStack((prevUndo) => [...prevUndo.slice(-30), prevDelta]);
-        setRedoStack([]); // Clear redo stack on new action
-
         const pageIdx = currentPage - 1;
         const currentPageMods: PageModifications = prevDelta.pages[pageIdx] || {
           pageIndex: pageIdx,
@@ -194,27 +251,346 @@ export const App: React.FC = () => {
         };
       });
     },
-    [currentPage]
+    [currentPage, pushHistorySnapshot]
   );
 
-  // Undo / Redo handlers
-  const handleUndo = useCallback(() => {
+  // Undo / Redo handlers supporting both content and structural changes
+  const handleUndo = useCallback(async () => {
     if (undoStack.length === 0) return;
     const previous = undoStack[undoStack.length - 1];
+    const currentSnapshot: HistorySnapshot = {
+      pdfBytes: pdfBytes ? pdfBytes.slice() : null,
+      delta: JSON.parse(JSON.stringify(delta)),
+      numPages,
+      currentPage,
+      documentTitle,
+    };
     setUndoStack((prev) => prev.slice(0, -1));
-    setRedoStack((prev) => [...prev, delta]);
-    setDelta(previous);
-    setSelectedItem(null);
-  }, [undoStack, delta]);
+    setRedoStack((prev) => [...prev, currentSnapshot]);
 
-  const handleRedo = useCallback(() => {
+    setDelta(previous.delta);
+    setNumPages(previous.numPages);
+    setCurrentPage(previous.currentPage);
+    setDocumentTitle(previous.documentTitle);
+    setSelectedItem(null);
+
+    if (previous.pdfBytes) {
+      setPdfBytes(previous.pdfBytes.slice());
+      const doc = await loadPdfDocument(previous.pdfBytes.slice());
+      setPdfDocument(doc);
+      setDocRevision((r) => r + 1);
+    }
+  }, [undoStack, pdfBytes, delta, numPages, currentPage, documentTitle]);
+
+  const handleRedo = useCallback(async () => {
     if (redoStack.length === 0) return;
     const next = redoStack[redoStack.length - 1];
+    const currentSnapshot: HistorySnapshot = {
+      pdfBytes: pdfBytes ? pdfBytes.slice() : null,
+      delta: JSON.parse(JSON.stringify(delta)),
+      numPages,
+      currentPage,
+      documentTitle,
+    };
     setRedoStack((prev) => prev.slice(0, -1));
-    setUndoStack((prev) => [...prev, delta]);
-    setDelta(next);
+    setUndoStack((prev) => [...prev, currentSnapshot]);
+
+    setDelta(next.delta);
+    setNumPages(next.numPages);
+    setCurrentPage(next.currentPage);
+    setDocumentTitle(next.documentTitle);
     setSelectedItem(null);
-  }, [redoStack, delta]);
+
+    if (next.pdfBytes) {
+      setPdfBytes(next.pdfBytes.slice());
+      const doc = await loadPdfDocument(next.pdfBytes.slice());
+      setPdfDocument(doc);
+      setDocRevision((r) => r + 1);
+    }
+  }, [redoStack, pdfBytes, delta, numPages, currentPage, documentTitle]);
+
+  // Page Operations
+  const handleReorderPage = async (fromIdx: number, toIdx: number) => {
+    if (!pdfBytes || fromIdx === toIdx) return;
+    pushHistorySnapshot();
+    try {
+      const newBytes = await reorderPages(pdfBytes, fromIdx, toIdx);
+      const newPagesDelta: Record<number, PageModifications> = {};
+      const oldIndices = Array.from({ length: numPages }, (_, i) => i);
+      const [moved] = oldIndices.splice(fromIdx, 1);
+      oldIndices.splice(toIdx, 0, moved);
+
+      oldIndices.forEach((oldIdx, newIdx) => {
+        if (delta.pages[oldIdx]) {
+          newPagesDelta[newIdx] = {
+            ...delta.pages[oldIdx],
+            pageIndex: newIdx,
+          };
+        }
+      });
+
+      setDelta({ ...delta, pages: newPagesDelta });
+      setPdfBytes(newBytes);
+      const doc = await loadPdfDocument(newBytes);
+      setPdfDocument(doc);
+      setDocRevision((r) => r + 1);
+
+      if (currentPage === fromIdx + 1) {
+        setCurrentPage(toIdx + 1);
+      } else if (fromIdx < currentPage - 1 && toIdx >= currentPage - 1) {
+        setCurrentPage(currentPage - 1);
+      } else if (fromIdx > currentPage - 1 && toIdx <= currentPage - 1) {
+        setCurrentPage(currentPage + 1);
+      }
+    } catch (err: any) {
+      console.error('Failed to reorder pages:', err);
+      alert(`Could not reorder pages: ${err.message || String(err)}`);
+    }
+  };
+
+  const handleDeletePage = async (pageIdx: number) => {
+    if (!pdfBytes || numPages <= 1) {
+      alert('Cannot delete the only page in the document.');
+      return;
+    }
+    pushHistorySnapshot();
+    try {
+      const newBytes = await deletePage(pdfBytes, pageIdx);
+      const newPagesDelta: Record<number, PageModifications> = {};
+      Object.entries(delta.pages).forEach(([k, mods]) => {
+        const idx = Number(k);
+        if (idx < pageIdx) {
+          newPagesDelta[idx] = mods;
+        } else if (idx > pageIdx) {
+          newPagesDelta[idx - 1] = {
+            ...mods,
+            pageIndex: idx - 1,
+          };
+        }
+      });
+
+      setDelta({ ...delta, pages: newPagesDelta });
+      setPdfBytes(newBytes);
+      const doc = await loadPdfDocument(newBytes);
+      setPdfDocument(doc);
+      setDocRevision((r) => r + 1);
+      const newNum = doc.numPages;
+      setNumPages(newNum);
+
+      if (currentPage > newNum) {
+        setCurrentPage(newNum);
+      } else if (currentPage === pageIdx + 1 && pageIdx === newNum) {
+        setCurrentPage(Math.max(1, newNum));
+      }
+
+      setToast({
+        id: String(Date.now()),
+        message: `Page ${pageIdx + 1} deleted`,
+        actionLabel: 'Undo',
+        onAction: () => {
+          handleUndo();
+          setToast(null);
+        },
+        duration: 5000,
+        variant: 'info',
+      });
+    } catch (err: any) {
+      console.error('Failed to delete page:', err);
+      alert(`Could not delete page: ${err.message || String(err)}`);
+    }
+  };
+
+  const handleRotatePage = async (pageIdx: number, degrees = 90) => {
+    if (!pdfBytes) return;
+    pushHistorySnapshot();
+    try {
+      const newBytes = await rotatePage(pdfBytes, pageIdx, degrees);
+      setPdfBytes(newBytes);
+      const doc = await loadPdfDocument(newBytes);
+      setPdfDocument(doc);
+      setDocRevision((r) => r + 1);
+      setToast({
+        id: String(Date.now()),
+        message: `Page ${pageIdx + 1} rotated 90°`,
+        duration: 3000,
+        variant: 'info',
+      });
+    } catch (err: any) {
+      console.error('Failed to rotate page:', err);
+      alert(`Could not rotate page: ${err.message || String(err)}`);
+    }
+  };
+
+  const handleDuplicatePage = async (pageIdx: number) => {
+    if (!pdfBytes) return;
+    pushHistorySnapshot();
+    try {
+      const newBytes = await duplicatePage(pdfBytes, pageIdx);
+      const newPagesDelta: Record<number, PageModifications> = {};
+      Object.entries(delta.pages).forEach(([k, mods]) => {
+        const idx = Number(k);
+        if (idx <= pageIdx) {
+          newPagesDelta[idx] = mods;
+        } else {
+          newPagesDelta[idx + 1] = {
+            ...mods,
+            pageIndex: idx + 1,
+          };
+        }
+      });
+      if (delta.pages[pageIdx]) {
+        newPagesDelta[pageIdx + 1] = {
+          ...JSON.parse(JSON.stringify(delta.pages[pageIdx])),
+          pageIndex: pageIdx + 1,
+        };
+      }
+
+      setDelta({ ...delta, pages: newPagesDelta });
+      setPdfBytes(newBytes);
+      const doc = await loadPdfDocument(newBytes);
+      setPdfDocument(doc);
+      setDocRevision((r) => r + 1);
+      setNumPages(doc.numPages);
+      setCurrentPage(pageIdx + 2);
+      setToast({
+        id: String(Date.now()),
+        message: `Page ${pageIdx + 1} duplicated`,
+        duration: 3000,
+        variant: 'success',
+      });
+    } catch (err: any) {
+      console.error('Failed to duplicate page:', err);
+      alert(`Could not duplicate page: ${err.message || String(err)}`);
+    }
+  };
+
+  const handleAddBlankPage = async () => {
+    if (!pdfBytes) return;
+    pushHistorySnapshot();
+    try {
+      const newBytes = await addBlankPage(pdfBytes);
+      setPdfBytes(newBytes);
+      const doc = await loadPdfDocument(newBytes);
+      setPdfDocument(doc);
+      setDocRevision((r) => r + 1);
+      const newNum = doc.numPages;
+      setNumPages(newNum);
+      setCurrentPage(newNum);
+      setToast({
+        id: String(Date.now()),
+        message: `Blank page added as Page ${newNum}`,
+        duration: 3000,
+        variant: 'success',
+      });
+    } catch (err: any) {
+      console.error('Failed to add blank page:', err);
+      alert(`Could not add blank page: ${err.message || String(err)}`);
+    }
+  };
+
+  const handleDownloadSinglePage = async (pageIdx: number) => {
+    if (!pdfBytes) return;
+    try {
+      let workingBytes: Uint8Array = pdfBytes.slice();
+      if (delta.pages[pageIdx]) {
+        const singleDelta: ModificationDelta = {
+          pages: { [pageIdx]: delta.pages[pageIdx] },
+        };
+        const modified = await clientPdfEngine.modifyPdf(workingBytes, singleDelta);
+        workingBytes = Uint8Array.from(modified);
+      }
+      const singlePageBytes = await extractPage(workingBytes, pageIdx);
+      const blob = new Blob([singlePageBytes as unknown as BlobPart], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const cleanTitle = (documentTitle || 'document').toLowerCase().replace(/[^a-z0-9-_]/g, '-');
+      a.download = `${cleanTitle}-page-${pageIdx + 1}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      console.error('Failed to download single page:', err);
+      alert(`Could not download page: ${err.message || String(err)}`);
+    }
+  };
+
+  const handleAppendPdf = async (file: File) => {
+    if (!pdfBytes) {
+      handleUploadFile(file);
+      return;
+    }
+    pushHistorySnapshot();
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const sourceBytes = new Uint8Array(arrayBuffer);
+      const mergedBytes = await mergePdfs(pdfBytes, sourceBytes);
+      setPdfBytes(mergedBytes);
+      const doc = await loadPdfDocument(mergedBytes);
+      setPdfDocument(doc);
+      setDocRevision((r) => r + 1);
+      const oldNum = numPages;
+      const newNum = doc.numPages;
+      setNumPages(newNum);
+      setCurrentPage(oldNum + 1);
+      setToast({
+        id: String(Date.now()),
+        message: `Appended ${newNum - oldNum} pages from "${file.name}"`,
+        duration: 4000,
+        variant: 'success',
+      });
+    } catch (err: any) {
+      console.error('Failed to append PDF:', err);
+      alert(`Could not append PDF: ${err.message || String(err)}`);
+    }
+  };
+
+  // Window-wide drag and drop listener for PDF files
+  useEffect(() => {
+    const handleDragEnter = (e: DragEvent) => {
+      if (e.dataTransfer && Array.from(e.dataTransfer.types).includes('Files')) {
+        dragCounterRef.current++;
+        setIsDraggingFile(true);
+      }
+    };
+
+    const handleDragLeave = (e: DragEvent) => {
+      if (e.dataTransfer && Array.from(e.dataTransfer.types).includes('Files')) {
+        dragCounterRef.current--;
+        if (dragCounterRef.current <= 0) {
+          dragCounterRef.current = 0;
+          setIsDraggingFile(false);
+          setDragOverZone('none');
+        }
+      }
+    };
+
+    const handleDragOver = (e: DragEvent) => {
+      if (e.dataTransfer && Array.from(e.dataTransfer.types).includes('Files')) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+      }
+    };
+
+    const handleDrop = (e: DragEvent) => {
+      dragCounterRef.current = 0;
+      setIsDraggingFile(false);
+      setDragOverZone('none');
+    };
+
+    window.addEventListener('dragenter', handleDragEnter);
+    window.addEventListener('dragleave', handleDragLeave);
+    window.addEventListener('dragover', handleDragOver);
+    window.addEventListener('drop', handleDrop);
+
+    return () => {
+      window.removeEventListener('dragenter', handleDragEnter);
+      window.removeEventListener('dragleave', handleDragLeave);
+      window.removeEventListener('dragover', handleDragOver);
+      window.removeEventListener('drop', handleDrop);
+    };
+  }, []);
 
   // Keyboard Shortcuts Listener
   useEffect(() => {
@@ -250,6 +626,16 @@ export const App: React.FC = () => {
 
       if (isInputFocused) return;
 
+      // Page Navigation shortcuts
+      if (e.key === 'PageDown' || (e.altKey && e.key === 'ArrowDown')) {
+        e.preventDefault();
+        setCurrentPage((p) => Math.min(numPages, p + 1));
+      }
+      if (e.key === 'PageUp' || (e.altKey && e.key === 'ArrowUp')) {
+        e.preventDefault();
+        setCurrentPage((p) => Math.max(1, p - 1));
+      }
+
       // Tool selection shortcuts
       if (e.key.toLowerCase() === 'v') setActiveTool('select');
       if (e.key.toLowerCase() === 't') setActiveTool('text');
@@ -267,7 +653,7 @@ export const App: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleUndo, handleRedo]);
+  }, [handleUndo, handleRedo, numPages]);
 
   // Prevent browser viewport zooming the whole site outside the canvas viewport
   useEffect(() => {
@@ -409,9 +795,18 @@ export const App: React.FC = () => {
           onToggleCollapse={() => setIsRailCollapsed((c) => !c)}
           pdfDocument={pdfDocument}
           modifications={delta.pages}
+          docRevision={docRevision}
+          onReorderPage={handleReorderPage}
+          onDeletePage={handleDeletePage}
+          onRotatePage={handleRotatePage}
+          onDuplicatePage={handleDuplicatePage}
+          onAddBlankPage={handleAddBlankPage}
+          onDownloadSinglePage={handleDownloadSinglePage}
+          isDragOverRail={isDraggingFile && dragOverZone === 'rail'}
         />
 
         <EditorCanvas
+          key={`editor-canvas-${docRevision}-${currentPage}`}
           pdfDocument={pdfDocument}
           currentPage={currentPage}
           scale={scale}
@@ -422,6 +817,87 @@ export const App: React.FC = () => {
           selectedItem={selectedItem}
           onSelectItem={setSelectedItem}
         />
+
+        {/* Fullscreen dual-target file drop overlay */}
+        {isDraggingFile && (
+          <div
+            className="file-drop-overlay"
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = 'copy';
+            }}
+          >
+            <div
+              className={`file-drop-zone drop-zone-rail ${dragOverZone === 'rail' ? 'is-active' : ''}`}
+              onDragEnter={() => setDragOverZone('rail')}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOverZone('rail');
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsDraggingFile(false);
+                dragCounterRef.current = 0;
+                setDragOverZone('none');
+                const file = e.dataTransfer.files?.[0];
+                if (file) {
+                  if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
+                    alert('Please drop a valid PDF file.');
+                    return;
+                  }
+                  handleAppendPdf(file);
+                }
+              }}
+            >
+              <div className="drop-zone-card">
+                <div className="drop-icon-wrapper">
+                  <UploadIcon size={32} />
+                </div>
+                <h3>Append Pages</h3>
+                <p>Drop here to add pages to current document</p>
+              </div>
+            </div>
+
+            <div
+              className={`file-drop-zone drop-zone-canvas ${dragOverZone === 'canvas' ? 'is-active' : ''}`}
+              onDragEnter={() => setDragOverZone('canvas')}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOverZone('canvas');
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsDraggingFile(false);
+                dragCounterRef.current = 0;
+                setDragOverZone('none');
+                const file = e.dataTransfer.files?.[0];
+                if (file) {
+                  if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
+                    alert('Please drop a valid PDF file.');
+                    return;
+                  }
+                  if (totalEdits > 0) {
+                    const confirmed = window.confirm(
+                      'You have unsaved edits in the active document. Open new document and discard changes?'
+                    );
+                    if (!confirmed) return;
+                  }
+                  handleUploadFile(file);
+                }
+              }}
+            >
+              <div className="drop-zone-card">
+                <div className="drop-icon-wrapper">
+                  <UploadIcon size={44} />
+                </div>
+                <h3>Open as New Document</h3>
+                <p>Drop anywhere here to replace the active document</p>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       <StatusBar
@@ -446,7 +922,23 @@ export const App: React.FC = () => {
       <CookieConsentBanner
         onOpenPrivacy={() => setIsPrivacyOpen(true)}
       />
+
+      {/* Floating Action Toast */}
+      {toast && (
+        <div className="floating-toast-container">
+          <Toast
+            id={toast.id}
+            message={toast.message}
+            actionLabel={toast.actionLabel}
+            onAction={toast.onAction}
+            variant={toast.variant || 'info'}
+            duration={toast.duration || 5000}
+            onClose={() => setToast(null)}
+          />
+        </div>
+      )}
     </div>
   );
 };
+
 export default App;

@@ -266,6 +266,32 @@ body {
   gap: var(--spacing-4);
 }
 
+.page-card-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-card-drop-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: var(--color-brand-primary);
+  border-radius: 2px;
+  z-index: 25;
+  box-shadow: 0 0 8px rgba(66, 133, 244, 0.7);
+  pointer-events: none;
+}
+
+.page-card-drop-line.line-top {
+  top: -8px;
+}
+
+.page-card-drop-line.line-bottom {
+  bottom: -8px;
+}
+
 .page-card {
   display: flex;
   flex-direction: column;
@@ -273,10 +299,11 @@ body {
   background-color: var(--surface-canvas);
   border: 2px solid transparent;
   border-radius: var(--border-radius-md);
-  padding: var(--spacing-4);
-  cursor: pointer;
+  padding: var(--spacing-3);
+  cursor: grab;
   transition: all var(--transition-fast);
   position: relative;
+  user-select: none;
 }
 
 .page-card:hover {
@@ -284,10 +311,190 @@ body {
   transform: translateY(-1px);
 }
 
+.page-card:active {
+  cursor: grabbing;
+}
+
+.page-card.is-dragging {
+  opacity: 0.35;
+  border-color: var(--color-brand-primary);
+  transform: scale(0.98);
+}
+
 .page-card.active {
   border-color: var(--color-brand-primary);
   background-color: var(--surface-active);
   box-shadow: 0 0 0 1px var(--color-brand-primary);
+}
+
+.page-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: var(--spacing-2);
+  gap: var(--spacing-2);
+}
+
+.page-number-tag {
+  font-size: var(--typography-font-size-xs);
+  font-weight: var(--typography-font-weight-medium);
+  color: var(--text-secondary);
+}
+
+.page-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.page-card:hover .page-card-actions,
+.page-card:focus-within .page-card-actions {
+  opacity: 1;
+}
+
+@media (pointer: coarse) {
+  .page-card-actions {
+    opacity: 1;
+  }
+}
+
+.page-delete-btn:hover {
+  color: var(--color-danger, #ea4335) !important;
+}
+
+.page-menu-container {
+  position: relative;
+}
+
+.page-action-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--elevation-shadow-lg, 0 10px 25px -5px rgba(0, 0, 0, 0.2));
+  min-width: 164px;
+  z-index: 100;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: pageMenuFadeIn 0.15s ease-out;
+}
+
+@keyframes pageMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.page-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  width: 100%;
+  padding: 6px 10px;
+  font-size: var(--typography-font-size-xs, 12px);
+  font-weight: var(--typography-font-weight-medium, 500);
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.page-menu-item:hover:not(:disabled) {
+  background-color: var(--surface-hover);
+}
+
+.page-menu-item:focus-visible {
+  outline: 2px solid var(--border-focus);
+  background-color: var(--surface-hover);
+}
+
+.page-menu-item:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.page-menu-item--danger {
+  color: var(--color-danger, #ea4335);
+}
+
+.page-menu-item--danger:hover:not(:disabled) {
+  background-color: rgba(234, 67, 53, 0.08);
+}
+
+.page-menu-divider {
+  height: 1px;
+  background-color: var(--border-subtle);
+  margin: 3px 0;
+}
+
+.page-rail-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+  padding-top: var(--spacing-4);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.page-rail-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  width: 100%;
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: var(--typography-font-size-xs, 12px);
+  font-weight: var(--typography-font-weight-medium, 500);
+  color: var(--color-brand-primary);
+  background-color: var(--surface-canvas);
+  border: 1px dashed var(--color-brand-primary);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.page-rail-add-btn:hover {
+  background-color: rgba(66, 133, 244, 0.08);
+  border-style: solid;
+}
+
+.rail-drop-indicator-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: var(--typography-font-size-xs, 12px);
+  font-weight: var(--typography-font-weight-medium, 500);
+  color: #ffffff;
+  background-color: var(--color-brand-primary);
+  border-radius: var(--border-radius-sm);
+  box-shadow: var(--elevation-shadow-sm);
+  animation: bannerPulse 1.5s infinite;
+}
+
+@keyframes bannerPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.page-rail.drag-target-active {
+  border-color: var(--color-brand-primary);
+  box-shadow: inset 0 0 0 2px var(--color-brand-primary);
 }
 
 /* Real PDF Canvas Thumbnail */
@@ -1026,5 +1233,133 @@ body {
 
   .status-shortcut-btn {
     display: none !important;
+  }
+}
+
+/* =========================================
+   FILE DRAG & DROP DUAL-TARGET OVERLAY
+   ========================================= */
+.file-drop-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  padding: var(--spacing-8, 32px);
+  gap: var(--spacing-6, 24px);
+  pointer-events: auto;
+  animation: dropOverlayFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dropOverlayFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(10px);
+  }
+}
+
+.file-drop-zone {
+  border: 2px dashed rgba(255, 255, 255, 0.35);
+  border-radius: var(--border-radius-xl, 20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-normal);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.drop-zone-rail {
+  width: var(--rail-width, 240px);
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.drop-zone-canvas {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.file-drop-zone:hover,
+.file-drop-zone.is-active {
+  border-color: var(--color-brand-primary, #4285f4);
+  background: rgba(66, 133, 244, 0.16);
+  box-shadow: 0 0 32px rgba(66, 133, 244, 0.4);
+  transform: scale(1.008);
+}
+
+.drop-zone-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: #ffffff;
+  gap: var(--spacing-2, 8px);
+  padding: var(--spacing-6);
+  pointer-events: none;
+}
+
+.drop-icon-wrapper {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--spacing-3, 12px);
+  color: #ffffff;
+  transition: all var(--transition-fast);
+}
+
+.file-drop-zone.is-active .drop-icon-wrapper {
+  background: var(--color-brand-primary, #4285f4);
+  box-shadow: 0 0 20px rgba(66, 133, 244, 0.6);
+  transform: scale(1.1);
+}
+
+.drop-zone-card h3 {
+  font-size: var(--typography-font-size-lg, 18px);
+  font-weight: var(--typography-font-weight-bold, 700);
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+.drop-zone-card p {
+  font-size: var(--typography-font-size-sm, 13px);
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
+  max-width: 260px;
+  line-height: 1.4;
+}
+
+/* =========================================
+   FLOATING ACTION TOAST CONTAINER
+   ========================================= */
+.floating-toast-container {
+  position: fixed;
+  bottom: 48px;
+  right: 28px;
+  z-index: 9999;
+  animation: toastSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--elevation-shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.25));
+  border-radius: var(--border-radius-lg, 12px);
+}
+
+@keyframes toastSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }

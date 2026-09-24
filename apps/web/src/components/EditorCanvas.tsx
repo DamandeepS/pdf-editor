@@ -274,6 +274,7 @@ export const EditorCanvas: React.FC<EditorCanvasProps> = ({
       if (renderTaskRef.current) {
         try {
           renderTaskRef.current.cancel();
+          await renderTaskRef.current.promise.catch(() => {});
         } catch {
           // ignore
         }
